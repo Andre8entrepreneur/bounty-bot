@@ -139,7 +139,7 @@ export function BountyDetail({ id }: { id: string }) {
   const isBuyer = publicKey?.toBase58() === bounty.buyer;
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-10 px-4 py-12">
+    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-4 py-12">
       <section className="flex flex-col items-center gap-4 text-center">
         <h1 className="text-2xl font-semibold tracking-tight">
           {brief?.businessName ?? "Bounty"}
@@ -202,7 +202,11 @@ export function BountyDetail({ id }: { id: string }) {
           const entry = entries.find((e) => e.agent_key === agent);
           return (
             <div key={agent} className="flex flex-col gap-3">
-              <AgentCard agentKey={agent} entry={entry} />
+              <AgentCard
+                agentKey={agent}
+                entry={entry}
+                revealed={bounty.status === "awarded" && agent === bounty.winner_agent}
+              />
               {inPickWindow && isBuyer && entry?.referee_pass && (
                 <button
                   onClick={() => pickWinner(entry)}
