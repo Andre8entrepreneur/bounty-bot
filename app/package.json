@@ -9,12 +9,18 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "check:env": "tsx scripts/check-env.ts",
-    "idl:sync": "tsx scripts/idl-sync.ts"
+    "idl:sync": "tsx scripts/idl-sync.ts",
+    "keys:export": "tsx scripts/keys-export.ts"
   },
   "dependencies": {
+    "@anchor-lang/core": "^1.2.1",
+    "@solana/spl-token": "^0.4.13",
+    "@solana/web3.js": "^1.98.4",
+    "bs58": "^6.0.0",
     "next": "16.4.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
+    "server-only": "^0.0.1",
     "zod": "^4.6.5"
   },
   "devDependencies": {
@@ -31,6 +37,10 @@
   },
   "allowScripts": {
     "unrs-resolver@1.12.2": true,
-    "esbuild@0.28.2": true
+    "esbuild@0.28.2": true,
+    "bigint-buffer@1.1.5": true,
+    "bufferutil@4.1.0": true,
+    "fsevents@2.3.3": true,
+    "utf-8-validate@6.0.6": true
   }
 }
