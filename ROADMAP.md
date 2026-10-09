@@ -45,7 +45,7 @@ A box is ticked only when its **Done when** check passed in the current session 
   Then ask Claude Code to verify it: staging a dummy file named `.env.dummy` with `git add -f` must make `git commit` fail with the hook's message (then unstage and delete it), and a normal commit must pass.
 - [x] **0.7 [auto] Scaffold.** Anchor workspace in place (program name `escrow`), Next.js app in `app/` (TS strict, Tailwind, App Router, ESLint), `app/src/lib/env.ts` (zod, server vs public split), `check:env` script, home page showing "Bounty Bot — DEVNET".
   **Done when:** `anchor build` passes, `npm --prefix app run build` passes, `npm --prefix app run check:env` reports every variable as `set`.
-- [ ] **0.8 [you] GitHub + Vercel.** Push. On Vercel: import the repo, Root Directory = `app`, add the `NEXT_PUBLIC_*` variables. (Server secrets come in 4.6.)
+- [x] **0.8 [you] GitHub + Vercel.** Push. On Vercel: import the repo, Root Directory = `app`, add the `NEXT_PUBLIC_*` variables. (Server secrets come in 4.6.)
   **Done when:** the home page is live on `*.vercel.app` (open it with the VPN on).
 - [ ] **0.9 [you] Overnight prep.** Laptop plugged in, VPN stable, sleep disabled (`caffeinate -dimsu &` in the terminal you launch from), and turn on auto-continue after a usage limit in Claude Code's `/config` if your version offers it.
   If Claude Code asks whether it may read files **outside the project folder**, answer "Yes, and keep allowing" so it never stalls overnight. Your keys stay protected by the deny rules in `.claude/settings.json`.
