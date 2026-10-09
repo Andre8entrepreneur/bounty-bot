@@ -2,3 +2,9 @@
 
 Format: `YYYY-MM-DD HH:MM · task id · command · result`
 
+2026-10-09 21:30 · 0.1 · `rustc --version && solana --version && anchor --version && node --version && yarn --version` · pass — Rust 1.99.0, Solana CLI 3.1.10, Anchor CLI 1.1.2, Node v26.4.0, Yarn 1.22.22. gitleaks 8.30.1, jq 1.8.2, supabase 2.120.0 installed. claude update → already up to date.
+2026-10-09 21:30 · 0.2 · manual (GitHub, Supabase, Anthropic, Vercel) · pass — GitHub repo `Andre8entrepreneur/bounty-bot` created (private) via `gh repo create`. Supabase project `bounty-bot` created (ap-northeast-1 / Tokyo). Anthropic API key created with $30/mo spend cap. Vercel CLI authenticated.
+2026-10-09 21:30 · 0.3 · `solana-keygen new` (deployer + 4 agent/platform keys), Phantom wallet setup · partial — deployer (`5WGHEDyctGEaWPETPpGk89q45GRfz8BGNVcuRTmqDuZw`) and 4 keys in `~/bounty-keys/` created. Phantom wallet created, devnet mode on (`DEMO_BUYER_ADDRESS` = `AsmskYw3N37XVwmeHnHwebyEHx5M4S555pXBJAHwj7Wh`). BLOCKED: devnet faucets (CLI, faucet.solana.com, QuickNode) all rate-limited/unusable — see BLOCKERS.md. Wallets not yet funded.
+2026-10-09 21:30 · 0.5 · `supabase login` / `supabase link --project-ref krsvyageflkavmjlzzxn` · pass — CLI already authenticated (pre-existing session), linked to `bounty-bot` project (`linked: true` confirmed).
+2026-10-09 21:30 · 0.6 · `git init && git config core.hooksPath .githooks && chmod +x .githooks/pre-commit` then hook verification · pass — staged `.env.dummy` with `git add -f`, commit correctly BLOCKED (exit 1) with hook's message; unstaged and removed; normal commit of baseline files succeeded (exit 0, gitleaks: 0 leaks found).
+

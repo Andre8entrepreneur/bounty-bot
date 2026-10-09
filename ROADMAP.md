@@ -17,11 +17,11 @@ A box is ticked only when its **Done when** check passed in the current session 
 
 ## Bloc 0 — Infra & security (interactive, ~90 min)
 
-- [ ] **0.1 [you] Toolchain.**
+- [x] **0.1 [you] Toolchain.**
   `curl --proto '=https' --tlsv1.2 -sSfL https://solana-install.solana.workers.dev | bash` → restart the terminal →
   `rustc --version && solana --version && anchor --version && node --version && yarn --version`.
   Then `brew install gitleaks jq supabase/tap/supabase`, and `claude update`.
-- [ ] **0.2 [you] Accounts.**
+- [x] **0.2 [you] Accounts.**
   - GitHub: new **private** repo `bounty-bot` (it goes public only after the secret scan in 5.4).
   - Supabase: new project, region Tokyo or Singapore. Keep the URL, anon key, service-role key and DB password.
   - Anthropic Console: one API key for the app's agents. **Set a monthly spend limit (~$30).**
@@ -39,8 +39,8 @@ A box is ticked only when its **Done when** check passed in the current session 
   ```
   Phantom: Settings → Developer settings → Testnet mode ON → Solana Devnet. Copy your address (= `DEMO_BUYER_ADDRESS`) and faucet ~1 SOL to it.
 - [ ] **0.4 [you] Secrets.** `cp .env.example app/.env.local`, then fill it **in your own editor**. Never paste a value into Claude Code.
-- [ ] **0.5 [you] Supabase CLI.** From the repo root: `supabase login`, then `supabase link --project-ref <your-ref>`.
-- [ ] **0.6 [you] Git + guard rails** (Claude Code is not allowed to change the hook path, on purpose):
+- [x] **0.5 [you] Supabase CLI.** From the repo root: `supabase login`, then `supabase link --project-ref <your-ref>`.
+- [x] **0.6 [you] Git + guard rails** (Claude Code is not allowed to change the hook path, on purpose):
   `git init && git config core.hooksPath .githooks && chmod +x .githooks/pre-commit`.
   Then ask Claude Code to verify it: staging a dummy file named `.env.dummy` with `git add -f` must make `git commit` fail with the hook's message (then unstage and delete it), and a normal commit must pass.
 - [ ] **0.7 [auto] Scaffold.** Anchor workspace in place (program name `escrow`), Next.js app in `app/` (TS strict, Tailwind, App Router, ESLint), `app/src/lib/env.ts` (zod, server vs public split), `check:env` script, home page showing "Bounty Bot — DEVNET".
