@@ -112,7 +112,7 @@ Custom error enum with explicit names. Emit events: `BountyCreated`, `EntrySubmi
 
 ## Bloc 3 — Agents, referee, server orchestration `[auto]`
 
-- [ ] **3.1 [auto] Schemas** (`lib/agents/schema.ts`, zod) and **hashing** (`lib/hash.ts`):
+- [x] **3.1 [auto] Schemas** (`lib/agents/schema.ts`, zod) and **hashing** (`lib/hash.ts`):
   - `Brief`: `businessName` ≤60 · `whatItDoes` ≤300 · `audience` ≤200 · `vibe` 1–5 values from an allowed list · `avoid` ≤200 optional · `prizeTusdc` 1–1000 · `deadlinePreset` `'demo' | '1h' | '24h'` (demo = 2 min deadline + 2 min pick window).
   - `BrandKit`: `names` exactly 3 (≤40 each) · `tagline` ≤80 · `palette` exactly 5 × `{ name ≤24, hex /^#[0-9A-Fa-f]{6}$/ }` · `fonts { heading, body }` from a `FONT_ALLOWLIST` of ~20 Google Fonts · `logoSvg` ≤20 KB · `moodboard` exactly 4 visual scene descriptions ≤120 chars · `rationale` ≤120 words.
   - `hash.ts`: canonical JSON (sorted keys, no whitespace) → sha256 hex. Same function for `brief_hash` and `content_hash`.
