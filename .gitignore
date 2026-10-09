@@ -1,0 +1,35 @@
+# Secrets — never commit
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+*-keypair.json
+id.json
+keys/
+
+# Rust / Anchor
+target/
+.anchor/
+test-ledger/
+**/*.rs.bk
+
+# Node / Next.js
+node_modules/
+app/.next/
+app/out/
+app/tmp/
+*.tsbuildinfo
+next-env.d.ts
+
+# Vercel / Supabase local state
+.vercel/
+supabase/.temp/
+supabase/.branches/
+
+# OS / editor
+.DS_Store
+*.log
+.idea/
+.vscode/
+.impeccable/
