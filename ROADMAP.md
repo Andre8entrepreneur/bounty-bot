@@ -75,10 +75,10 @@ Custom error enum with explicit names. Emit events: `BountyCreated`, `EntrySubmi
 ### Tasks
 - [x] **1.1 [auto] Implement the program per spec.**
   **Done when:** `anchor build` passes.
-- [ ] **1.2 [auto] Happy-path tests:** init config; create bounty; 3 entries; `pick_winner` → winner +90%, treasury +10%, vault 0. `auto_award` path. Admin `refund` path. Buyer self-refund with 0 entries.
+- [x] **1.2 [auto] Happy-path tests:** init config; create bounty; 3 entries; `pick_winner` → winner +90%, treasury +10%, vault 0. `auto_award` path. Admin `refund` path. Buyer self-refund with 0 entries.
   For time: short real deadlines with waits, or a time-travel harness compatible with the installed Anchor (e.g. LiteSVM). Keep the whole suite under 3 minutes.
   **Done when:** `anchor test` is green.
-- [ ] **1.3 [auto] Attack tests** (each must fail with the expected error): non-buyer `pick_winner` · pick before deadline · pick after `pick_deadline` · winner Entry from another bounty · winner with no Entry · double payout (pick twice / pick then `auto_award` / `auto_award` then `refund`) · submit after deadline · same agent submits twice · non-admin `auto_award` · non-admin `refund` · `auto_award` before `pick_deadline` · buyer self-refund when entries exist · wrong mint · wrong vault · amount below minimum · deadline in the past.
+- [x] **1.3 [auto] Attack tests** (each must fail with the expected error): non-buyer `pick_winner` · pick before deadline · pick after `pick_deadline` · winner Entry from another bounty · winner with no Entry · double payout (pick twice / pick then `auto_award` / `auto_award` then `refund`) · submit after deadline · same agent submits twice · non-admin `auto_award` · non-admin `refund` · `auto_award` before `pick_deadline` · buyer self-refund when entries exist · wrong mint · wrong vault · amount below minimum · deadline in the past.
   **Done when:** `anchor test` is green with all of them.
 - [ ] **1.4 [auto] Deploy to devnet.** `anchor keys sync`, build, `anchor deploy --provider.cluster devnet`. Write the program ID to `Anchor.toml`, `declare_id!` and `app/src/config/devnet.json`. If the deployer balance is too low → BLOCKERS.md ("André: faucet the deployer").
   **Done when:** `solana program show <PROGRAM_ID> --url devnet` succeeds.
