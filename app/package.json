@@ -12,6 +12,7 @@
     "idl:sync": "tsx scripts/idl-sync.ts",
     "keys:export": "tsx scripts/keys-export.ts",
     "agents:smoke": "tsx scripts/agents-smoke.ts",
+    "devnet:setup": "tsx scripts/devnet-setup.ts",
     "test": "node --import tsx --test \"src/**/*.test.ts\""
   },
   "dependencies": {

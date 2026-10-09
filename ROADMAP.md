@@ -91,7 +91,7 @@ Custom error enum with explicit names. Emit events: `BountyCreated`, `EntrySubmi
 
 - [x] **2.1 [auto] `lib/solana/keys.ts`** (server-only): loads the platform and agent keypairs from files in `KEYS_DIR` locally, or from base58 env vars (`PLATFORM_SECRET_KEY`, `AGENT_MINIMAL_SECRET_KEY`, `AGENT_BOLD_SECRET_KEY`, `AGENT_LUXE_SECRET_KEY`) on Vercel. Never logs secrets. Also write `scripts/keys-export.ts` (prints base58 keys for André) — **write it, never run it.**
   **Done when:** typecheck passes and a small script prints the four **public** keys only.
-- [ ] **2.2 [auto] `devnet:setup`** (idempotent, refuses if cluster ≠ devnet): create the tUSDC mint if missing (deployer = mint authority); `initialize_config` (admin = platform pubkey, treasury = platform pubkey); create the treasury ATA; mint 1,000 tUSDC to `DEMO_BUYER_ADDRESS` and 1,000 to the deployer; top up each agent and the platform to ≥ 0.1 SOL from the deployer. Write public addresses to `app/src/config/devnet.json`.
+- [x] **2.2 [auto] `devnet:setup`** (idempotent, refuses if cluster ≠ devnet): create the tUSDC mint if missing (deployer = mint authority); `initialize_config` (admin = platform pubkey, treasury = platform pubkey); create the treasury ATA; mint 1,000 tUSDC to `DEMO_BUYER_ADDRESS` and 1,000 to the deployer; top up each agent and the platform to ≥ 0.1 SOL from the deployer. Write public addresses to `app/src/config/devnet.json`.
   **Done when:** a second run changes nothing and prints "already set up".
 - [x] **2.3 [auto] `lib/solana/client.ts`:** PDA helpers, typed fetchers (bounty, entries), builders for all 6 instructions, `explorerTx(sig)` → `https://explorer.solana.com/tx/<sig>?cluster=devnet`.
   **Done when:** typecheck passes and unit tests on PDA derivation pass.
