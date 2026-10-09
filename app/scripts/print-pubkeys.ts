@@ -4,7 +4,7 @@ import { config } from "dotenv";
 import { resolve } from "node:path";
 import { getAgentKeypair, getPlatformKeypair } from "../src/lib/solana/keys";
 
-config({ path: resolve(process.cwd(), ".env.local") });
+config({ path: resolve(process.cwd(), ".env.local"), override: true });
 
 console.log(`platform: ${getPlatformKeypair().publicKey.toBase58()}`);
 console.log(`agent-minimal: ${getAgentKeypair("minimal").publicKey.toBase58()}`);

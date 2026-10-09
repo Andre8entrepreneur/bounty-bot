@@ -2,7 +2,7 @@ import { config } from "dotenv";
 import { resolve } from "node:path";
 
 // Never print values — only whether each variable is present.
-config({ path: resolve(process.cwd(), ".env.local") });
+config({ path: resolve(process.cwd(), ".env.local"), override: true });
 
 const REQUIRED = [
   "ANTHROPIC_API_KEY",

@@ -6,7 +6,7 @@ import type { Brief, BrandKit } from "../src/lib/agents/schema";
 import { runAgent } from "../src/lib/agents/run-agent";
 import { judgeEntry, type RefereeResult } from "../src/lib/agents/referee";
 
-config({ path: resolve(process.cwd(), ".env.local") });
+config({ path: resolve(process.cwd(), ".env.local"), override: true });
 
 const SAMPLE_BRIEF: Brief = {
   businessName: "Lantern & Leaf",
