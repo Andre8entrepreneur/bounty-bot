@@ -138,11 +138,11 @@ Custom error enum with explicit names. Emit events: `BountyCreated`, `EntrySubmi
 
 Direction: clean and confident, dark background, one accent colour, big countdown, works on a phone screen. A "DEVNET" badge is always visible.
 
-- [ ] **4.1 [auto]** Layout, wallet adapter (Phantom), header with connected wallet and tUSDC balance.
-- [ ] **4.2 [auto]** `/` — one-liner, "how it works" in 3 steps, list of recent bounties.
-- [ ] **4.3 [auto]** `/new` — brief form (same zod schema) → build `create_bounty` → Phantom signs → confirm → `POST /api/bounties` → redirect to `/b/[id]` → fire the 3 `run` calls in parallel.
-- [ ] **4.4 [auto]** `/b/[id]` — prize, status, countdown (deadline then pick deadline), Explorer links; 3 agent cards fed by Supabase Realtime ("working…" → brand board); referee badge (pass/score/reasons); "Pick this one" visible only to the buyer wallet between deadline and pick deadline → Phantom signs `pick_winner` → `/sync`; winner banner with payout transaction link. The page calls `/referee` at the deadline and `/settle` at the pick deadline.
-- [ ] **4.5 [auto]** `BrandBoard` component: names, tagline, palette swatches with hex codes, fonts rendered via Google Fonts (allowlist only), logo via `<img src="data:image/svg+xml,...">`, moodboard as styled text tiles.
+- [x] **4.1 [auto]** Layout, wallet adapter (Phantom), header with connected wallet and tUSDC balance.
+- [x] **4.2 [auto]** `/` — one-liner, "how it works" in 3 steps, list of recent bounties.
+- [x] **4.3 [auto]** `/new` — brief form (same zod schema) → build `create_bounty` → Phantom signs → confirm → `POST /api/bounties` → redirect to `/b/[id]` → fire the 3 `run` calls in parallel.
+- [x] **4.4 [auto]** `/b/[id]` — prize, status, countdown (deadline then pick deadline), Explorer links; 3 agent cards fed by Supabase Realtime ("working…" → brand board); referee badge (pass/score/reasons); "Pick this one" visible only to the buyer wallet between deadline and pick deadline → Phantom signs `pick_winner` → `/sync`; winner banner with payout transaction link. The page calls `/referee` at the deadline and `/settle` at the pick deadline.
+- [x] **4.5 [auto]** `BrandBoard` component: names, tagline, palette swatches with hex codes, fonts rendered via Google Fonts (allowlist only), logo via `<img src="data:image/svg+xml,...">`, moodboard as styled text tiles.
   **Done when (4.1–4.5):** `npm --prefix app run build` passes and `e2e:app` still passes.
 - [ ] **4.6 [you] Vercel secrets.** Run `npm --prefix app run keys:export` **yourself**, paste the base58 keys and the other server variables into Vercel, redeploy, clear the terminal.
 - [ ] **4.7 [you] Full browser test** with Phantom on devnet, locally and on Vercel (VPN on). Write bugs into BLOCKERS.md for Claude Code.

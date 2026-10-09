@@ -1,0 +1,221 @@
+"use client";
+
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { PublicKey, Transaction } from "@solana/web3.js";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { buildPickWinnerIx, explorerTx, getProgram } from "@/lib/solana/client";
+import type { BountyRow, EntryRow } from "@/lib/types";
+import { AgentCard } from "@/components/AgentCard";
+import { Countdown } from "@/components/Countdown";
+import devnetConfig from "@/config/devnet.json";
+
+const AGENTS = ["minimal", "bold", "luxe"] as const;
+
+export function BountyDetail({ id }: { id: string }) {
+  const { connection } = useConnection();
+  const { publicKey, sendTransaction } = useWallet();
+
+  const [bounty, setBounty] = useState<BountyRow | null>(null);
+  const [entries, setEntries] = useState<EntryRow[]>([]);
+  const [picking, setPicking] = useState<string | null>(null);
+  const [pickTxSig, setPickTxSig] = useState<string | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+  const calledReferee = useRef(false);
+  const calledSettle = useRef(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const refresh = useCallback(async () => {
+    const supabase = getSupabaseBrowserClient();
+    const [{ data: b }, { data: e }] = await Promise.all([
+      supabase.from("bounties").select("*").eq("id", id).single<BountyRow>(),
+      supabase.from("entries").select("*").eq("bounty_id", id).returns<EntryRow[]>(),
+    ]);
+    if (b) setBounty(b);
+    if (e) setEntries(e);
+  }, [id]);
+
+  useEffect(() => {
+    let ignore = false;
+    const supabase = getSupabaseBrowserClient();
+
+    (async () => {
+      const [{ data: b }, { data: e }] = await Promise.all([
+        supabase.from("bounties").select("*").eq("id", id).single<BountyRow>(),
+        supabase.from("entries").select("*").eq("bounty_id", id).returns<EntryRow[]>(),
+      ]);
+      if (ignore) return;
+      if (b) setBounty(b);
+      if (e) setEntries(e);
+    })();
+
+    const channel = supabase
+      .channel(`bounty-${id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "bounties", filter: `id=eq.${id}` },
+        () => refresh(),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "entries", filter: `bounty_id=eq.${id}` },
+        () => refresh(),
+      )
+      .subscribe();
+    return () => {
+      ignore = true;
+      supabase.removeChannel(channel);
+    };
+  }, [id, refresh]);
+
+  // Fire /referee at the deadline and /settle at the pick deadline. Both
+  // routes are idempotent — a stray extra call is harmless.
+  useEffect(() => {
+    if (!bounty || bounty.status !== "open") return;
+    const deadlineMs = bounty.deadline ? new Date(bounty.deadline).getTime() : null;
+    const pickDeadlineMs = bounty.pick_deadline ? new Date(bounty.pick_deadline).getTime() : null;
+
+    const interval = setInterval(() => {
+      const nowMs = Date.now();
+      if (deadlineMs && nowMs >= deadlineMs && !calledReferee.current) {
+        calledReferee.current = true;
+        fetch(`/api/bounties/${id}/referee`, { method: "POST" })
+          .then(() => refresh())
+          .catch(() => {
+            calledReferee.current = false;
+          });
+      }
+      if (pickDeadlineMs && nowMs >= pickDeadlineMs && !calledSettle.current) {
+        calledSettle.current = true;
+        fetch(`/api/bounties/${id}/settle`, { method: "POST" })
+          .then(() => refresh())
+          .catch(() => {
+            calledSettle.current = false;
+          });
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [bounty, id, refresh]);
+
+  async function pickWinner(entry: EntryRow) {
+    if (!bounty || !publicKey || !entry.agent_pubkey) return;
+    setPicking(entry.id);
+    try {
+      const program = getProgram(connection);
+      const ix = await buildPickWinnerIx(program, {
+        buyer: new PublicKey(bounty.buyer!),
+        bountyId: BigInt(bounty.bounty_id!),
+        mint: new PublicKey(devnetConfig.mint),
+        treasury: new PublicKey(devnetConfig.treasury),
+        winnerAgent: new PublicKey(entry.agent_pubkey),
+      });
+      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+      const tx = new Transaction({ feePayer: publicKey, recentBlockhash: blockhash }).add(ix);
+      const sig = await sendTransaction(tx, connection);
+      await connection.confirmTransaction({ signature: sig, blockhash, lastValidBlockHeight }, "confirmed");
+      setPickTxSig(sig);
+      await fetch(`/api/bounties/${id}/sync`, { method: "POST" });
+      await refresh();
+    } catch (err) {
+      console.error("pick_winner failed", err);
+    } finally {
+      setPicking(null);
+    }
+  }
+
+  if (!bounty) {
+    return <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-16 text-zinc-500">Loading…</main>;
+  }
+
+  const brief = bounty.brief as { businessName?: string } | null;
+  const deadlineMs = bounty.deadline ? new Date(bounty.deadline).getTime() : 0;
+  const pickDeadlineMs = bounty.pick_deadline ? new Date(bounty.pick_deadline).getTime() : 0;
+  const pastDeadline = now >= deadlineMs;
+  const inPickWindow = bounty.status === "open" && now >= deadlineMs && now < pickDeadlineMs;
+  const isBuyer = publicKey?.toBase58() === bounty.buyer;
+
+  return (
+    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-10 px-4 py-12">
+      <section className="flex flex-col items-center gap-4 text-center">
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {brief?.businessName ?? "Bounty"}
+        </h1>
+        <div className="flex items-center gap-2 text-sm text-zinc-400">
+          <span>{bounty.amount ? (bounty.amount / 1_000_000).toFixed(0) : "?"} tUSDC prize</span>
+          <span>·</span>
+          <span className="capitalize">{bounty.status}</span>
+        </div>
+
+        {bounty.status === "open" && (
+          <Countdown
+            target={new Date(pastDeadline ? pickDeadlineMs : deadlineMs)}
+            label={pastDeadline ? "Pick window closes" : "Submissions close"}
+          />
+        )}
+
+        {bounty.status === "awarded" && (
+          <div className="rounded-xl border border-accent/30 bg-accent/5 px-4 py-3 text-sm text-accent">
+            Awarded to <span className="font-semibold">{bounty.winner_agent}</span>
+            {bounty.settle_tx && (
+              <>
+                {" — "}
+                <a href={explorerTx(bounty.settle_tx)} target="_blank" rel="noreferrer" className="underline">
+                  view payout
+                </a>
+              </>
+            )}
+            {!bounty.settle_tx && pickTxSig && (
+              <>
+                {" — "}
+                <a href={explorerTx(pickTxSig)} target="_blank" rel="noreferrer" className="underline">
+                  view payout
+                </a>
+              </>
+            )}
+          </div>
+        )}
+
+        {bounty.status === "refunded" && (
+          <div className="rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm text-zinc-400">
+            No entry passed — refunded to the buyer.
+          </div>
+        )}
+
+        {bounty.create_tx && (
+          <a
+            href={explorerTx(bounty.create_tx)}
+            target="_blank"
+            rel="noreferrer"
+            className="text-xs text-zinc-600 underline hover:text-zinc-400"
+          >
+            View bounty creation on Explorer
+          </a>
+        )}
+      </section>
+
+      <section className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+        {AGENTS.map((agent) => {
+          const entry = entries.find((e) => e.agent_key === agent);
+          return (
+            <div key={agent} className="flex flex-col gap-3">
+              <AgentCard agentKey={agent} entry={entry} />
+              {inPickWindow && isBuyer && entry?.referee_pass && (
+                <button
+                  onClick={() => pickWinner(entry)}
+                  disabled={picking !== null}
+                  className="rounded-full bg-accent px-4 py-2 text-xs font-semibold text-black transition hover:brightness-110 disabled:opacity-40"
+                >
+                  {picking === entry.id ? "Confirm in wallet…" : "Pick this one"}
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </section>
+    </main>
+  );
+}
