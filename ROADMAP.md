@@ -82,7 +82,7 @@ Custom error enum with explicit names. Emit events: `BountyCreated`, `EntrySubmi
   **Done when:** `anchor test` is green with all of them.
 - [ ] **1.4 [auto] Deploy to devnet.** `anchor keys sync`, build, `anchor deploy --provider.cluster devnet`. Write the program ID to `Anchor.toml`, `declare_id!` and `app/src/config/devnet.json`. If the deployer balance is too low → BLOCKERS.md ("André: faucet the deployer").
   **Done when:** `solana program show <PROGRAM_ID> --url devnet` succeeds.
-- [ ] **1.5 [auto] `idl:sync` script.**
+- [x] **1.5 [auto] `idl:sync` script.**
   **Done when:** the app imports the IDL types and `npm --prefix app run typecheck` passes.
 
 ---
