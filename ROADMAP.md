@@ -95,7 +95,7 @@ Custom error enum with explicit names. Emit events: `BountyCreated`, `EntrySubmi
   **Done when:** a second run changes nothing and prints "already set up".
 - [x] **2.3 [auto] `lib/solana/client.ts`:** PDA helpers, typed fetchers (bounty, entries), builders for all 6 instructions, `explorerTx(sig)` → `https://explorer.solana.com/tx/<sig>?cluster=devnet`.
   **Done when:** typecheck passes and unit tests on PDA derivation pass.
-- [ ] **2.4 [auto] `e2e:devnet`**, using the deployer as buyer, 60s deadline / 60s pick window:
+- [x] **2.4 [auto] `e2e:devnet`**, using the deployer as buyer, 60s deadline / 60s pick window:
   (A) create → 3 entries → wait → `pick_winner` · (B) create → 1 entry → wait → `auto_award` · (C) create → 0 entries → wait → buyer `refund`.
   Print balances before/after and Explorer links.
   **Done when:** it exits 0 and balances match (winner +90%, treasury +10%, refund 100%).
