@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "check:env": "tsx scripts/check-env.ts",
     "idl:sync": "tsx scripts/idl-sync.ts",
-    "keys:export": "tsx scripts/keys-export.ts"
+    "keys:export": "tsx scripts/keys-export.ts",
+    "test": "node --import tsx --test \"src/**/*.test.ts\""
   },
   "dependencies": {
     "@anchor-lang/core": "^1.2.1",
