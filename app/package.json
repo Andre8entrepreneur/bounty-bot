@@ -11,6 +11,7 @@
     "check:env": "tsx scripts/check-env.ts",
     "idl:sync": "tsx scripts/idl-sync.ts",
     "keys:export": "tsx scripts/keys-export.ts",
+    "agents:smoke": "tsx scripts/agents-smoke.ts",
     "test": "node --import tsx --test \"src/**/*.test.ts\""
   },
   "dependencies": {
