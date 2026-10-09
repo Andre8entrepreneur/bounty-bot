@@ -14,6 +14,7 @@
     "agents:smoke": "tsx scripts/agents-smoke.ts",
     "devnet:setup": "tsx scripts/devnet-setup.ts",
     "e2e:devnet": "tsx scripts/e2e-devnet.ts",
+    "e2e:app": "tsx scripts/e2e-app.ts",
     "test": "node --import tsx --test \"src/**/*.test.ts\""
   },
   "dependencies": {

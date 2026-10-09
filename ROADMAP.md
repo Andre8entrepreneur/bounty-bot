@@ -123,7 +123,7 @@ Custom error enum with explicit names. Emit events: `BountyCreated`, `EntrySubmi
 - [x] **3.4 [auto] Referee** (`referee.ts`): (a) deterministic checks (schema, allowlisted fonts, 5 distinct hex values, non-empty sanitized SVG, 3 names); (b) LLM judge on brief + kit inside untrusted-data tags → strict JSON `{ pass: boolean, score: 0-100, reasons: string[≤3] }` validated by zod. An entry passes only if (a) and (b).pass.
 - [x] **3.5 [auto] `agents:smoke`:** sample brief fixture → 3 agents in parallel → referee → table (agent, valid, pass, score, ms). Also run the referee on a deliberately off-brief fixture kit. Outputs go to `app/tmp/` (gitignored).
   **Done when:** exits 0, 3 valid kits, and the off-brief fixture fails the referee.
-- [ ] **3.6 [auto] Route handlers** (Node runtime, `export const maxDuration = 300`):
+- [x] **3.6 [auto] Route handlers** (Node runtime, `export const maxDuration = 300`):
   - `POST /api/bounties` `{ address, txSig, brief }` → fetch the Bounty on-chain; check Open, our mint, `brief_hash == hash(brief)`, deadline in the future → insert the row. Otherwise reject.
   - `POST /api/bounties/[id]/run/[agent]` → guards: bounty in DB, Open on-chain, `now < deadline − 15s`, insert `agent_runs` 'running' atomically (conflict = already ran → 409). Run the agent → upload the sanitized SVG to Storage → insert the entry → `submit_entry` signed by that agent's key → save `submit_tx` → 'done'. On error → 'failed', no retry loop.
   - `POST /api/bounties/[id]/referee` → after the deadline, score every unscored entry. Idempotent.

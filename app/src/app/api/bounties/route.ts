@@ -73,24 +73,28 @@ export async function POST(request: Request) {
     }
 
     const supabase = getSupabaseServerClient();
-    const { error } = await supabase.from("bounties").insert({
-      onchain_address: body.address,
-      bounty_id: bounty.bountyId.toString(),
-      buyer: bounty.buyer.toBase58(),
-      amount: bounty.amount.toNumber(),
-      deadline: new Date(deadlineMs).toISOString(),
-      pick_deadline: new Date(bounty.pickDeadline.toNumber() * 1000).toISOString(),
-      brief: body.brief,
-      brief_hash: actualHash,
-      status: "open",
-      create_tx: body.txSig,
-    });
+    const { data: inserted, error } = await supabase
+      .from("bounties")
+      .insert({
+        onchain_address: body.address,
+        bounty_id: bounty.bountyId.toString(),
+        buyer: bounty.buyer.toBase58(),
+        amount: bounty.amount.toNumber(),
+        deadline: new Date(deadlineMs).toISOString(),
+        pick_deadline: new Date(bounty.pickDeadline.toNumber() * 1000).toISOString(),
+        brief: body.brief,
+        brief_hash: actualHash,
+        status: "open",
+        create_tx: body.txSig,
+      })
+      .select("id")
+      .single<{ id: string }>();
 
-    if (error) {
+    if (error || !inserted) {
       return jsonError(409, "Bounty already recorded, or insert failed");
     }
 
-    return NextResponse.json({ ok: true }, { status: 201 });
+    return NextResponse.json({ ok: true, id: inserted.id }, { status: 201 });
   } catch (err) {
     return handleRouteError(err, "POST /api/bounties");
   }

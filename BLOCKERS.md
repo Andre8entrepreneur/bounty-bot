@@ -4,7 +4,7 @@
 
 - **What it was:** Deployer and Phantom buyer wallets had 0 SOL; the official faucet (CLI + web) and several alternates (QuickNode, Helius — confirmed paid-plan-only via their own docs) were all rate-limited or inaccessible all night.
 - **Fix:** [devnetfaucet.org](https://devnetfaucet.org) (listed in Solana's own dev guide, separate rate-limit pool from the official faucet) airdropped 20 SOL to the deployer (`5WGHEDyctGEaWPETPpGk89q45GRfz8BGNVcuRTmqDuZw`). The buyer wallet (`AsmskYw3N37XVwmeHnHwebyEHx5M4S555pXBJAHwj7Wh`) hit that same faucet's per-IP cooldown (1500 min) after just the one request, so it was funded instead with a direct on-chain transfer from the now-flush deployer (`solana transfer ... 2 --allow-unfunded-recipient`, confirmed: deployer 17.999995 SOL, buyer 2 SOL).
-- **Unblocked:** Bloc 1 task 1.4 (`anchor deploy --provider.cluster devnet`), Bloc 2 tasks 2.2 (`devnet:setup`) and 2.4 (`e2e:devnet`) can now proceed.
+- **Unblocked:** Bloc 1 task 1.4 (`anchor deploy --provider.cluster devnet`), Bloc 2 tasks 2.2 (`devnet:setup`) and 2.4 (`e2e:devnet`), and Bloc 3 task 3.6's `e2e:app` verification — all now done.
 
 ## 3.5 — Anthropic API key rejected (401 invalid x-api-key) (RESOLVED 2026-10-10 01:30)
 
