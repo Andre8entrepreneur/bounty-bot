@@ -99,7 +99,7 @@ Custom error enum with explicit names. Emit events: `BountyCreated`, `EntrySubmi
   (A) create → 3 entries → wait → `pick_winner` · (B) create → 1 entry → wait → `auto_award` · (C) create → 0 entries → wait → buyer `refund`.
   Print balances before/after and Explorer links.
   **Done when:** it exits 0 and balances match (winner +90%, treasury +10%, refund 100%).
-- [ ] **2.5 [auto] Supabase migration** (`supabase/migrations/`):
+- [x] **2.5 [auto] Supabase migration** (`supabase/migrations/`):
   - `bounties`: `id uuid pk default gen_random_uuid()`, `onchain_address text unique not null`, `bounty_id text`, `buyer text`, `amount bigint`, `deadline timestamptz`, `pick_deadline timestamptz`, `brief jsonb`, `brief_hash text`, `status text check (status in ('open','awarded','refunded'))`, `winner_agent text`, `create_tx text`, `settle_tx text`, `created_at timestamptz default now()`.
   - `entries`: `id uuid pk`, `bounty_id uuid references bounties on delete cascade`, `agent_key text check (agent_key in ('minimal','bold','luxe'))`, `agent_pubkey text`, `kit jsonb`, `logo_path text`, `content_hash text`, `submit_tx text`, `referee_pass boolean`, `referee_score int`, `referee_notes jsonb`, `created_at timestamptz default now()`, `unique (bounty_id, agent_key)`.
   - `agent_runs`: `bounty_id uuid`, `agent_key text`, `status text check (status in ('running','done','failed'))`, `error text`, `started_at`, `finished_at`, `primary key (bounty_id, agent_key)`.
