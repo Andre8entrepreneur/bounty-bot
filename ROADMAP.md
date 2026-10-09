@@ -155,7 +155,7 @@ Direction: clean and confident, dark background, one accent colour, big countdow
 - [ ] **5.2 [auto]** Demo seed: one command creates a "Paris bubble tea shop" bounty with demo timing. Plus a fallback: a finished, awarded bounty page to show if the live run fails.
 - [ ] **5.3 [you]** Record a 2–3 min backup demo video.
 - [ ] **5.4 [you]** Before going public: `gitleaks git -v` on the full history → 0 leaks. Then make the repo public.
-- [ ] **5.5 [you]** Submit to Colosseum and to the Hacker House (Mon Oct 12, 10:00).
+- [ ] **5.5 [you]** Submit to Colosseum and to the Hacker House (Mon Oct 12, 10:00). Before this: disable "Vercel Authentication" (Deployment Protection → SSO) in Vercel project settings so judges can open the link without a Vercel login — currently ON (left on during setup since it has zero cost risk; nothing on the site calls paid APIs yet).
 - [ ] **5.6 [you]** Rehearse the pitch 3 times with a timer.
 
 ---
