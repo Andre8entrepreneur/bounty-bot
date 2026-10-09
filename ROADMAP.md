@@ -73,7 +73,7 @@ A box is ticked only when its **Done when** check passed in the current session 
 Custom error enum with explicit names. Emit events: `BountyCreated`, `EntrySubmitted`, `BountyAwarded`, `BountyRefunded`. Any unchecked account needs a `/// CHECK:` comment explaining why it is safe.
 
 ### Tasks
-- [ ] **1.1 [auto] Implement the program per spec.**
+- [x] **1.1 [auto] Implement the program per spec.**
   **Done when:** `anchor build` passes.
 - [ ] **1.2 [auto] Happy-path tests:** init config; create bounty; 3 entries; `pick_winner` → winner +90%, treasury +10%, vault 0. `auto_award` path. Admin `refund` path. Buyer self-refund with 0 entries.
   For time: short real deadlines with waits, or a time-travel harness compatible with the installed Anchor (e.g. LiteSVM). Keep the whole suite under 3 minutes.
