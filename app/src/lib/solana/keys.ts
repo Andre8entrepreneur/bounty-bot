@@ -34,7 +34,9 @@ function envVarFor(role: KeyRole): "PLATFORM_SECRET_KEY" | "AGENT_MINIMAL_SECRET
 
 function loadFromFile(keysDir: string, role: KeyRole): Keypair {
   const path = resolve(keysDir, KEY_FILENAMES[role]);
-  const raw = readFileSync(path, "utf-8");
+  // Local-dev-only path (Vercel always sets the *_SECRET_KEY vars instead,
+  // so this branch never runs in production) — told not to trace/bundle it.
+  const raw = readFileSync(/* turbopackIgnore: true */ path, "utf-8");
   const secret = Uint8Array.from(JSON.parse(raw) as number[]);
   return Keypair.fromSecretKey(secret);
 }

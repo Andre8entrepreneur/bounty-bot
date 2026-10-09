@@ -11,6 +11,8 @@ import {
   PublicKey,
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
+  Transaction,
+  VersionedTransaction,
   type TransactionInstruction,
 } from "@solana/web3.js";
 import {
@@ -21,9 +23,35 @@ import {
 
 import idlJson from "./idl/escrow.json";
 import type { Escrow } from "./idl/escrow";
-import { Wallet as AnchorWallet } from "@anchor-lang/core";
 
 const idl = idlJson as Escrow;
+
+// @anchor-lang/core's `Wallet`/`NodeWallet` export is broken in its ESM
+// build (the CJS build assigns it conditionally at runtime in a way Next's
+// static ESM export analysis can't see, so bundling it 404s with "Export
+// Wallet doesn't exist"). A minimal local implementation avoids depending
+// on that broken re-export entirely — AnchorProvider only needs the shape
+// (payer, publicKey, signTransaction, signAllTransactions), not the class.
+class KeypairWallet {
+  constructor(readonly payer: Keypair) {}
+
+  get publicKey(): PublicKey {
+    return this.payer.publicKey;
+  }
+
+  async signTransaction<T extends Transaction | VersionedTransaction>(tx: T): Promise<T> {
+    if (tx instanceof VersionedTransaction) {
+      tx.sign([this.payer]);
+    } else {
+      tx.partialSign(this.payer);
+    }
+    return tx;
+  }
+
+  async signAllTransactions<T extends Transaction | VersionedTransaction>(txs: T[]): Promise<T[]> {
+    return Promise.all(txs.map((tx) => this.signTransaction(tx)));
+  }
+}
 
 export const PROGRAM_ID = new PublicKey(idl.address);
 
@@ -32,12 +60,17 @@ export type BountyAccount = IdlAccounts<Escrow>["bounty"];
 export type EntryAccount = IdlAccounts<Escrow>["entry"];
 export type BountyStatus = IdlTypes<Escrow>["bountyStatus"];
 
-// ---------- Program / provider ----------
+// ---------- Connection / provider ----------
+
+export function getConnection(rpcUrl: string): Connection {
+  return new Connection(rpcUrl, "confirmed");
+}
+
 
 /** Builds a Program client. Pass a payer Keypair for scripts/route handlers
  * that need to send transactions; omit it for read-only fetches. */
 export function getProgram(connection: Connection, payer?: Keypair): Program<Escrow> {
-  const wallet = payer ? new AnchorWallet(payer) : new AnchorWallet(Keypair.generate());
+  const wallet = new KeypairWallet(payer ?? Keypair.generate());
   const provider = new AnchorProvider(connection, wallet, { commitment: "confirmed" });
   return new Program<Escrow>(idl, provider);
 }
@@ -100,6 +133,17 @@ export async function fetchBounty(
   const [bountyPda] = findBountyPda(buyer, bountyId, program.programId);
   try {
     return await program.account.bounty.fetch(bountyPda);
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchBountyByAddress(
+  program: Program<Escrow>,
+  bountyAddress: PublicKey,
+): Promise<BountyAccount | null> {
+  try {
+    return await program.account.bounty.fetch(bountyAddress);
   } catch {
     return null;
   }
@@ -288,6 +332,29 @@ export async function buildRefundIx(
       tokenProgram: TOKEN_PROGRAM_ID,
     })
     .instruction();
+}
+
+// ---------- Sending ----------
+
+/** Builds, signs (with `signer` as the sole signer and fee payer), sends and
+ * confirms a transaction containing a single instruction. Used by route
+ * handlers for the agent/platform-signed calls (submit_entry, auto_award,
+ * refund) — the buyer's own calls (create_bounty, pick_winner) are signed in
+ * the browser via the wallet adapter instead, not through this helper. */
+export async function sendSignedInstruction(
+  connection: Connection,
+  ix: TransactionInstruction,
+  signer: Keypair,
+): Promise<string> {
+  const tx = new Transaction().add(ix);
+  const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+  tx.recentBlockhash = blockhash;
+  tx.feePayer = signer.publicKey;
+  tx.sign(signer);
+
+  const signature = await connection.sendRawTransaction(tx.serialize());
+  await connection.confirmTransaction({ signature, blockhash, lastValidBlockHeight }, "confirmed");
+  return signature;
 }
 
 // ---------- Misc ----------
