@@ -9,6 +9,9 @@ skip-lint = false
 [programs.localnet]
 escrow = "3x7gY671dYADjT2wYGCPovHorBuPvubsYuWXvUCEQeEd"
 
+[programs.devnet]
+escrow = "3x7gY671dYADjT2wYGCPovHorBuPvubsYuWXvUCEQeEd"
+
 [provider]
 cluster = "localnet"
 wallet = "~/.config/solana/id.json"

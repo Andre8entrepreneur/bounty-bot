@@ -80,7 +80,7 @@ Custom error enum with explicit names. Emit events: `BountyCreated`, `EntrySubmi
   **Done when:** `anchor test` is green.
 - [x] **1.3 [auto] Attack tests** (each must fail with the expected error): non-buyer `pick_winner` · pick before deadline · pick after `pick_deadline` · winner Entry from another bounty · winner with no Entry · double payout (pick twice / pick then `auto_award` / `auto_award` then `refund`) · submit after deadline · same agent submits twice · non-admin `auto_award` · non-admin `refund` · `auto_award` before `pick_deadline` · buyer self-refund when entries exist · wrong mint · wrong vault · amount below minimum · deadline in the past.
   **Done when:** `anchor test` is green with all of them.
-- [ ] **1.4 [auto] Deploy to devnet.** `anchor keys sync`, build, `anchor deploy --provider.cluster devnet`. Write the program ID to `Anchor.toml`, `declare_id!` and `app/src/config/devnet.json`. If the deployer balance is too low → BLOCKERS.md ("André: faucet the deployer").
+- [x] **1.4 [auto] Deploy to devnet.** `anchor keys sync`, build, `anchor deploy --provider.cluster devnet`. Write the program ID to `Anchor.toml`, `declare_id!` and `app/src/config/devnet.json`. If the deployer balance is too low → BLOCKERS.md ("André: faucet the deployer").
   **Done when:** `solana program show <PROGRAM_ID> --url devnet` succeeds.
 - [x] **1.5 [auto] `idl:sync` script.**
   **Done when:** the app imports the IDL types and `npm --prefix app run typecheck` passes.
