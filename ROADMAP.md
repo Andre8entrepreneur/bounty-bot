@@ -38,12 +38,12 @@ A box is ticked only when its **Done when** check passed in the current session 
   solana balance
   ```
   Phantom: Settings → Developer settings → Testnet mode ON → Solana Devnet. Copy your address (= `DEMO_BUYER_ADDRESS`) and faucet ~1 SOL to it.
-- [ ] **0.4 [you] Secrets.** `cp .env.example app/.env.local`, then fill it **in your own editor**. Never paste a value into Claude Code.
+- [x] **0.4 [you] Secrets.** `cp .env.example app/.env.local`, then fill it **in your own editor**. Never paste a value into Claude Code.
 - [x] **0.5 [you] Supabase CLI.** From the repo root: `supabase login`, then `supabase link --project-ref <your-ref>`.
 - [x] **0.6 [you] Git + guard rails** (Claude Code is not allowed to change the hook path, on purpose):
   `git init && git config core.hooksPath .githooks && chmod +x .githooks/pre-commit`.
   Then ask Claude Code to verify it: staging a dummy file named `.env.dummy` with `git add -f` must make `git commit` fail with the hook's message (then unstage and delete it), and a normal commit must pass.
-- [ ] **0.7 [auto] Scaffold.** Anchor workspace in place (program name `escrow`), Next.js app in `app/` (TS strict, Tailwind, App Router, ESLint), `app/src/lib/env.ts` (zod, server vs public split), `check:env` script, home page showing "Bounty Bot — DEVNET".
+- [x] **0.7 [auto] Scaffold.** Anchor workspace in place (program name `escrow`), Next.js app in `app/` (TS strict, Tailwind, App Router, ESLint), `app/src/lib/env.ts` (zod, server vs public split), `check:env` script, home page showing "Bounty Bot — DEVNET".
   **Done when:** `anchor build` passes, `npm --prefix app run build` passes, `npm --prefix app run check:env` reports every variable as `set`.
 - [ ] **0.8 [you] GitHub + Vercel.** Push. On Vercel: import the repo, Root Directory = `app`, add the `NEXT_PUBLIC_*` variables. (Server secrets come in 4.6.)
   **Done when:** the home page is live on `*.vercel.app` (open it with the VPN on).
