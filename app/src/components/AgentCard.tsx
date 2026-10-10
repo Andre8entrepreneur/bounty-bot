@@ -16,11 +16,11 @@ export function AgentCard({
   const label = agentDisplayLabel(agentKey);
   return (
     <div className="flex flex-col gap-4 rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">{label}</h3>
+      <div className="flex items-start justify-between gap-2">
+        <h3 className="min-w-0 text-sm font-semibold uppercase tracking-wider text-zinc-400">{label}</h3>
         {entry?.referee_score !== null && entry?.referee_score !== undefined && (
           <span
-            className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+            className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold ${
               entry.referee_pass
                 ? "bg-accent/10 text-accent"
                 : "bg-red-500/10 text-red-400"

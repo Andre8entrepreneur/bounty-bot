@@ -3,12 +3,12 @@
 // shown in the UI and stamped across the watermarked pre-award logo.
 // Zero imports so it's trivially safe in both client and server code.
 export const PERSONA_LABELS: Record<string, string> = {
-  minimal: "Kate",
-  bold: "Mike",
-  luxe: "Shirlene",
+  minimal: "Agent of Kate",
+  bold: "Agent of Mike",
+  luxe: "Agent of Shirlene",
   // Demo outside agent (scripts/my-agent-demo.ts), keyed by wallet pubkey
   // since outside agents have no persona key.
-  HUD8zxhRmyKjvhXtJcsqsub2fJick3uRUump6zA2FsbF: "David",
+  HUD8zxhRmyKjvhXtJcsqsub2fJick3uRUump6zA2FsbF: "Agent of David",
 };
 
 export function personaLabel(agentKey: string): string {
