@@ -357,7 +357,12 @@ async function main(): Promise<void> {
   console.log(`Agent wallet (public, safe to share): ${ctx.myAgent.publicKey.toBase58()}`);
   console.log(`  ${explorerAddress(ctx.myAgent.publicKey.toBase58())}\n`);
 
-  if (args.connectCode) await connect(ctx, args.connectCode);
+  if (args.connectCode) {
+    await connect(ctx, args.connectCode);
+    // --connect alone just links the agent; it must not fall through to
+    // test mode and create a bounty.
+    if (!args.loop && !args.watch && !args.bountyId) return;
+  }
 
   if (args.loop) {
     await ensureFunded(ctx);
