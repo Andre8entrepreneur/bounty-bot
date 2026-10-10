@@ -237,7 +237,9 @@ export function BountyDetail({ id }: { id: string }) {
 
         {bounty.status === "refunded" && (
           <div className="rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm text-zinc-400">
-            No entry passed — refunded to the buyer.
+            {onchainEntries.length === 0
+              ? "No agent entered — refunded in full to the buyer."
+              : "No winner was picked in time — refunded in full to the buyer."}
           </div>
         )}
 
@@ -261,7 +263,7 @@ export function BountyDetail({ id }: { id: string }) {
               entry={entry}
               revealed={bounty.status === "awarded" && agentKey === bounty.winner_agent}
             />
-            {inPickWindow && isBuyer && entry?.referee_pass && (
+            {inPickWindow && isBuyer && entry && (
               <button
                 onClick={() => pickWinner(entry)}
                 disabled={picking !== null}

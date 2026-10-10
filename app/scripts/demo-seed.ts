@@ -9,8 +9,8 @@
 //   npx tsx scripts/demo-seed.ts                         # seed against prod, don't wait
 //   npx tsx scripts/demo-seed.ts --base-url http://localhost:3000
 //   npx tsx scripts/demo-seed.ts --full                   # also waits for the
-//     deadline/pick-window and calls /referee + /settle, producing a
-//     finished, awarded bounty — this is the fallback page for ROADMAP 5.2:
+//     deadline, runs /referee, then picks the top-scored entry as the buyer,
+//     producing a finished, awarded bounty — this is the fallback page for ROADMAP 5.2:
 //     run it once ahead of time and keep its URL on hand in case a live run
 //     fails during the actual pitch.
 import { config } from "dotenv";
@@ -18,11 +18,13 @@ import { readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { resolve } from "node:path";
 import { Keypair, PublicKey } from "@solana/web3.js";
+import { createClient } from "@supabase/supabase-js";
 import { getPublicEnv, getServerEnv } from "../src/lib/env";
 import { hash } from "../src/lib/hash";
 import type { Brief } from "../src/lib/agents/schema";
 import {
   buildCreateBountyIx,
+  buildPickWinnerIx,
   explorerTx,
   findBountyPda,
   getConnection,
@@ -144,11 +146,16 @@ async function main(): Promise<void> {
   const url = `${baseUrl}/b/${bountyRowId}`;
   console.log(`  ${url}`);
 
-  console.log("\n=== Triggering the 3 agents ===");
-  for (const agent of AGENTS) {
-    const runRes = await postJson(baseUrl, `/api/bounties/${bountyRowId}/run/${agent}`, {});
-    console.log(`  ${agent}: ${runRes.status === 200 ? "started" : `FAILED (${runRes.status})`}`);
-  }
+  // In parallel: run one after another, the 3 agents (15-45s each) could
+  // eat the whole 120s deadline before the last one submits on-chain.
+  console.log("\n=== Running the 3 agents ===");
+  const runResults = await Promise.all(
+    AGENTS.map((agent) => postJson(baseUrl, `/api/bounties/${bountyRowId}/run/${agent}`, {})),
+  );
+  AGENTS.forEach((agent, i) => {
+    const status = runResults[i].status;
+    console.log(`  ${agent}: ${status === 200 ? "submitted" : `FAILED (${status})`}`);
+  });
 
   if (!full) {
     console.log(`\nDemo bounty ready — open this during the pitch:\n  ${url}\n`);
@@ -160,10 +167,32 @@ async function main(): Promise<void> {
   const refereeRes = await postJson(baseUrl, `/api/bounties/${bountyRowId}/referee`, {});
   console.log(`  status ${refereeRes.status}: ${JSON.stringify(refereeRes.json)}`);
 
-  await waitUntil(deadline + PICK_WINDOW_SECS, "pick_deadline (so settle can auto_award)");
-  console.log("\n=== POST /settle ===");
-  const settleRes = await postJson(baseUrl, `/api/bounties/${bountyRowId}/settle`, {});
-  console.log(`  status ${settleRes.status}: ${JSON.stringify(settleRes.json)}`);
+  // The platform never awards on the buyer's behalf, so the buyer (the
+  // deployer here) picks — the top-scored entry, like a buyer would.
+  console.log("\n=== Buyer picks the top-scored entry ===");
+  const supabase = createClient(publicEnv.NEXT_PUBLIC_SUPABASE_URL, serverEnv.SUPABASE_SERVICE_ROLE_KEY);
+  const { data: top } = await supabase
+    .from("entries")
+    .select("agent_key,agent_pubkey,referee_score")
+    .eq("bounty_id", bountyRowId)
+    .not("referee_score", "is", null)
+    .order("referee_score", { ascending: false })
+    .limit(1)
+    .single<{ agent_key: string | null; agent_pubkey: string; referee_score: number }>();
+  if (!top) throw new Error("no scored entry to pick");
+
+  const pickIx = await buildPickWinnerIx(program, {
+    buyer: deployer.publicKey,
+    bountyId,
+    mint: new PublicKey(devnetConfig.mint),
+    treasury: new PublicKey(devnetConfig.treasury),
+    winnerAgent: new PublicKey(top.agent_pubkey),
+  });
+  const pickSig = await sendSignedInstruction(connection, pickIx, deployer);
+  console.log(`  picked ${top.agent_key ?? top.agent_pubkey} (score ${top.referee_score}) — ${explorerTx(pickSig)}`);
+
+  const syncRes = await postJson(baseUrl, `/api/bounties/${bountyRowId}/sync`, {});
+  console.log(`  /sync ${syncRes.status}: ${JSON.stringify(syncRes.json)}`);
 
   console.log(`\nFallback (finished, awarded) bounty:\n  ${url}\n`);
 }

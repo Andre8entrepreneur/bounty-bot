@@ -3,7 +3,6 @@ import { z } from "zod";
 import { PublicKey } from "@solana/web3.js";
 import { getServerEnv } from "@/lib/env";
 import {
-  buildAutoAwardIx,
   buildRefundIx,
   fetchBountyByAddress,
   fetchConfig,
@@ -15,7 +14,7 @@ import { getPlatformKeypair } from "@/lib/solana/keys";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { handleRouteError, jsonError } from "@/lib/api-error";
-import type { BountyRow, EntryRow } from "@/lib/types";
+import type { BountyRow } from "@/lib/types";
 
 export const maxDuration = 300;
 
@@ -72,69 +71,37 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       return NextResponse.json({ ok: true, settled: false, reason: "before deadline" });
     }
 
-    const buyer = new PublicKey(bountyRow.buyer ?? onchainBounty.buyer.toBase58());
-    const bountyId = BigInt(bountyRow.bounty_id ?? onchainBounty.bountyId.toString());
-    const platformKeypair = getPlatformKeypair();
-
-    const { data: passingEntries, error: entriesError } = await supabase
-      .from("entries")
-      .select("*")
-      .eq("bounty_id", bountyRowId)
-      .eq("referee_pass", true)
-      .order("referee_score", { ascending: false })
-      .limit(1)
-      .returns<EntryRow[]>();
-
-    if (entriesError) {
-      return handleRouteError(entriesError, "POST settle: select entries");
-    }
-
-    const topEntry = passingEntries?.[0];
-
-    if (!topEntry) {
-      // No entry passes: refund as soon as the deadline has passed, don't
-      // wait for pick_deadline — there's nothing for the buyer to pick.
-      const ix = await buildRefundIx(program, {
-        signer: platformKeypair.publicKey,
-        buyer,
-        bountyId,
-        mint: config.mint,
-      });
-      const settleTx = await sendSignedInstruction(connection, ix, platformKeypair);
-
-      await supabase
-        .from("bounties")
-        .update({ status: "refunded", settle_tx: settleTx })
-        .eq("id", bountyRowId);
-
-      return NextResponse.json({ ok: true, settled: true, action: "refund", settleTx });
-    }
-
-    if (now < pickDeadlineMs) {
-      // A passing entry exists but the buyer still has time to pick manually.
+    // With entries in, the buyer gets the whole pick window — they may pick
+    // any entry, passed or failed. Only an empty bounty refunds right away.
+    const entryCount = onchainBounty.entryCount;
+    if (entryCount > 0 && now < pickDeadlineMs) {
       return NextResponse.json({ ok: true, settled: false, reason: "pick window still open" });
     }
 
-    const ix = await buildAutoAwardIx(program, {
-      admin: platformKeypair.publicKey,
-      buyer,
-      bountyId,
+    // Nobody entered, or the buyer let the pick window close without
+    // choosing: full refund. The platform never picks a winner on the
+    // buyer's behalf (the program's auto_award is deliberately unused).
+    const platformKeypair = getPlatformKeypair();
+    const ix = await buildRefundIx(program, {
+      signer: platformKeypair.publicKey,
+      buyer: new PublicKey(bountyRow.buyer ?? onchainBounty.buyer.toBase58()),
+      bountyId: BigInt(bountyRow.bounty_id ?? onchainBounty.bountyId.toString()),
       mint: config.mint,
-      treasury: config.treasury,
-      winnerAgent: new PublicKey(topEntry.agent_pubkey ?? ""),
     });
     const settleTx = await sendSignedInstruction(connection, ix, platformKeypair);
 
     await supabase
       .from("bounties")
-      .update({
-        status: "awarded",
-        winner_agent: topEntry.agent_key ?? topEntry.agent_pubkey,
-        settle_tx: settleTx,
-      })
+      .update({ status: "refunded", settle_tx: settleTx })
       .eq("id", bountyRowId);
 
-    return NextResponse.json({ ok: true, settled: true, action: "auto_award", settleTx });
+    return NextResponse.json({
+      ok: true,
+      settled: true,
+      action: "refund",
+      reason: entryCount === 0 ? "no entries" : "buyer did not pick",
+      settleTx,
+    });
   } catch (err) {
     return handleRouteError(err, "POST /api/bounties/[id]/settle");
   }

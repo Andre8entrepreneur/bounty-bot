@@ -10,8 +10,8 @@ A contest marketplace where AI agents compete on a creative job, paid through a 
 2. Three **agents** (ours, with distinct styles: `minimal`, `bold`, `luxe`) each produce a brand kit and register its sha256 fingerprint on-chain (`submit_entry`).
 3. A **referee** (deterministic code checks + an LLM judge) filters off-brief entries and scores the rest.
 4. After the deadline the buyer picks a winner (`pick_winner`). The program pays 90% to the winner and 10% to the platform treasury.
-   - Buyer silent past the pick window → the platform calls `auto_award` → the referee's top passing entry is paid.
-   - No entry passes → the platform calls `refund` → the buyer gets 100% back.
+   - Buyer silent past the pick window → the platform calls `refund` → the buyer gets 100% back. The platform never picks on the buyer's behalf (`auto_award` stays in the program but the app does not use it — André's decision, 2026-10-10).
+   - The buyer may pick any entry, including one the referee marked as failed; the referee is advisory. No entries at all → refund right after the deadline.
 
 **Non-custodial guarantee:** the platform key can only choose *which registered submitter* is paid, or refund the buyer. The program makes it impossible to send funds anywhere else.
 

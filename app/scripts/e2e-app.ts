@@ -1,13 +1,16 @@
 // Full end-to-end test through the actual route handlers against a real
 // `next start` server: creates a bounty on-chain as the deployer-buyer,
-// calls /api/bounties, /run/[agent] x3, /referee, /settle, and verifies the
-// bounty ends Awarded on-chain with 3 scored entries in Supabase.
+// calls /api/bounties, /run/[agent] x3, /referee, then /settle both inside
+// and after the pick window — the buyer never picks, so it must stay open
+// during the window and refund the buyer in full afterwards (the platform
+// never awards on the buyer's behalf). Also checks 3 scored entries.
 import { config } from "dotenv";
 import { ChildProcess, spawn } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { resolve } from "node:path";
 import { Keypair, PublicKey } from "@solana/web3.js";
+import { getAccount, getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { createClient } from "@supabase/supabase-js";
 import { getPublicEnv, getServerEnv } from "../src/lib/env";
 import { hash } from "../src/lib/hash";
@@ -161,18 +164,39 @@ async function main(): Promise<void> {
     assert(refereeRes.status === 200, `referee returned 200 (got ${refereeRes.status}: ${JSON.stringify(refereeRes.json)})`);
     assert(Array.isArray(refereeRes.json.scored) && refereeRes.json.scored.length === 3, "referee scored all 3 entries");
 
-    await waitUntil(deadline + PICK_WINDOW_SECS, "pick_deadline (so settle can auto_award)");
+    // The buyer (deployer) deliberately never picks: the platform must not
+    // choose for them, and must refund in full once the pick window closes.
+    console.log("\n=== POST /settle inside the pick window (must NOT settle) ===");
+    const earlySettle = await postJson(`/api/bounties/${bountyRowId}/settle`, {});
+    assert(earlySettle.status === 200, `early settle returned 200 (got ${earlySettle.status})`);
+    assert(
+      earlySettle.json.settled === false && earlySettle.json.reason === "pick window still open",
+      `early settle left the bounty open for the buyer (got ${JSON.stringify(earlySettle.json)})`,
+    );
 
-    console.log("\n=== POST /api/bounties/[id]/settle ===");
+    const buyerAta = getAssociatedTokenAddressSync(new PublicKey(devnetConfig.mint), deployer.publicKey);
+    const buyerBefore = (await getAccount(connection, buyerAta)).amount;
+
+    await waitUntil(deadline + PICK_WINDOW_SECS, "pick_deadline (buyer never picked)");
+
+    console.log("\n=== POST /settle after the pick window (must refund) ===");
     const settleRes = await postJson(`/api/bounties/${bountyRowId}/settle`, {});
     assert(settleRes.status === 200, `settle returned 200 (got ${settleRes.status}: ${JSON.stringify(settleRes.json)})`);
-    assert(settleRes.json.settled === true, "settle actually settled the bounty");
-    console.log(`  action: ${settleRes.json.action}`);
+    assert(
+      settleRes.json.action === "refund" && settleRes.json.reason === "buyer did not pick",
+      `settle refunded because the buyer did not pick (got ${JSON.stringify(settleRes.json)})`,
+    );
 
     console.log("\n=== Verifying final state ===");
     const onchainBounty = await fetchBountyByAddress(program, bountyPda);
     const statusKey = onchainBounty ? Object.keys(onchainBounty.status)[0] : null;
-    assert(statusKey === "awarded", `on-chain status is "awarded" (got "${statusKey}")`);
+    assert(statusKey === "refunded", `on-chain status is "refunded" (got "${statusKey}")`);
+
+    const buyerAfter = (await getAccount(connection, buyerAta)).amount;
+    assert(
+      buyerAfter - buyerBefore === BigInt(10_000_000),
+      `buyer got the full 10 tUSDC back (delta ${buyerAfter - buyerBefore})`,
+    );
 
     const supabase = createClient(publicEnv.NEXT_PUBLIC_SUPABASE_URL, serverEnv.SUPABASE_SERVICE_ROLE_KEY);
     const { data: dbBounty } = await supabase
@@ -180,7 +204,7 @@ async function main(): Promise<void> {
       .select("*")
       .eq("id", bountyRowId)
       .single<BountyRow>();
-    assert(dbBounty?.status === "awarded", `DB row status is "awarded" (got "${dbBounty?.status}")`);
+    assert(dbBounty?.status === "refunded", `DB row status is "refunded" (got "${dbBounty?.status}")`);
 
     const { data: entries } = await supabase
       .from("entries")
