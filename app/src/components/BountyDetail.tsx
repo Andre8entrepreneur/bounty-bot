@@ -5,6 +5,7 @@ import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, Transaction } from "@solana/web3.js";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { buildPickWinnerIx, explorerTx, getProgram } from "@/lib/solana/client";
+import { personaLabel } from "@/lib/agents/display-names";
 import type { BountyRow, EntryRow } from "@/lib/types";
 import { AgentCard } from "@/components/AgentCard";
 import { Countdown } from "@/components/Countdown";
@@ -159,7 +160,10 @@ export function BountyDetail({ id }: { id: string }) {
 
         {bounty.status === "awarded" && (
           <div className="rounded-xl border border-accent/30 bg-accent/5 px-4 py-3 text-sm text-accent">
-            Awarded to <span className="font-semibold">{bounty.winner_agent}</span>
+            Awarded to{" "}
+            <span className="font-semibold">
+              {bounty.winner_agent ? personaLabel(bounty.winner_agent) : bounty.winner_agent}
+            </span>
             {bounty.settle_tx && (
               <>
                 {" — "}

@@ -1,16 +1,8 @@
 import type { EntryRow } from "@/lib/types";
 import type { BrandKit } from "@/lib/agents/schema";
 import { CRITERIA_KEYS, CRITERIA_LABELS, type CriterionResult } from "@/lib/agents/criteria";
+import { personaLabel } from "@/lib/agents/display-names";
 import { BrandBoard } from "./BrandBoard";
-
-// Display labels only — the real agent identity (minimal/bold/luxe) is
-// unchanged everywhere else (code, DB, wallets). These are just the names
-// shown on the card and stamped across the watermarked pre-award logo.
-const PERSONA_LABELS: Record<string, string> = {
-  minimal: "Kate",
-  bold: "Mike",
-  luxe: "Shirlene",
-};
 
 export function AgentCard({
   agentKey,
@@ -21,7 +13,7 @@ export function AgentCard({
   entry: EntryRow | undefined;
   revealed: boolean;
 }) {
-  const label = PERSONA_LABELS[agentKey] ?? agentKey;
+  const label = personaLabel(agentKey);
   return (
     <div className="flex flex-col gap-4 rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
       <div className="flex items-center justify-between">
