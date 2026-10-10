@@ -16,6 +16,7 @@ import { getAssociatedTokenAddressSync, getAccount } from "@solana/spl-token";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { personaLabel } from "@/lib/agents/display-names";
 import { useAgentLabel } from "@/hooks/useAgentLabel";
+import { fetchForwards, matchForwards } from "@/lib/solana/forwards";
 import { MyAgents } from "@/components/MyAgents";
 import { WalletButton } from "@/components/WalletButton";
 import devnetConfig from "@/config/devnet.json";
@@ -24,6 +25,13 @@ import type { AgentKey, BountyRow, EntryRow } from "@/lib/types";
 const MINT = new PublicKey(devnetConfig.mint);
 
 interface DashboardRow {
+  /** bounty + agent: an owner's two agents can enter the same bounty. */
+  id: string;
+  agentPubkey: string;
+  /** Entered by one of this wallet's agents, not the wallet itself — its
+   * winnings reach this wallet through the connector's forward. */
+  viaAgent: boolean;
+  forwardTx: string | null;
   bountyAddress: string;
   bountyDbId: string | null;
   businessName: string;
@@ -99,7 +107,29 @@ export default function AgentDashboardPage() {
         if (!cancelled) setPosted(postedRows ?? []);
 
         const program = getProgram(connection);
-        const onchainEntries = await fetchEntriesByAgent(program, target);
+        const targetKey = target.toBase58();
+
+        // Entries count for this wallet if it entered itself OR one of the
+        // agents it owns (registry) entered.
+        const { data: owned } = await supabase
+          .from("agents")
+          .select("agent_pubkey")
+          .eq("owner_pubkey", targetKey)
+          .not("agent_pubkey", "is", null);
+        const agentKeys = [
+          targetKey,
+          ...((owned ?? []) as Array<{ agent_pubkey: string }>)
+            .map((a) => a.agent_pubkey)
+            .filter((pk) => pk !== targetKey),
+        ];
+
+        const onchainEntries = (
+          await Promise.all(
+            agentKeys.map(async (pk) =>
+              (await fetchEntriesByAgent(program, new PublicKey(pk))).map((e) => ({ e, agentPubkey: pk })),
+            ),
+          )
+        ).flat();
 
         if (onchainEntries.length === 0) {
           if (!cancelled) setRows([]);
@@ -107,39 +137,41 @@ export default function AgentDashboardPage() {
         }
 
         const bountyAccounts = await Promise.all(
-          onchainEntries.map((e) => fetchBountyByAddress(program, e.account.bounty)),
+          onchainEntries.map(({ e }) => fetchBountyByAddress(program, e.account.bounty)),
         );
 
-        const bountyAddresses = onchainEntries.map((e) => e.account.bounty.toBase58());
+        const bountyAddresses = [...new Set(onchainEntries.map(({ e }) => e.account.bounty.toBase58()))];
         const [{ data: dbBounties }, { data: dbEntries }] = await Promise.all([
           supabase.from("bounties").select("*").in("onchain_address", bountyAddresses).returns<BountyRow[]>(),
-          supabase
-            .from("entries")
-            .select("*")
-            .eq("agent_pubkey", target.toBase58())
-            .returns<EntryRow[]>(),
+          supabase.from("entries").select("*").in("agent_pubkey", agentKeys).returns<EntryRow[]>(),
         ]);
 
         const bountiesByAddress = new Map((dbBounties ?? []).map((b) => [b.onchain_address, b]));
-        const entriesByBountyDbId = new Map((dbEntries ?? []).map((e) => [e.bounty_id, e]));
+        const dbEntryByKey = new Map((dbEntries ?? []).map((e) => [`${e.bounty_id}:${e.agent_pubkey}`, e]));
 
-        const merged: DashboardRow[] = onchainEntries.map((entry, i) => {
+        const merged: DashboardRow[] = onchainEntries.map(({ e: entry, agentPubkey }, i) => {
           const bountyAccount = bountyAccounts[i];
           const address = entry.account.bounty.toBase58();
           const dbBounty = bountiesByAddress.get(address);
-          const dbEntry = dbBounty ? entriesByBountyDbId.get(dbBounty.id) : undefined;
+          const dbEntry = dbBounty ? dbEntryByKey.get(`${dbBounty.id}:${agentPubkey}`) : undefined;
           const brief = (dbBounty?.brief ?? null) as { businessName?: string } | null;
 
           const status = (bountyAccount
             ? (Object.keys(bountyAccount.status)[0] as DashboardRow["status"])
             : (dbBounty?.status ?? "open")) as DashboardRow["status"];
 
+          // Won means this entry's agent is the bounty's winner — not the
+          // wallet being viewed (it may have won through one of its agents).
           const winnerPubkey = bountyAccount?.winner as PublicKey | null | undefined;
-          const won = Boolean(winnerPubkey && winnerPubkey.equals(target));
+          const won = Boolean(winnerPubkey && winnerPubkey.toBase58() === agentPubkey);
           const payoutTusdc =
             won && bountyAccount ? (Number(bountyAccount.amount) * 0.9) / 1_000_000 : null;
 
           return {
+            id: `${address}:${agentPubkey}`,
+            agentPubkey,
+            viaAgent: agentPubkey !== targetKey,
+            forwardTx: null,
             bountyAddress: address,
             bountyDbId: dbBounty?.id ?? null,
             businessName: brief?.businessName ?? `Bounty ${address.slice(0, 6)}…`,
@@ -154,6 +186,19 @@ export default function AgentDashboardPage() {
             refereeScore: dbEntry?.referee_score ?? null,
           };
         });
+
+        // For wins by an owned agent, find the connector's forward of that
+        // payout to this wallet, on-chain.
+        for (const pk of agentKeys.filter((k) => k !== targetKey)) {
+          const wins = merged.filter((r) => r.won && r.agentPubkey === pk);
+          if (wins.length === 0) continue;
+          const forwards = await fetchForwards(connection, MINT, new PublicKey(pk), target);
+          const matched = matchForwards(
+            wins.map((r) => ({ key: r.id, afterMs: r.submittedAtMs, amountTusdc: r.payoutTusdc ?? 0 })),
+            forwards,
+          );
+          for (const r of wins) r.forwardTx = matched.get(r.id) ?? null;
+        }
 
         merged.sort((a, b) => b.submittedAtMs - a.submittedAtMs);
         if (!cancelled) setRows(merged);
@@ -173,6 +218,7 @@ export default function AgentDashboardPage() {
     };
   }, [connection, target]);
 
+  const labelFor = useAgentLabel();
   const wonCount = rows?.filter((r) => r.won).length ?? 0;
   const totalEarned = rows?.reduce((sum, r) => sum + (r.payoutTusdc ?? 0), 0) ?? 0;
 
@@ -182,7 +228,8 @@ export default function AgentDashboardPage() {
         <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>
         <p className="max-w-2xl text-zinc-400">
           One wallet, both sides of the market: the bounties it has posted as a buyer, and every
-          entry its agent has submitted on-chain as a competitor. Submitting is permissionless:
+          entry it — or any agent it owns — has submitted on-chain as a competitor, with what each
+          one earned. Submitting is permissionless:
           the <code>submit_entry</code> instruction has no whitelist, so any agent, built by
           anyone, can register an entry directly against the program.{" "}
           <a
@@ -300,7 +347,7 @@ export default function AgentDashboardPage() {
 
           <section className="flex flex-col gap-3">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">
-            As an agent — entries submitted
+            As an agent — entries by this wallet and its agents
           </h2>
 
           {rows === null ? (
@@ -321,7 +368,7 @@ export default function AgentDashboardPage() {
             <ul className="flex flex-col gap-3">
               {rows.map((row) => (
                 <li
-                  key={row.bountyAddress}
+                  key={row.id}
                   className="flex flex-col gap-2 rounded-xl border border-zinc-800 p-4 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="flex min-w-0 flex-col gap-1">
@@ -339,7 +386,12 @@ export default function AgentDashboardPage() {
                       <StatusBadge status={row.status} />
                     </div>
                     <div className="flex flex-wrap gap-x-3 text-xs text-zinc-500">
-                      {row.agentKey && <span>as {personaLabel(row.agentKey)}</span>}
+                      <span>
+                        as{" "}
+                        <span className="text-zinc-300">
+                          {row.agentKey ? personaLabel(row.agentKey) : labelFor(row.agentPubkey)}
+                        </span>
+                      </span>
                       <span>{new Date(row.submittedAtMs).toLocaleString()}</span>
                       {row.refereeScore !== null && (
                         <span>
@@ -360,13 +412,35 @@ export default function AgentDashboardPage() {
                   </div>
 
                   {row.won && (
-                    <div className="flex items-center gap-2 rounded-full border border-accent/30 bg-accent/5 px-3 py-1 text-sm text-accent">
-                      Won +{row.payoutTusdc?.toFixed(2)} tUSDC
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-2xl border border-accent/30 bg-accent/5 px-3 py-1.5 text-sm text-accent">
+                      <span className="font-semibold">Won +{row.payoutTusdc?.toFixed(2)} tUSDC</span>
                       {row.settleTx && (
-                        <a href={explorerTx(row.settleTx)} target="_blank" rel="noreferrer" className="underline">
-                          payout ↗
+                        <a
+                          href={explorerTx(row.settleTx)}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="underline"
+                          title={row.viaAgent ? "Escrow → your agent's wallet" : "Escrow → this wallet"}
+                        >
+                          {row.viaAgent ? "paid to your agent ↗" : "payout ↗"}
                         </a>
                       )}
+                      {row.viaAgent &&
+                        (row.forwardTx ? (
+                          <a
+                            href={explorerTx(row.forwardTx)}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="underline"
+                            title="Your agent's wallet → your wallet"
+                          >
+                            → forwarded to you ↗
+                          </a>
+                        ) : (
+                          <span className="text-amber-300" title="The connector forwards winnings within ~20s while it runs">
+                            → forwarding…
+                          </span>
+                        ))}
                     </div>
                   )}
                 </li>
