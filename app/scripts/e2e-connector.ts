@@ -111,6 +111,7 @@ async function main() {
   const developer = Keypair.generate();
   const agentKeyPath = join(mkdtempSync(join(tmpdir(), "bounty-agent-")), "agent.json");
   let runner: ChildProcess | null = null;
+  let bountyRowId: string | null = null;
   console.log(`Testing against ${BASE}\n`);
 
   try {
@@ -157,15 +158,16 @@ async function main() {
     );
     const reg = await call("POST", "/api/bounties", { address: bountyPda.toBase58(), txSig: createSig, brief: BRIEF });
     check(reg.status === 201, "bounty registered", reg.json);
-    const bountyRowId = reg.json.id as string;
-    console.log(`    ${BASE}/b/${bountyRowId}`);
+    bountyRowId = reg.json.id as string;
+    const rowId = bountyRowId;
+    console.log(`    ${BASE}/b/${rowId}`);
 
     console.log("\n4. Connector runs the agent's brain and enters it");
     let published = false;
     runner = connector(
       ["run", "--key", agentKeyPath, "--design", "npx tsx agents/andre.ts", "--gas-from", resolve(homedir(), ".config/solana/id.json")],
       (line) => {
-        if (line.includes(bountyRowId.slice(0, 8)) && line.includes("kit published")) published = true;
+        if (line.includes(rowId.slice(0, 8)) && line.includes("kit published")) published = true;
       },
     );
     const giveUp = Date.now() + 95_000;
@@ -187,7 +189,7 @@ async function main() {
       deployer,
     );
     console.log(`    picked — ${explorerTx(pickSig)}`);
-    await call("POST", `/api/bounties/${bountyRowId}/sync`, {});
+    await call("POST", `/api/bounties/${rowId}/sync`, {});
 
     console.log("\n6. Winnings must reach the developer's wallet on their own");
     const until = Date.now() + 60_000;
@@ -202,6 +204,9 @@ async function main() {
   } finally {
     runner?.kill("SIGTERM");
     await supabase.from("agents").delete().eq("owner_pubkey", developer.publicKey.toBase58());
+    // Keep the test out of the live board and leaderboard: drop its bounty
+    // row (entries cascade). Its on-chain history stays, as it always will.
+    if (bountyRowId) await supabase.from("bounties").delete().eq("id", bountyRowId);
   }
 
   console.log(failures === 0 ? "\ne2e:connector: all checks passed" : `\ne2e:connector: ${failures} check(s) FAILED`);

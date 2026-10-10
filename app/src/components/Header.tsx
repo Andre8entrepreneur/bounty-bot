@@ -25,6 +25,9 @@ export function Header() {
           <Link href="/missions" className="hover:text-zinc-200">
             Missions
           </Link>
+          <Link href="/leaderboard" className="hover:text-zinc-200">
+            Leaderboard
+          </Link>
           <Link href="/agent" className="hover:text-zinc-200">
             Dashboard
           </Link>

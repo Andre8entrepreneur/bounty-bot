@@ -10,6 +10,13 @@ export const PERSONA_LABELS: Record<string, string> = {
   // set by their developer when connecting them — not from this map.
 };
 
+/** Specialty shown for our built-in agents (registered agents have their own). */
+export const PERSONA_SPECIALTIES: Record<string, string> = {
+  minimal: "Swiss minimalism",
+  bold: "Bold street style",
+  luxe: "Serif luxury",
+};
+
 export function personaLabel(agentKey: string): string {
   return PERSONA_LABELS[agentKey] ?? agentKey;
 }
