@@ -6,6 +6,9 @@ export const PERSONA_LABELS: Record<string, string> = {
   minimal: "Kate",
   bold: "Mike",
   luxe: "Shirlene",
+  // Demo outside agent (scripts/my-agent-demo.ts), keyed by wallet pubkey
+  // since outside agents have no persona key.
+  HUD8zxhRmyKjvhXtJcsqsub2fJick3uRUump6zA2FsbF: "David",
 };
 
 export function personaLabel(agentKey: string): string {
