@@ -74,7 +74,10 @@ function toDataUri(svg: string): string {
   return `data:image/svg+xml;base64,${Buffer.from(svg, "utf8").toString("base64")}`;
 }
 
-/** The latest awarded mission with at least 3 scored, previewable entries. */
+/** A recent awarded mission with at least 3 scored, previewable entries.
+ * Prefers one where the scores spread out and the buyer picked the top
+ * score — it shows the referee actually telling entries apart — else the
+ * most recent one. */
 export async function getShowcase(): Promise<Showcase | null> {
   const supabase = getSupabaseBrowserClient();
   const { data: bounties } = await supabase
@@ -82,48 +85,60 @@ export async function getShowcase(): Promise<Showcase | null> {
     .select("id,brief,amount,winner_agent,settle_tx")
     .eq("status", "awarded")
     .order("created_at", { ascending: false })
-    .limit(6)
+    .limit(8)
     .returns<ShowcaseBounty[]>();
+  if (!bounties || bounties.length === 0) return null;
 
-  for (const bounty of bounties ?? []) {
-    const { data: rows } = await supabase
-      .from("entries")
-      .select("agent_key,agent_pubkey,referee_score,referee_pass,kit")
-      .eq("bounty_id", bounty.id)
-      .not("referee_score", "is", null)
-      .returns<ShowcaseRow[]>();
-    const usable = (rows ?? []).filter((r) => r.kit?.logoSvg && r.referee_score !== null);
-    if (usable.length < 3) continue;
+  const { data: allRows } = await supabase
+    .from("entries")
+    .select("bounty_id,agent_key,agent_pubkey,referee_score,referee_pass,kit")
+    .in("bounty_id", bounties.map((b) => b.id))
+    .not("referee_score", "is", null)
+    .returns<Array<ShowcaseRow & { bounty_id: string }>>();
 
-    const pubkeys = usable.filter((r) => !r.agent_key && r.agent_pubkey).map((r) => r.agent_pubkey as string);
-    const { data: named } = pubkeys.length
-      ? await supabase.from("agents").select("agent_pubkey,name").in("agent_pubkey", pubkeys).returns<Array<{ agent_pubkey: string; name: string }>>()
-      : { data: [] };
-    const nameByPubkey = new Map((named ?? []).map((a) => [a.agent_pubkey, a.name]));
+  const candidates = bounties
+    .map((bounty) => {
+      const rows = (allRows ?? []).filter((r) => r.bounty_id === bounty.id && r.kit?.logoSvg);
+      const scores = rows.map((r) => r.referee_score ?? 0);
+      const isWinner = (r: ShowcaseRow) =>
+        bounty.winner_agent !== null && (bounty.winner_agent === r.agent_key || bounty.winner_agent === r.agent_pubkey);
+      const winner = rows.find(isWinner);
+      const top = Math.max(...scores);
+      const telling = winner !== undefined && winner.referee_score === top && top - Math.min(...scores) >= 5;
+      return { bounty, rows, telling };
+    })
+    .filter((c) => c.rows.length >= 3);
+  const chosen = candidates.find((c) => c.telling) ?? candidates[0];
+  if (!chosen) return null;
+  const { bounty, rows } = chosen;
 
-    const entries = usable
-      .map((r): ShowcaseEntry => ({
-        label: r.agent_key
-          ? personaLabel(r.agent_key)
-          : (nameByPubkey.get(r.agent_pubkey ?? "") ?? agentDisplayLabel(r.agent_pubkey ?? "")),
-        score: r.referee_score ?? 0,
-        pass: r.referee_pass === true,
-        winner: bounty.winner_agent !== null && (bounty.winner_agent === r.agent_key || bounty.winner_agent === r.agent_pubkey),
-        logoDataUri: toDataUri(r.kit?.logoSvg ?? ""),
-        name: r.kit?.names?.[0] ?? "",
-        tagline: r.kit?.tagline ?? "",
-        palette: (r.kit?.palette ?? []).map((p) => p.hex ?? "").filter((hex) => /^#[0-9a-fA-F]{6}$/.test(hex)),
-      }))
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 5);
+  const pubkeys = rows.filter((r) => !r.agent_key && r.agent_pubkey).map((r) => r.agent_pubkey as string);
+  const { data: named } = pubkeys.length
+    ? await supabase.from("agents").select("agent_pubkey,name").in("agent_pubkey", pubkeys).returns<Array<{ agent_pubkey: string; name: string }>>()
+    : { data: [] };
+  const nameByPubkey = new Map((named ?? []).map((a) => [a.agent_pubkey, a.name]));
 
-    return {
-      bountyId: bounty.id,
-      businessName: bounty.brief?.businessName ?? "A real mission",
-      prizeTusdc: (bounty.amount ?? 0) / 1_000_000,
-      settleTx: bounty.settle_tx,
-      entries,
-    };
-  }
-  return null;
+  const entries = rows
+    .map((r): ShowcaseEntry => ({
+      label: r.agent_key
+        ? personaLabel(r.agent_key)
+        : (nameByPubkey.get(r.agent_pubkey ?? "") ?? agentDisplayLabel(r.agent_pubkey ?? "")),
+      score: r.referee_score ?? 0,
+      pass: r.referee_pass === true,
+      winner: bounty.winner_agent !== null && (bounty.winner_agent === r.agent_key || bounty.winner_agent === r.agent_pubkey),
+      logoDataUri: toDataUri(r.kit?.logoSvg ?? ""),
+      name: r.kit?.names?.[0] ?? "",
+      tagline: r.kit?.tagline ?? "",
+      palette: (r.kit?.palette ?? []).map((pal) => pal.hex ?? "").filter((hex) => /^#[0-9a-fA-F]{6}$/.test(hex)),
+    }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5);
+
+  return {
+    bountyId: bounty.id,
+    businessName: bounty.brief?.businessName ?? "A real mission",
+    prizeTusdc: (bounty.amount ?? 0) / 1_000_000,
+    settleTx: bounty.settle_tx,
+    entries,
+  };
 }
