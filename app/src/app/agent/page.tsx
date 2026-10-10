@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey } from "@solana/web3.js";
@@ -12,11 +12,14 @@ import {
   fetchEntriesByAgent,
   getProgram,
 } from "@/lib/solana/client";
+import { getAssociatedTokenAddressSync, getAccount } from "@solana/spl-token";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { personaLabel } from "@/lib/agents/display-names";
-import { useTusdcBalance } from "@/hooks/useTusdcBalance";
 import { WalletButton } from "@/components/WalletButton";
+import devnetConfig from "@/config/devnet.json";
 import type { AgentKey, BountyRow, EntryRow } from "@/lib/types";
+
+const MINT = new PublicKey(devnetConfig.mint);
 
 interface DashboardRow {
   bountyAddress: string;
@@ -35,19 +38,35 @@ interface DashboardRow {
 
 export default function AgentDashboardPage() {
   const { connection } = useConnection();
-  const { publicKey, connected } = useWallet();
-  const tusdcBalance = useTusdcBalance();
+  const { publicKey } = useWallet();
+  const [addressInput, setAddressInput] = useState("");
+  const [viewAddress, setViewAddress] = useState<PublicKey | null>(null);
+  const [addressError, setAddressError] = useState<string | null>(null);
   const [solBalance, setSolBalance] = useState<number | null>(null);
+  const [tusdcBalance, setTusdcBalance] = useState<number | null>(null);
   const [rows, setRows] = useState<DashboardRow[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+
+  const target = viewAddress ?? publicKey;
+
+  function handleViewAddress(e: FormEvent) {
+    e.preventDefault();
+    setAddressError(null);
+    try {
+      setViewAddress(new PublicKey(addressInput.trim()));
+    } catch {
+      setAddressError("That doesn't look like a valid Solana address.");
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
 
     async function load() {
-      if (!publicKey) {
+      if (!target) {
         if (!cancelled) {
           setSolBalance(null);
+          setTusdcBalance(null);
           setRows(null);
         }
         return;
@@ -55,11 +74,19 @@ export default function AgentDashboardPage() {
 
       setLoadError(null);
       try {
-        const lamports = await connection.getBalance(publicKey);
+        const lamports = await connection.getBalance(target);
         if (!cancelled) setSolBalance(lamports / 1e9);
 
+        try {
+          const ata = getAssociatedTokenAddressSync(MINT, target);
+          const account = await getAccount(connection, ata);
+          if (!cancelled) setTusdcBalance(Number(account.amount) / 1_000_000);
+        } catch {
+          if (!cancelled) setTusdcBalance(0);
+        }
+
         const program = getProgram(connection);
-        const onchainEntries = await fetchEntriesByAgent(program, publicKey);
+        const onchainEntries = await fetchEntriesByAgent(program, target);
 
         if (onchainEntries.length === 0) {
           if (!cancelled) setRows([]);
@@ -77,7 +104,7 @@ export default function AgentDashboardPage() {
           supabase
             .from("entries")
             .select("*")
-            .eq("agent_pubkey", publicKey.toBase58())
+            .eq("agent_pubkey", target.toBase58())
             .returns<EntryRow[]>(),
         ]);
 
@@ -96,7 +123,7 @@ export default function AgentDashboardPage() {
             : (dbBounty?.status ?? "open")) as DashboardRow["status"];
 
           const winnerPubkey = bountyAccount?.winner as PublicKey | null | undefined;
-          const won = Boolean(winnerPubkey && winnerPubkey.equals(publicKey));
+          const won = Boolean(winnerPubkey && winnerPubkey.equals(target));
           const payoutTusdc =
             won && bountyAccount ? (Number(bountyAccount.amount) * 0.9) / 1_000_000 : null;
 
@@ -132,7 +159,7 @@ export default function AgentDashboardPage() {
       cancelled = true;
       clearInterval(interval);
     };
-  }, [connection, publicKey]);
+  }, [connection, target]);
 
   const wonCount = rows?.filter((r) => r.won).length ?? 0;
   const totalEarned = rows?.reduce((sum, r) => sum + (r.payoutTusdc ?? 0), 0) ?? 0;
@@ -157,13 +184,59 @@ export default function AgentDashboardPage() {
         </p>
       </section>
 
-      {!connected ? (
-        <div className="flex flex-col items-start gap-4 rounded-2xl border border-zinc-800 p-8">
-          <p className="text-zinc-400">Connect a wallet to see its on-chain entries and earnings.</p>
+      <section className="flex flex-col gap-3 rounded-2xl border border-zinc-800 p-5">
+        <form onSubmit={handleViewAddress} className="flex flex-wrap items-end gap-3">
+          <label className="flex flex-1 flex-col gap-2">
+            <span className="text-xs uppercase tracking-wider text-zinc-500">
+              View any wallet by address
+            </span>
+            <input
+              value={addressInput}
+              onChange={(e) => setAddressInput(e.target.value)}
+              placeholder="Paste a Solana address — no wallet connection needed"
+              className="input"
+            />
+          </label>
+          <button
+            type="submit"
+            className="rounded-full border border-zinc-700 px-5 py-2.5 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500"
+          >
+            View
+          </button>
+          {viewAddress && (
+            <button
+              type="button"
+              onClick={() => {
+                setViewAddress(null);
+                setAddressInput("");
+              }}
+              className="text-sm text-zinc-500 underline hover:text-zinc-300"
+            >
+              Clear
+            </button>
+          )}
+        </form>
+        {addressError && <p className="text-sm text-red-400">{addressError}</p>}
+        <div className="flex items-center gap-3 text-sm text-zinc-500">
+          <span>or connect a wallet to view your own</span>
           <WalletButton />
+        </div>
+      </section>
+
+      {!target ? (
+        <div className="flex flex-col items-start gap-4 rounded-2xl border border-zinc-800 p-8">
+          <p className="text-zinc-400">
+            Connect a wallet or paste an address above to see its on-chain entries and earnings.
+          </p>
         </div>
       ) : (
         <>
+          {viewAddress && (
+            <p className="text-sm text-zinc-500">
+              Viewing <span className="font-mono text-zinc-300">{viewAddress.toBase58()}</span>{" "}
+              (read-only — not connected)
+            </p>
+          )}
           <section className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <Stat label="SOL" value={solBalance === null ? "…" : solBalance.toFixed(3)} />
             <Stat label="tUSDC" value={tusdcBalance === null ? "…" : tusdcBalance.toFixed(2)} />

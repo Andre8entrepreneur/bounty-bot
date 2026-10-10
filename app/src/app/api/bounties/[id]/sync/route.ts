@@ -62,7 +62,11 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
         .eq("bounty_id", bountyRowId)
         .eq("agent_pubkey", winnerPubkey)
         .maybeSingle<{ agent_key: string }>();
-      winnerAgentKey = winningEntry?.agent_key ?? null;
+      // Falls back to the raw winner pubkey when no DB entries row matches —
+      // a third-party agent submitted directly on-chain, so we never had a
+      // row for it to begin with. Still a correct, honest winner_agent
+      // value; the UI knows how to render a persona label vs. a raw pubkey.
+      winnerAgentKey = winningEntry?.agent_key ?? winnerPubkey;
     }
 
     await supabase

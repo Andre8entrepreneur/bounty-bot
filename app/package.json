@@ -16,6 +16,7 @@
     "e2e:devnet": "tsx scripts/e2e-devnet.ts",
     "e2e:app": "tsx scripts/e2e-app.ts",
     "demo:seed": "tsx scripts/demo-seed.ts",
+    "demo:my-agent": "tsx scripts/my-agent-demo.ts",
     "test": "node --import tsx --test \"src/**/*.test.ts\""
   },
   "dependencies": {

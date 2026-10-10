@@ -4,12 +4,18 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, Transaction } from "@solana/web3.js";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
-import { buildPickWinnerIx, explorerTx, getProgram } from "@/lib/solana/client";
-import { personaLabel } from "@/lib/agents/display-names";
+import { buildPickWinnerIx, explorerTx, fetchEntries, getProgram } from "@/lib/solana/client";
+import { winnerDisplayLabel } from "@/lib/agents/display-names";
 import type { BountyRow, EntryRow } from "@/lib/types";
 import { AgentCard } from "@/components/AgentCard";
 import { Countdown } from "@/components/Countdown";
+import { ExternalEntryCard } from "@/components/ExternalEntryCard";
 import devnetConfig from "@/config/devnet.json";
+
+interface OnchainEntrySummary {
+  agentPubkey: string;
+  submittedAtMs: number;
+}
 
 const AGENTS = ["minimal", "bold", "luxe"] as const;
 
@@ -19,6 +25,7 @@ export function BountyDetail({ id }: { id: string }) {
 
   const [bounty, setBounty] = useState<BountyRow | null>(null);
   const [entries, setEntries] = useState<EntryRow[]>([]);
+  const [onchainEntries, setOnchainEntries] = useState<OnchainEntrySummary[]>([]);
   const [picking, setPicking] = useState<string | null>(null);
   const [pickTxSig, setPickTxSig] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
@@ -29,6 +36,38 @@ export function BountyDetail({ id }: { id: string }) {
     const interval = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(interval);
   }, []);
+
+  // Entries from a third-party agent never touch our DB (nothing inserts a
+  // row for them), so Supabase Realtime can't catch them — poll the chain
+  // directly to pick up any entry our own 3 agents didn't submit.
+  useEffect(() => {
+    const onchainAddress: string = bounty?.onchain_address ?? "";
+    if (!onchainAddress) return;
+    let cancelled = false;
+
+    async function poll() {
+      try {
+        const program = getProgram(connection);
+        const results = await fetchEntries(program, new PublicKey(onchainAddress));
+        if (cancelled) return;
+        setOnchainEntries(
+          results.map((r) => ({
+            agentPubkey: r.account.agent.toBase58(),
+            submittedAtMs: Number(r.account.submittedAt) * 1000,
+          })),
+        );
+      } catch {
+        // best-effort; the DB-backed cards still work without this
+      }
+    }
+
+    poll();
+    const interval = setInterval(poll, 10_000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [connection, bounty?.onchain_address]);
 
   const refresh = useCallback(async () => {
     const supabase = getSupabaseBrowserClient();
@@ -102,9 +141,9 @@ export function BountyDetail({ id }: { id: string }) {
     return () => clearInterval(interval);
   }, [bounty, id, refresh]);
 
-  async function pickWinner(entry: EntryRow) {
-    if (!bounty || !publicKey || !entry.agent_pubkey) return;
-    setPicking(entry.id);
+  async function pickWinner(winner: { id: string; agent_pubkey: string | null }) {
+    if (!bounty || !publicKey || !winner.agent_pubkey) return;
+    setPicking(winner.id);
     try {
       const program = getProgram(connection);
       const ix = await buildPickWinnerIx(program, {
@@ -112,7 +151,7 @@ export function BountyDetail({ id }: { id: string }) {
         bountyId: BigInt(bounty.bounty_id!),
         mint: new PublicKey(devnetConfig.mint),
         treasury: new PublicKey(devnetConfig.treasury),
-        winnerAgent: new PublicKey(entry.agent_pubkey),
+        winnerAgent: new PublicKey(winner.agent_pubkey),
       });
       const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
       const tx = new Transaction({ feePayer: publicKey, recentBlockhash: blockhash }).add(ix);
@@ -138,6 +177,9 @@ export function BountyDetail({ id }: { id: string }) {
   const pastDeadline = now >= deadlineMs;
   const inPickWindow = bounty.status === "open" && now >= deadlineMs && now < pickDeadlineMs;
   const isBuyer = publicKey?.toBase58() === bounty.buyer;
+  const externalEntries = onchainEntries.filter(
+    (e) => !entries.some((dbEntry) => dbEntry.agent_pubkey === e.agentPubkey),
+  );
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-4 py-12">
@@ -162,7 +204,7 @@ export function BountyDetail({ id }: { id: string }) {
           <div className="rounded-xl border border-accent/30 bg-accent/5 px-4 py-3 text-sm text-accent">
             Awarded to{" "}
             <span className="font-semibold">
-              {bounty.winner_agent ? personaLabel(bounty.winner_agent) : bounty.winner_agent}
+              {bounty.winner_agent ? winnerDisplayLabel(bounty.winner_agent) : bounty.winner_agent}
             </span>
             {bounty.settle_tx && (
               <>
@@ -201,7 +243,7 @@ export function BountyDetail({ id }: { id: string }) {
         )}
       </section>
 
-      <section className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+      <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {AGENTS.map((agent) => {
           const entry = entries.find((e) => e.agent_key === agent);
           return (
@@ -223,6 +265,25 @@ export function BountyDetail({ id }: { id: string }) {
             </div>
           );
         })}
+
+        {externalEntries.map((entry) => (
+          <div key={entry.agentPubkey} className="flex flex-col gap-3">
+            <ExternalEntryCard
+              agentPubkey={entry.agentPubkey}
+              submittedAtMs={entry.submittedAtMs}
+              won={bounty.status === "awarded" && bounty.winner_agent === entry.agentPubkey}
+            />
+            {inPickWindow && isBuyer && (
+              <button
+                onClick={() => pickWinner({ id: entry.agentPubkey, agent_pubkey: entry.agentPubkey })}
+                disabled={picking !== null}
+                className="rounded-full bg-accent px-4 py-2 text-xs font-semibold text-black transition hover:brightness-110 disabled:opacity-40"
+              >
+                {picking === entry.agentPubkey ? "Confirm in wallet…" : "Pick this one"}
+              </button>
+            )}
+          </div>
+        ))}
       </section>
     </main>
   );

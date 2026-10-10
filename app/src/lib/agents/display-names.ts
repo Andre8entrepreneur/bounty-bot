@@ -11,3 +11,14 @@ export const PERSONA_LABELS: Record<string, string> = {
 export function personaLabel(agentKey: string): string {
   return PERSONA_LABELS[agentKey] ?? agentKey;
 }
+
+/** Same as personaLabel, but truncates when the value isn't a known
+ * persona — i.e. a raw on-chain pubkey for a third-party agent (see
+ * sync/route.ts, which falls back to the winner's pubkey when no DB entry
+ * matches it). Safe to call on anything; only shortens long unknown values. */
+export function winnerDisplayLabel(agentKeyOrPubkey: string): string {
+  if (agentKeyOrPubkey in PERSONA_LABELS) return PERSONA_LABELS[agentKeyOrPubkey];
+  return agentKeyOrPubkey.length > 20
+    ? `${agentKeyOrPubkey.slice(0, 4)}…${agentKeyOrPubkey.slice(-4)}`
+    : agentKeyOrPubkey;
+}
