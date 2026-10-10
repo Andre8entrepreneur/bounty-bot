@@ -127,7 +127,11 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
 
     await supabase
       .from("bounties")
-      .update({ status: "awarded", winner_agent: topEntry.agent_key, settle_tx: settleTx })
+      .update({
+        status: "awarded",
+        winner_agent: topEntry.agent_key ?? topEntry.agent_pubkey,
+        settle_tx: settleTx,
+      })
       .eq("id", bountyRowId);
 
     return NextResponse.json({ ok: true, settled: true, action: "auto_award", settleTx });

@@ -5,7 +5,7 @@ import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, Transaction } from "@solana/web3.js";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { buildPickWinnerIx, explorerTx, fetchEntries, getProgram } from "@/lib/solana/client";
-import { winnerDisplayLabel } from "@/lib/agents/display-names";
+import { agentDisplayLabel } from "@/lib/agents/display-names";
 import type { BountyRow, EntryRow } from "@/lib/types";
 import { AgentCard } from "@/components/AgentCard";
 import { Countdown } from "@/components/Countdown";
@@ -177,7 +177,17 @@ export function BountyDetail({ id }: { id: string }) {
   const pastDeadline = now >= deadlineMs;
   const inPickWindow = bounty.status === "open" && now >= deadlineMs && now < pickDeadlineMs;
   const isBuyer = publicKey?.toBase58() === bounty.buyer;
-  const externalEntries = onchainEntries.filter(
+  // Our 3 agents always get a card (even while still "working…"); any other
+  // agent gets one too once it has published its kit. agentKey is the persona
+  // key for ours and the wallet pubkey for everyone else — the same value
+  // settle/sync store in winner_agent, so `revealed` works for both.
+  const cards: Array<{ agentKey: string; entry: EntryRow | undefined }> = [
+    ...AGENTS.map((agent) => ({ agentKey: agent, entry: entries.find((e) => e.agent_key === agent) })),
+    ...entries
+      .filter((e) => e.agent_key === null)
+      .map((e) => ({ agentKey: e.agent_pubkey ?? e.id, entry: e })),
+  ];
+  const unpublishedEntries = onchainEntries.filter(
     (e) => !entries.some((dbEntry) => dbEntry.agent_pubkey === e.agentPubkey),
   );
 
@@ -204,7 +214,7 @@ export function BountyDetail({ id }: { id: string }) {
           <div className="rounded-xl border border-accent/30 bg-accent/5 px-4 py-3 text-sm text-accent">
             Awarded to{" "}
             <span className="font-semibold">
-              {bounty.winner_agent ? winnerDisplayLabel(bounty.winner_agent) : bounty.winner_agent}
+              {bounty.winner_agent ? agentDisplayLabel(bounty.winner_agent) : bounty.winner_agent}
             </span>
             {bounty.settle_tx && (
               <>
@@ -244,45 +254,32 @@ export function BountyDetail({ id }: { id: string }) {
       </section>
 
       <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {AGENTS.map((agent) => {
-          const entry = entries.find((e) => e.agent_key === agent);
-          return (
-            <div key={agent} className="flex flex-col gap-3">
-              <AgentCard
-                agentKey={agent}
-                entry={entry}
-                revealed={bounty.status === "awarded" && agent === bounty.winner_agent}
-              />
-              {inPickWindow && isBuyer && entry?.referee_pass && (
-                <button
-                  onClick={() => pickWinner(entry)}
-                  disabled={picking !== null}
-                  className="rounded-full bg-accent px-4 py-2 text-xs font-semibold text-black transition hover:brightness-110 disabled:opacity-40"
-                >
-                  {picking === entry.id ? "Confirm in wallet…" : "Pick this one"}
-                </button>
-              )}
-            </div>
-          );
-        })}
-
-        {externalEntries.map((entry) => (
-          <div key={entry.agentPubkey} className="flex flex-col gap-3">
-            <ExternalEntryCard
-              agentPubkey={entry.agentPubkey}
-              submittedAtMs={entry.submittedAtMs}
-              won={bounty.status === "awarded" && bounty.winner_agent === entry.agentPubkey}
+        {cards.map(({ agentKey, entry }) => (
+          <div key={agentKey} className="flex flex-col gap-3">
+            <AgentCard
+              agentKey={agentKey}
+              entry={entry}
+              revealed={bounty.status === "awarded" && agentKey === bounty.winner_agent}
             />
-            {inPickWindow && isBuyer && (
+            {inPickWindow && isBuyer && entry?.referee_pass && (
               <button
-                onClick={() => pickWinner({ id: entry.agentPubkey, agent_pubkey: entry.agentPubkey })}
+                onClick={() => pickWinner(entry)}
                 disabled={picking !== null}
                 className="rounded-full bg-accent px-4 py-2 text-xs font-semibold text-black transition hover:brightness-110 disabled:opacity-40"
               >
-                {picking === entry.agentPubkey ? "Confirm in wallet…" : "Pick this one"}
+                {picking === entry.id ? "Confirm in wallet…" : "Pick this one"}
               </button>
             )}
           </div>
+        ))}
+
+        {unpublishedEntries.map((entry) => (
+          <ExternalEntryCard
+            key={entry.agentPubkey}
+            agentPubkey={entry.agentPubkey}
+            submittedAtMs={entry.submittedAtMs}
+            won={bounty.status === "awarded" && bounty.winner_agent === entry.agentPubkey}
+          />
         ))}
       </section>
     </main>

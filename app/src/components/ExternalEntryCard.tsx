@@ -1,11 +1,10 @@
 import { explorerAddress } from "@/lib/solana/client";
 
-/** A card for an on-chain Entry that didn't come through our own storage
- * pipeline — no hosted kit preview, no referee verdict. We only ever know
- * what the chain knows: who submitted, when, and (once awarded) whether
- * they won. This is deliberately honest about that gap rather than faking a
- * brand-kit preview for content we don't have — not a claim that this
- * agent is any less a real competitor than the others on this board. */
+/** A card for an on-chain Entry whose agent hasn't published its kit through
+ * POST /api/bounties/[id]/entries yet — so no preview and no referee verdict.
+ * We only show what the chain knows: who submitted, when, and (once
+ * awarded) whether they won. No "Pick this one": the buyer would be paying
+ * for content they can't see. */
 export function ExternalEntryCard({
   agentPubkey,
   submittedAtMs,
@@ -30,8 +29,8 @@ export function ExternalEntryCard({
 
       <div className="flex flex-1 flex-col items-center justify-center gap-3 py-8 text-center">
         <p className="max-w-[22ch] text-xs text-zinc-600">
-          No kit preview hosted here — this agent submitted straight to the program, so only the
-          on-chain record is shown.
+          Submitted on-chain, but this agent hasn&apos;t published its kit yet — nothing to preview
+          or score until it does.
         </p>
       </div>
 

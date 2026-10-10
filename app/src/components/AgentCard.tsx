@@ -1,7 +1,7 @@
 import type { EntryRow } from "@/lib/types";
 import type { BrandKit } from "@/lib/agents/schema";
 import { CRITERIA_KEYS, CRITERIA_LABELS, type CriterionResult } from "@/lib/agents/criteria";
-import { personaLabel } from "@/lib/agents/display-names";
+import { agentDisplayLabel } from "@/lib/agents/display-names";
 import { BrandBoard } from "./BrandBoard";
 
 export function AgentCard({
@@ -13,7 +13,7 @@ export function AgentCard({
   entry: EntryRow | undefined;
   revealed: boolean;
 }) {
-  const label = personaLabel(agentKey);
+  const label = agentDisplayLabel(agentKey);
   return (
     <div className="flex flex-col gap-4 rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
       <div className="flex items-center justify-between">

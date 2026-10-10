@@ -25,10 +25,11 @@ import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { resolve } from "node:path";
 import { Keypair, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { getPublicEnv, getServerEnv } from "../src/lib/env";
 import { hash } from "../src/lib/hash";
-import type { Brief } from "../src/lib/agents/schema";
+import { BriefSchema, type Brief } from "../src/lib/agents/schema";
+import { generateBrandKit } from "../src/lib/agents/run-agent";
 import {
   buildCreateBountyIx,
   buildSubmitEntryIx,
@@ -61,6 +62,17 @@ const BRIEF: Brief = {
   deadlinePreset: "demo",
 };
 
+// This agent's own creative direction — deliberately unlike our 3 personas,
+// the way an outside developer's agent would have its own take.
+const MY_AGENT_PERSONA = `You are an independent brand designer with a retro-editorial
+signature: the confidence of vintage print — old travel posters, mid-century
+magazine mastheads, letterpress menus. You favor warm, slightly faded palettes
+anchored by one ink-dark neutral, and pair a characterful serif headline face
+with a clean body face. Your logos are emblem- or badge-like marks with a bit
+of history in them, built from simple geometry so they still read at 16px.
+Every kit should feel like it has been around for decades and earned its
+place. Taglines are short, warm, and a little witty.`;
+
 function loadDeployerKeypair(): Keypair {
   const path = resolve(homedir(), ".config/solana/id.json");
   const raw = readFileSync(path, "utf-8");
@@ -86,13 +98,42 @@ function parseArgs(argv: string[]) {
   let deadlineSecs = 300;
   let pickWindowSecs = 600;
   let bountyAddress: string | null = null;
+  let watch = false;
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--base-url" && argv[i + 1]) baseUrl = argv[++i];
     else if (argv[i] === "--deadline-secs" && argv[i + 1]) deadlineSecs = Number(argv[++i]);
     else if (argv[i] === "--pick-window-secs" && argv[i + 1]) pickWindowSecs = Number(argv[++i]);
     else if (argv[i] === "--bounty" && argv[i + 1]) bountyAddress = argv[++i];
+    else if (argv[i] === "--watch") watch = true;
   }
-  return { baseUrl, deadlineSecs, pickWindowSecs, bountyAddress };
+  return { baseUrl, deadlineSecs, pickWindowSecs, bountyAddress, watch };
+}
+
+const WATCH_POLL_MS = 2_000;
+const WATCH_TIMEOUT_MS = 15 * 60_000;
+
+/** Waits for the next bounty posted after this script started — the way a
+ * real agent would sit on the mission board and jump into new missions —
+ * and returns its row id. */
+async function waitForNewBounty(
+  supabase: SupabaseClient,
+  startedAt: Date,
+): Promise<string> {
+  const giveUpAt = Date.now() + WATCH_TIMEOUT_MS;
+  while (Date.now() < giveUpAt) {
+    const { data } = await supabase
+      .from("bounties")
+      .select("id,deadline")
+      .eq("status", "open")
+      .gt("created_at", startedAt.toISOString())
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .returns<Array<{ id: string; deadline: string | null }>>();
+    const next = data?.[0];
+    if (next?.deadline && new Date(next.deadline).getTime() > Date.now()) return next.id;
+    await new Promise((r) => setTimeout(r, WATCH_POLL_MS));
+  }
+  throw new Error("no new bounty was posted within 15 minutes");
 }
 
 async function postJson(baseUrl: string, path: string, body: unknown) {
@@ -106,7 +147,10 @@ async function postJson(baseUrl: string, path: string, body: unknown) {
 }
 
 async function main(): Promise<void> {
-  const { baseUrl, deadlineSecs, pickWindowSecs, bountyAddress } = parseArgs(process.argv.slice(2));
+  const startedAt = new Date();
+  const args = parseArgs(process.argv.slice(2));
+  const { baseUrl, deadlineSecs, pickWindowSecs, watch } = args;
+  let bountyAddress = args.bountyAddress;
   const serverEnv = getServerEnv();
   const publicEnv = getPublicEnv();
 
@@ -149,6 +193,14 @@ async function main(): Promise<void> {
   let bountyRowId: string;
   let buyerPubkey: PublicKey;
   let bountyId: bigint;
+  let brief: Brief = BRIEF;
+
+  if (watch) {
+    console.log("\n=== Watching the mission board for the next new bounty... ===");
+    const watcher = createClient(publicEnv.NEXT_PUBLIC_SUPABASE_URL, serverEnv.SUPABASE_SERVICE_ROLE_KEY);
+    bountyAddress = await waitForNewBounty(watcher, startedAt);
+    console.log(`  spotted ${bountyAddress}`);
+  }
 
   if (bountyAddress) {
     console.log(`\n=== Joining existing bounty ${bountyAddress} ===`);
@@ -166,6 +218,7 @@ async function main(): Promise<void> {
     bountyRowId = row.id;
     buyerPubkey = new PublicKey(row.buyer!);
     bountyId = BigInt(row.bounty_id!);
+    brief = BriefSchema.parse(row.brief);
     console.log(`  buyer: ${buyerPubkey.toBase58()}`);
   } else {
     const deployer = loadDeployerKeypair();
@@ -215,13 +268,14 @@ async function main(): Promise<void> {
 
   const url = `${baseUrl}/b/${bountyRowId}`;
 
-  console.log("\n=== Submitting my agent's entry directly on-chain (bypassing our app entirely) ===");
-  const content = {
-    note: "Submitted by an independent agent, outside the Bounty Bot codebase.",
-    submittedBy: "scripts/my-agent-demo.ts",
-    at: new Date().toISOString(),
-  };
-  const contentHash = hash(content);
+  console.log("\n=== My agent is designing a brand kit... ===");
+  const kit = await generateBrandKit(MY_AGENT_PERSONA, brief, "my-agent");
+  console.log(`  done — "${kit.names[0]}"`);
+
+  // Commit first, publish second: the on-chain hash is what proves the
+  // kit we publish is the one this agent actually entered.
+  console.log("\n=== Committing its fingerprint on-chain (submit_entry, signed by my agent) ===");
+  const contentHash = hash(kit);
   const submitIx = await buildSubmitEntryIx(program, {
     agent: myAgent.publicKey,
     buyer: buyerPubkey,
@@ -230,6 +284,16 @@ async function main(): Promise<void> {
   });
   const submitSig = await sendSignedInstruction(connection, submitIx, myAgent);
   console.log(`  submitted — ${explorerTx(submitSig)}`);
+
+  console.log("\n=== Publishing the kit so the buyer can see it and the referee can score it ===");
+  const publishRes = await postJson(baseUrl, `/api/bounties/${bountyRowId}/entries`, {
+    agentPubkey: myAgent.publicKey.toBase58(),
+    kit,
+  });
+  if (publishRes.status !== 201) {
+    throw new Error(`publish failed (${publishRes.status}): ${JSON.stringify(publishRes.json)}`);
+  }
+  console.log("  published");
 
   console.log(`\nOpen this and click "Pick this one" on the 4th card (only works if you're connected`);
   console.log(`as the buyer wallet that posted it: ${buyerPubkey.toBase58()}):`);

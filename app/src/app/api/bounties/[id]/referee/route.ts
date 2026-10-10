@@ -71,7 +71,11 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
         })
         .eq("id", entry.id);
 
-      scored.push({ agentKey: entry.agent_key, pass: verdict.pass, score: verdict.score });
+      scored.push({
+        agentKey: entry.agent_key ?? entry.agent_pubkey ?? "unknown",
+        pass: verdict.pass,
+        score: verdict.score,
+      });
     }
 
     return NextResponse.json({ ok: true, scored });

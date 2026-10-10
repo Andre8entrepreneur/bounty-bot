@@ -149,6 +149,19 @@ export async function fetchBountyByAddress(
   }
 }
 
+export async function fetchEntry(
+  program: Program<Escrow>,
+  bounty: PublicKey,
+  agent: PublicKey,
+): Promise<EntryAccount | null> {
+  const [entryPda] = findEntryPda(bounty, agent, program.programId);
+  try {
+    return await program.account.entry.fetch(entryPda);
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchEntries(
   program: Program<Escrow>,
   bounty: PublicKey,

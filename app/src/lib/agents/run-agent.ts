@@ -72,13 +72,22 @@ async function callForBrandKit(
   }
 }
 
-/** Runs one persona agent against a brief: one Anthropic call, one repair
- * retry on invalid output, then sanitizes the returned logo SVG. Throws if
- * the agent never produces a valid kit. */
+/** Runs one of our persona agents against a brief. */
 export async function runAgent(agentKey: AgentKey, brief: Brief): Promise<BrandKit> {
+  return generateBrandKit(PERSONAS[agentKey], brief, agentKey);
+}
+
+/** Generates a brand kit for any creative-direction prompt: one Anthropic
+ * call, one repair retry on invalid output, then sanitizes the returned logo
+ * SVG. Throws if the model never produces a valid kit. */
+export async function generateBrandKit(
+  persona: string,
+  brief: Brief,
+  label: string,
+): Promise<BrandKit> {
   const env = getServerEnv();
   const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
-  const system = `${PERSONAS[agentKey]}\n\n${outputContract()}`;
+  const system = `${persona}\n\n${outputContract()}`;
   const userMessage = briefUserMessage(brief);
 
   let attempt = await callForBrandKit(client, env.AGENT_MODEL, system, userMessage);
@@ -92,7 +101,7 @@ export async function runAgent(agentKey: AgentKey, brief: Brief): Promise<BrandK
 
   if ("error" in attempt) {
     throw new Error(
-      `runAgent(${agentKey}): model did not produce schema-valid output after retry: ${attempt.error}`,
+      `generateBrandKit(${label}): model did not produce schema-valid output after retry: ${attempt.error}`,
     );
   }
 

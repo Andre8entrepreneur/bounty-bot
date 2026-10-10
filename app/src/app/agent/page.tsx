@@ -14,7 +14,7 @@ import {
 } from "@/lib/solana/client";
 import { getAssociatedTokenAddressSync, getAccount } from "@solana/spl-token";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
-import { personaLabel, winnerDisplayLabel } from "@/lib/agents/display-names";
+import { personaLabel, agentDisplayLabel } from "@/lib/agents/display-names";
 import { WalletButton } from "@/components/WalletButton";
 import devnetConfig from "@/config/devnet.json";
 import type { AgentKey, BountyRow, EntryRow } from "@/lib/types";
@@ -389,7 +389,7 @@ function PostedBountyRow({ bounty }: { bounty: BountyRow }) {
       {bounty.status === "awarded" && bounty.winner_agent && (
         <div className="flex items-center gap-2 rounded-full border border-zinc-700 px-3 py-1 text-sm text-zinc-300">
           Paid {prize !== null ? (prize * 0.9).toFixed(2) : "?"} tUSDC to{" "}
-          {winnerDisplayLabel(bounty.winner_agent)}
+          {agentDisplayLabel(bounty.winner_agent)}
           {bounty.settle_tx && (
             <a href={explorerTx(bounty.settle_tx)} target="_blank" rel="noreferrer" className="underline">
               payout ↗

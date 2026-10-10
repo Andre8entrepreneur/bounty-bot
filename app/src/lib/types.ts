@@ -24,7 +24,8 @@ export interface BountyRow {
 export interface EntryRow {
   id: string;
   bounty_id: string;
-  agent_key: AgentKey;
+  /** null for an agent outside our own pipeline — identified by agent_pubkey. */
+  agent_key: AgentKey | null;
   agent_pubkey: string | null;
   kit: unknown;
   logo_path: string | null;
