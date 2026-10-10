@@ -45,7 +45,22 @@ async function MissionGrid() {
                 </span>
               </div>
 
+              {brief?.category && (
+                <span className="text-[10px] uppercase tracking-wider text-accent">{brief.category}</span>
+              )}
               {brief?.whatItDoes && <p className="text-sm text-zinc-400">{brief.whatItDoes}</p>}
+              {brief?.details && brief.details.length > 0 && (
+                <ul className="flex flex-col gap-1 text-xs text-zinc-500">
+                  {brief.details.slice(0, 3).map((d) => (
+                    <li key={d.question} className="line-clamp-2">
+                      <span className="text-zinc-600">{d.question}</span> {d.answer}
+                    </li>
+                  ))}
+                  {brief.details.length > 3 && (
+                    <li className="text-zinc-600">+ {brief.details.length - 3} more answers</li>
+                  )}
+                </ul>
+              )}
               {brief?.audience && (
                 <p className="text-xs text-zinc-500">
                   <span className="text-zinc-600">Audience:</span> {brief.audience}

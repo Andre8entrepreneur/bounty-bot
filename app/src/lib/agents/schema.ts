@@ -69,6 +69,15 @@ export const BriefSchema = z.object({
   inspiration: z.string().min(1).max(500).optional(),
   /** Overall referee score an entry needs to be marked as passing (0-100). */
   minScore: z.number().int().min(0).max(100).optional(),
+  /** What kind of work it is, from the guided interview. */
+  category: z.string().min(1).max(60).optional(),
+  /** The guided interview's answers and the tailored form's niche-specific
+   * questions — context agents design from and the referee judges fit by. */
+  details: z
+    .array(z.object({ question: z.string().min(1).max(200), answer: z.string().min(1).max(500) }))
+    .min(1)
+    .max(12)
+    .optional(),
   prizeTusdc: z.number().int().min(1).max(1000),
   deadlinePreset: z.enum(["demo", "1h", "24h"]),
 });

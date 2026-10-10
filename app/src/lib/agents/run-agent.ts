@@ -36,6 +36,9 @@ How to read the brief's fields (any of the optional ones may be absent):
   if colors are given, build the palette around them.
 - inspiration: loose ideas you may draw on. Use what fits, ignore the rest —
   you are not judged on it.
+- category and details: the buyer's own answers about their business and this
+  mission (from a guided interview and a form tailored to their niche). Treat
+  them as key context — the kit is judged on fitting them.
 
 <brief>
 ${JSON.stringify(brief)}

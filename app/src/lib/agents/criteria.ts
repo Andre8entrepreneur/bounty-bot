@@ -48,7 +48,8 @@ export function buildCriteria(brief: Brief): CriterionSpec[] {
     {
       label: "Fits the brief",
       kind: "score",
-      check: "how well the kit matches what the business does, its audience, and the vibe keywords",
+      check:
+        "how well the kit matches what the business does, its audience, the vibe keywords, and the buyer's own answers in details (if any)",
     },
   ];
   if (brief.visualDirection || (brief.colors && brief.colors.length > 0)) {

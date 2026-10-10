@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import bs58 from "bs58";
 import { signInMessage } from "@/lib/auth/messages";
@@ -17,6 +17,7 @@ interface SessionState {
 }
 
 const SessionContext = createContext<SessionState | null>(null);
+const DECLINED_KEY = "bb_signin_declined";
 
 export function SessionProvider({ children }: { children: ReactNode }) {
   const { publicKey, signMessage } = useWallet();
@@ -39,7 +40,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const signIn = useCallback(async () => {
+  const doSignIn = useCallback(async (auto: boolean) => {
     if (!publicKey || !signMessage) {
       setError("Connect a wallet that can sign messages first.");
       return;
@@ -59,11 +60,46 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       if (!res.ok || !json.pubkey) throw new Error(json.error ?? "Sign-in failed");
       setSessionPubkey(json.pubkey);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Sign-in failed");
+      if (auto) {
+        // They dismissed the automatic prompt: don't ask again this visit.
+        try {
+          sessionStorage.setItem(`${DECLINED_KEY}:${publicKey.toBase58()}`, "1");
+        } catch {
+          // storage blocked — worst case they get asked again next load
+        }
+      } else {
+        setError(err instanceof Error ? err.message : "Sign-in failed");
+      }
     } finally {
       setSigningIn(false);
     }
   }, [publicKey, signMessage]);
+
+  const signIn = useCallback(() => doSignIn(false), [doSignIn]);
+
+  // Automatic sign-in: as soon as a wallet connects without a valid session,
+  // ask Phantom for the signature once — no extra click. Skipped if they
+  // already declined it during this visit.
+  const autoTried = useRef<string | null>(null);
+  useEffect(() => {
+    if (sessionPubkey === undefined || !publicKey || !signMessage) return;
+    const pk = publicKey.toBase58();
+    if (sessionPubkey === pk || autoTried.current === pk) return;
+    let declined = false;
+    try {
+      declined = sessionStorage.getItem(`${DECLINED_KEY}:${pk}`) === "1";
+    } catch {
+      declined = false;
+    }
+    if (declined) return;
+    // A beat after the wallet connects, and from a timer rather than the
+    // effect body (state changes belong in callbacks, not effects).
+    const timer = setTimeout(() => {
+      autoTried.current = pk;
+      void doSignIn(true);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [sessionPubkey, publicKey, signMessage, doSignIn]);
 
   const signOut = useCallback(async () => {
     await fetch("/api/auth/logout", { method: "POST" }).catch(() => {});

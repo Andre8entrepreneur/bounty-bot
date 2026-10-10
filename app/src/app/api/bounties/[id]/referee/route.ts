@@ -10,6 +10,7 @@ import type { BountyRow, EntryRow } from "@/lib/types";
 export const maxDuration = 300;
 
 const ParamsSchema = z.object({ id: z.string().uuid() });
+const CLAIM_TTL_MS = 3 * 60_000;
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   if (!checkRateLimit(`referee:${getClientIp(request)}`)) {
@@ -55,8 +56,27 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     const scored: Array<{ agentKey: string; pass: boolean; score: number }> = [];
 
     for (const entry of unscoredEntries ?? []) {
-      const kit = BrandKitSchema.parse(entry.kit);
-      const verdict = await judgeEntry(brief, kit);
+      // Claim it first: the bounty page, the keeper and scripts can all call
+      // /referee at the deadline, and without a claim each would score the
+      // same entry (double model cost, scores flipping). A claim older than
+      // CLAIM_TTL_MS is treated as abandoned (e.g. a timed-out call).
+      const staleBefore = new Date(Date.now() - CLAIM_TTL_MS).toISOString();
+      const { data: claimed } = await supabase
+        .from("entries")
+        .update({ referee_notes: { scoring: true, claimedAt: new Date().toISOString() } })
+        .eq("id", entry.id)
+        .is("referee_score", null)
+        .or(`referee_notes.is.null,referee_notes->>claimedAt.lt.${staleBefore}`)
+        .select("id");
+      if (!claimed || claimed.length === 0) continue;
+
+      let verdict;
+      try {
+        verdict = await judgeEntry(brief, BrandKitSchema.parse(entry.kit));
+      } catch (err) {
+        await supabase.from("entries").update({ referee_notes: null }).eq("id", entry.id).is("referee_score", null);
+        throw err;
+      }
 
       await supabase
         .from("entries")

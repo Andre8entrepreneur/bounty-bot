@@ -41,7 +41,7 @@ export function AgentCard({
       ) : (
         <>
           <BrandBoard kit={entry.kit as BrandKit} revealed={revealed} watermark={label} />
-          {entry.referee_notes != null && (
+          {entry.referee_score !== null && entry.referee_notes != null && (
             <RefereeBreakdown notes={entry.referee_notes} />
           )}
           <div className="flex flex-wrap gap-3">

@@ -14,6 +14,13 @@ import {
   type Brief,
 } from "@/lib/agents/schema";
 import { hash } from "@/lib/hash";
+import {
+  DEFAULT_FORM_SPEC,
+  type ExtraField,
+  type FormSpec,
+  type InterviewTurn,
+} from "@/lib/agents/form-spec";
+import { BriefInterview, type InterviewResult } from "@/components/BriefInterview";
 import { buildCreateBountyIx, findBountyPda, getProgram } from "@/lib/solana/client";
 import devnetConfig from "@/config/devnet.json";
 
@@ -40,6 +47,44 @@ export default function NewBountyPage() {
   const [deadlinePreset, setDeadlinePreset] = useState<keyof typeof DEADLINE_PRESETS>("demo");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Guided flow: interview first, then a form generated for this mission.
+  const [phase, setPhase] = useState<"interview" | "form">("interview");
+  const [spec, setSpec] = useState<FormSpec>(DEFAULT_FORM_SPEC);
+  const [category, setCategory] = useState<string | undefined>(undefined);
+  const [turns, setTurns] = useState<InterviewTurn[]>([]);
+  const [extraAnswers, setExtraAnswers] = useState<Record<string, string | string[]>>({});
+
+  function startForm(result: InterviewResult | null) {
+    setSpec(result?.spec ?? DEFAULT_FORM_SPEC);
+    setCategory(result?.category);
+    setTurns(result?.turns ?? []);
+    setExtraAnswers({});
+    setPhase("form");
+    window.scrollTo({ top: 0 });
+  }
+
+  function setExtra(field: ExtraField, value: string) {
+    setExtraAnswers((prev) => {
+      if (field.kind !== "multichoice") return { ...prev, [field.id]: value };
+      const current = Array.isArray(prev[field.id]) ? (prev[field.id] as string[]) : [];
+      const next = current.includes(value) ? current.filter((v) => v !== value) : [...current, value];
+      return { ...prev, [field.id]: next };
+    });
+  }
+
+  /** Interview answers + the tailored questions the buyer answered — the
+   * context agents design from and the referee judges fit by. */
+  function buildDetails(): Brief["details"] {
+    const fromForm = spec.extraFields
+      .map((f) => {
+        const v = extraAnswers[f.id];
+        const answer = Array.isArray(v) ? v.join(", ") : (v ?? "").trim();
+        return { question: f.label.slice(0, 200), answer: answer.slice(0, 500) };
+      })
+      .filter((d) => d.answer.length > 0);
+    const all = [...turns, ...fromForm].slice(0, 12);
+    return all.length > 0 ? all : undefined;
+  }
 
   function toggleVibe(v: string) {
     setVibe((prev) => (prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v].slice(0, 5)));
@@ -78,6 +123,8 @@ export default function NewBountyPage() {
       colors: colors.length > 0 ? colors : undefined,
       inspiration: inspiration.trim() || undefined,
       minScore,
+      category,
+      details: buildDetails(),
       prizeTusdc,
       deadlinePreset,
     });
@@ -137,23 +184,53 @@ export default function NewBountyPage() {
     }
   }
 
+  if (phase === "interview") {
+    return (
+      <main className="mx-auto w-full max-w-xl flex-1 px-4 py-12">
+        <h1 className="mb-2 text-2xl font-semibold tracking-tight">Post a bounty</h1>
+        <p className="mb-8 text-sm text-zinc-500">
+          Tell us what you need — we&apos;ll build a form made for your mission.
+        </p>
+        <BriefInterview onComplete={startForm} onSkip={() => startForm(null)} />
+      </main>
+    );
+  }
+
+  const c = spec.core;
+  const vibeOrder = [
+    ...spec.suggestedVibes,
+    ...VIBE_ALLOWLIST.filter((v) => !spec.suggestedVibes.includes(v)),
+  ];
+  const mustHaveSuggestions = spec.suggestedMustHaves.filter((m) => !mustHaves.includes(m));
+
   return (
     <main className="mx-auto w-full max-w-xl flex-1 px-4 py-12">
-      <h1 className="mb-8 text-2xl font-semibold tracking-tight">Post a bounty</h1>
+      <div className="mb-8 flex flex-col gap-2">
+        {category && <span className="text-xs uppercase tracking-wider text-accent">{category}</span>}
+        <h1 className="text-2xl font-semibold tracking-tight">{spec.title}</h1>
+        {spec.intro && <p className="text-sm text-zinc-400">{spec.intro}</p>}
+        <button
+          type="button"
+          onClick={() => setPhase("interview")}
+          className="self-start text-xs text-zinc-500 underline hover:text-zinc-300"
+        >
+          ← {turns.length > 0 ? "Redo the questions" : "Answer a few questions instead"}
+        </button>
+      </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-        <Field label="Business name">
+        <Field label={c.businessName.label}>
           <input
             value={businessName}
             onChange={(e) => setBusinessName(e.target.value)}
             maxLength={60}
             required
             className="input"
-            placeholder="Lantern & Leaf"
+            placeholder={c.businessName.placeholder}
           />
         </Field>
 
-        <Field label="What it does">
+        <Field label={c.whatItDoes.label} hint={c.whatItDoes.help || undefined}>
           <textarea
             value={whatItDoes}
             onChange={(e) => setWhatItDoes(e.target.value)}
@@ -161,24 +238,76 @@ export default function NewBountyPage() {
             required
             rows={3}
             className="input"
-            placeholder="A cozy bubble tea shop serving fresh fruit teas..."
+            placeholder={c.whatItDoes.placeholder}
           />
         </Field>
 
-        <Field label="Audience">
+        <Field label={c.audience.label} hint={c.audience.help || undefined}>
           <input
             value={audience}
             onChange={(e) => setAudience(e.target.value)}
             maxLength={200}
             required
             className="input"
-            placeholder="Students and young professionals nearby"
+            placeholder={c.audience.placeholder}
           />
         </Field>
 
-        <Field label="Vibe (up to 5)">
+        {spec.extraFields.length > 0 && (
+          <fieldset className="flex flex-col gap-6 rounded-2xl border border-zinc-800 p-5">
+            <legend className="px-2 text-xs uppercase tracking-wider text-zinc-500">About your mission</legend>
+            {spec.extraFields.map((f) => (
+              <Field key={f.id} label={f.label} hint={f.help || undefined}>
+                {f.kind === "text" && (
+                  <input
+                    value={(extraAnswers[f.id] as string | undefined) ?? ""}
+                    onChange={(e) => setExtra(f, e.target.value)}
+                    maxLength={500}
+                    className="input"
+                    placeholder={f.placeholder}
+                  />
+                )}
+                {f.kind === "longtext" && (
+                  <textarea
+                    value={(extraAnswers[f.id] as string | undefined) ?? ""}
+                    onChange={(e) => setExtra(f, e.target.value)}
+                    maxLength={500}
+                    rows={3}
+                    className="input"
+                    placeholder={f.placeholder}
+                  />
+                )}
+                {(f.kind === "choice" || f.kind === "multichoice") && (
+                  <div className="flex flex-wrap gap-2">
+                    {f.options.map((o) => {
+                      const v = extraAnswers[f.id];
+                      const on = Array.isArray(v) ? v.includes(o) : v === o;
+                      return (
+                        <button
+                          type="button"
+                          key={o}
+                          onClick={() => setExtra(f, o)}
+                          className={`rounded-full border px-3 py-1 text-sm transition ${
+                            on ? "border-accent bg-accent/10 text-accent" : "border-zinc-800 text-zinc-400 hover:border-zinc-700"
+                          }`}
+                        >
+                          {o}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </Field>
+            ))}
+          </fieldset>
+        )}
+
+        <Field
+          label="Vibe (up to 5)"
+          hint={spec.suggestedVibes.length > 0 ? "✦ marks the ones we suggest for you — you choose." : undefined}
+        >
           <div className="flex flex-wrap gap-2">
-            {VIBE_ALLOWLIST.map((v) => (
+            {vibeOrder.map((v) => (
               <button
                 type="button"
                 key={v}
@@ -189,6 +318,7 @@ export default function NewBountyPage() {
                     : "border-zinc-800 text-zinc-400 hover:border-zinc-700"
                 }`}
               >
+                {spec.suggestedVibes.includes(v) && "✦ "}
                 {v}
               </button>
             ))}
@@ -246,33 +376,52 @@ export default function NewBountyPage() {
               </button>
             </div>
           )}
+          {mustHaveSuggestions.length > 0 && mustHaves.length < MUST_HAVES_MAX && (
+            <div className="flex flex-col gap-2">
+              <span className="text-xs text-zinc-600">Suggested for your mission — tap to add:</span>
+              <div className="flex flex-wrap gap-2">
+                {mustHaveSuggestions.map((m) => (
+                  <button
+                    type="button"
+                    key={m}
+                    onClick={() =>
+                      setMustHaves((prev) => (prev.length < MUST_HAVES_MAX && !prev.includes(m) ? [...prev, m] : prev))
+                    }
+                    className="rounded-full border border-dashed border-zinc-700 px-3 py-1 text-left text-xs text-zinc-300 hover:border-accent hover:text-accent"
+                  >
+                    + {m}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </Field>
 
-        <Field label="Avoid (optional)" hint="Anything here that shows up in a kit is penalized.">
+        <Field label={c.avoid.label} hint="Anything here that shows up in a kit is penalized.">
           <input
             value={avoid}
             onChange={(e) => setAvoid(e.target.value)}
             maxLength={200}
             className="input"
-            placeholder="nothing cartoonish, no neon"
+            placeholder={c.avoid.placeholder}
           />
         </Field>
 
-        <Field label="Look & feel (optional)" hint="Scored: does the kit look the way you describe?">
+        <Field label={c.visualDirection.label} hint="Scored: does the kit look the way you describe?">
           <textarea
             value={visualDirection}
             onChange={(e) => setVisualDirection(e.target.value)}
             maxLength={300}
             rows={2}
             className="input"
-            placeholder="hand-drawn, warm pastels, rounded shapes, lots of white space"
+            placeholder={c.visualDirection.placeholder}
           />
           <div className="flex flex-wrap items-center gap-2">
             {colors.map((hex) => (
               <button
                 type="button"
                 key={hex}
-                onClick={() => setColors((prev) => prev.filter((c) => c !== hex))}
+                onClick={() => setColors((prev) => prev.filter((col) => col !== hex))}
                 className="flex items-center gap-2 rounded-full border border-zinc-800 py-1 pl-1 pr-3 text-xs text-zinc-300 hover:border-zinc-600"
                 aria-label={`Remove color ${hex}`}
               >
@@ -301,17 +450,14 @@ export default function NewBountyPage() {
           </div>
         </Field>
 
-        <Field
-          label="Inspiration (optional)"
-          hint="Ideas the agents may use — not required, and never scored."
-        >
+        <Field label={c.inspiration.label} hint="Ideas the agents may use — not required, and never scored.">
           <textarea
             value={inspiration}
             onChange={(e) => setInspiration(e.target.value)}
             maxLength={500}
             rows={3}
             className="input"
-            placeholder="We love old Paris café signs, our cat Mochi is the shop mascot…"
+            placeholder={c.inspiration.placeholder}
           />
         </Field>
 
