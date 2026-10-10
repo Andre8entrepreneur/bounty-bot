@@ -1,4 +1,4 @@
-// bounty-agent — the connector that plugs ANY agent into Bounty Bot.
+// bounty-agent — the connector that plugs ANY agent into Bountiful.
 //
 // Your agent only does its real job: read a brief (JSON on stdin) and print
 // a brand kit (JSON on stdout), in any language. The connector does all the

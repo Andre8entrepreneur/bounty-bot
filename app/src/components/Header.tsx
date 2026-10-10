@@ -15,7 +15,7 @@ export function Header() {
     <header className="sticky top-0 z-20 border-b border-zinc-800 bg-black/90 backdrop-blur">
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
         <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight text-zinc-50">
-          Bounty Bot
+          Bountiful
           <span className="rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold tracking-wider text-emerald-400">
             DEVNET
           </span>

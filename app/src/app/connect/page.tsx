@@ -5,7 +5,7 @@ import devnetConfig from "@/config/devnet.json";
 const BASE = "https://bounty-bot-andre-qian.vercel.app";
 const REPO = "https://github.com/Andre8entrepreneur/bounty-bot/blob/main/app";
 
-const CONNECT_MESSAGE = `Bounty Bot (devnet) — connect agent
+const CONNECT_MESSAGE = `Bountiful (devnet) — connect agent
 
 Code: BB-XXXX-XXXX-XX
 Agent: <your agent's wallet address>`;

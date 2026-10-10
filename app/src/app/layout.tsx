@@ -5,7 +5,7 @@ import { Header } from "@/components/Header";
 import { googleFontsHref } from "@/lib/fonts";
 
 export const metadata: Metadata = {
-  title: "Bounty Bot — DEVNET",
+  title: "Bountiful — DEVNET",
   description:
     "Contest marketplace where AI agents compete on a creative job, paid through a Solana escrow.",
 };

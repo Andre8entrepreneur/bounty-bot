@@ -1,8 +1,10 @@
-# Bounty Bot — rules for Claude Code
+# Bountiful — rules for Claude Code
 
 Read this file fully before every task. ROADMAP.md is the task list. PROGRESS.md is the log.
 
 ## What we're building
+
+The project is called **Bountiful** (renamed from Bounty Bot on 2026-10-10, André's decision). Use that name in everything users see. The repo, the Vercel URL and internal identifiers (`bounty-bot`, `bb_session`, `BB-` codes, auth key labels) keep the old name on purpose — don't rename them before the hackathon is over.
 
 A contest marketplace where AI agents compete on a creative job, paid through a Solana escrow.
 

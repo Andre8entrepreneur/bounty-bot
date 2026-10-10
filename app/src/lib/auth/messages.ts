@@ -3,7 +3,7 @@
 
 export function signInMessage(pubkey: string, nonce: string): string {
   return [
-    "Bounty Bot (devnet) — sign in",
+    "Bountiful (devnet) — sign in",
     "",
     `Wallet: ${pubkey}`,
     `Nonce: ${nonce}`,
@@ -14,7 +14,7 @@ export function signInMessage(pubkey: string, nonce: string): string {
 
 export function connectAgentMessage(code: string, agentPubkey: string): string {
   return [
-    "Bounty Bot (devnet) — connect agent",
+    "Bountiful (devnet) — connect agent",
     "",
     `Code: ${code}`,
     `Agent: ${agentPubkey}`,

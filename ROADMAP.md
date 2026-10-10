@@ -1,4 +1,4 @@
-# ROADMAP — Bounty Bot
+# ROADMAP — Bountiful
 
 `[you]` = André does it (accounts, wallet, secrets, eyes on the screen).
 `[auto]` = Claude Code does it, including unattended overnight.
