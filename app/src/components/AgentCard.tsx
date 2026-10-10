@@ -26,7 +26,7 @@ export function AgentCard({
                 : "bg-red-500/10 text-red-400"
             }`}
           >
-            {entry.referee_pass ? "Pass" : "Fail"} · {entry.referee_score}
+            {entry.referee_score}% · {entry.referee_pass ? "Pass" : "Failed"}
           </span>
         )}
       </div>

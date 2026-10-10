@@ -7,9 +7,10 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { buildPickWinnerIx, explorerTx, fetchEntries, getProgram } from "@/lib/solana/client";
 import { agentDisplayLabel } from "@/lib/agents/display-names";
 import type { BountyRow, EntryRow } from "@/lib/types";
-import { AgentCard } from "@/components/AgentCard";
 import { Countdown } from "@/components/Countdown";
-import { ExternalEntryCard } from "@/components/ExternalEntryCard";
+import { RankingBoard } from "@/components/RankingBoard";
+import type { RankRow } from "@/lib/ranking";
+import { DEFAULT_MIN_SCORE, type Brief } from "@/lib/agents/schema";
 import devnetConfig from "@/config/devnet.json";
 
 interface OnchainEntrySummary {
@@ -131,7 +132,10 @@ export function BountyDetail({ id }: { id: string }) {
       }
       if (pickDeadlineMs && nowMs >= pickDeadlineMs && !calledSettle.current) {
         calledSettle.current = true;
+        // /sync too: if the buyer picked from another tab, settle sees the
+        // bounty already settled on-chain and this keeps the DB in step.
         fetch(`/api/bounties/${id}/settle`, { method: "POST" })
+          .then(() => fetch(`/api/bounties/${id}/sync`, { method: "POST" }))
           .then(() => refresh())
           .catch(() => {
             calledSettle.current = false;
@@ -171,25 +175,25 @@ export function BountyDetail({ id }: { id: string }) {
     return <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-16 text-zinc-500">Loading…</main>;
   }
 
-  const brief = bounty.brief as { businessName?: string } | null;
+  const brief = bounty.brief as Partial<Brief> | null;
   const deadlineMs = bounty.deadline ? new Date(bounty.deadline).getTime() : 0;
   const pickDeadlineMs = bounty.pick_deadline ? new Date(bounty.pick_deadline).getTime() : 0;
   const pastDeadline = now >= deadlineMs;
   const inPickWindow = bounty.status === "open" && now >= deadlineMs && now < pickDeadlineMs;
   const isBuyer = publicKey?.toBase58() === bounty.buyer;
-  // Our 3 agents always get a card (even while still "working…"); any other
-  // agent gets one too once it has published its kit. agentKey is the persona
-  // key for ours and the wallet pubkey for everyone else — the same value
-  // settle/sync store in winner_agent, so `revealed` works for both.
-  const cards: Array<{ agentKey: string; entry: EntryRow | undefined }> = [
-    ...AGENTS.map((agent) => ({ agentKey: agent, entry: entries.find((e) => e.agent_key === agent) })),
+  // Our 3 agents always get a row (even while still "working…"); any other
+  // agent gets one once it has submitted on-chain. `key` is the persona key
+  // for ours and the wallet pubkey for everyone else — the same value
+  // settle/sync store in winner_agent, so winner detection works for both.
+  const rows: RankRow[] = [
+    ...AGENTS.map((agent) => ({ key: agent, entry: entries.find((e) => e.agent_key === agent) })),
     ...entries
       .filter((e) => e.agent_key === null)
-      .map((e) => ({ agentKey: e.agent_pubkey ?? e.id, entry: e })),
+      .map((e) => ({ key: e.agent_pubkey ?? e.id, entry: e })),
+    ...onchainEntries
+      .filter((e) => !entries.some((dbEntry) => dbEntry.agent_pubkey === e.agentPubkey))
+      .map((e) => ({ key: e.agentPubkey, unpublishedAtMs: e.submittedAtMs })),
   ];
-  const unpublishedEntries = onchainEntries.filter(
-    (e) => !entries.some((dbEntry) => dbEntry.agent_pubkey === e.agentPubkey),
-  );
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-4 py-12">
@@ -255,35 +259,14 @@ export function BountyDetail({ id }: { id: string }) {
         )}
       </section>
 
-      <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {cards.map(({ agentKey, entry }) => (
-          <div key={agentKey} className="flex flex-col gap-3">
-            <AgentCard
-              agentKey={agentKey}
-              entry={entry}
-              revealed={bounty.status === "awarded" && agentKey === bounty.winner_agent}
-            />
-            {inPickWindow && isBuyer && entry && (
-              <button
-                onClick={() => pickWinner(entry)}
-                disabled={picking !== null}
-                className="rounded-full bg-accent px-4 py-2 text-xs font-semibold text-black transition hover:brightness-110 disabled:opacity-40"
-              >
-                {picking === entry.id ? "Confirm in wallet…" : "Pick this one"}
-              </button>
-            )}
-          </div>
-        ))}
-
-        {unpublishedEntries.map((entry) => (
-          <ExternalEntryCard
-            key={entry.agentPubkey}
-            agentPubkey={entry.agentPubkey}
-            submittedAtMs={entry.submittedAtMs}
-            won={bounty.status === "awarded" && bounty.winner_agent === entry.agentPubkey}
-          />
-        ))}
-      </section>
+      <RankingBoard
+        rows={rows}
+        winnerKey={bounty.status === "awarded" ? bounty.winner_agent : null}
+        minScore={brief?.minScore ?? DEFAULT_MIN_SCORE}
+        canPick={inPickWindow && isBuyer}
+        picking={picking}
+        onPick={pickWinner}
+      />
     </main>
   );
 }
