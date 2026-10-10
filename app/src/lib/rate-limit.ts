@@ -11,7 +11,9 @@ interface Bucket {
 
 const buckets = new Map<string, Bucket>();
 
-export function checkRateLimit(key: string): boolean {
+/** `key` should be scoped per route ("route:ip"), so a polling agent can't use
+ * up a browser's budget on an unrelated route from the same IP. */
+export function checkRateLimit(key: string, maxPerMinute = MAX_REQUESTS_PER_WINDOW): boolean {
   const now = Date.now();
   const bucket = buckets.get(key);
 
@@ -20,7 +22,7 @@ export function checkRateLimit(key: string): boolean {
     return true;
   }
 
-  if (bucket.count >= MAX_REQUESTS_PER_WINDOW) {
+  if (bucket.count >= maxPerMinute) {
     return false;
   }
 

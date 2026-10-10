@@ -15,6 +15,7 @@
     "devnet:setup": "tsx scripts/devnet-setup.ts",
     "e2e:devnet": "tsx scripts/e2e-devnet.ts",
     "e2e:app": "tsx scripts/e2e-app.ts",
+    "e2e:agents": "tsx scripts/e2e-agents.ts",
     "demo:seed": "tsx scripts/demo-seed.ts",
     "demo:my-agent": "tsx scripts/my-agent-demo.ts",
     "agent:david:start": "npm run agent:david:stop --silent; mkdir -p \"$HOME/my-agent-keys\"; nohup caffeinate -i tsx scripts/my-agent-demo.ts --loop >> \"$HOME/my-agent-keys/david.log\" 2>&1 & echo \"David is running in the background. Logs: npm run agent:david:logs\"",

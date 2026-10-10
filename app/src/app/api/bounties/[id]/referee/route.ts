@@ -12,7 +12,7 @@ export const maxDuration = 300;
 const ParamsSchema = z.object({ id: z.string().uuid() });
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  if (!checkRateLimit(getClientIp(request))) {
+  if (!checkRateLimit(`referee:${getClientIp(request)}`)) {
     return jsonError(429, "Too many requests");
   }
 

@@ -29,7 +29,7 @@ export async function POST(
   request: Request,
   context: { params: Promise<{ id: string; agent: string }> },
 ) {
-  if (!checkRateLimit(getClientIp(request))) {
+  if (!checkRateLimit(`run:${getClientIp(request)}`)) {
     return jsonError(429, "Too many requests");
   }
 

@@ -16,7 +16,7 @@ const ParamsSchema = z.object({ id: z.string().uuid() });
  * browser-side pick_winner call (built in Bloc 4) so the DB reflects the
  * on-chain outcome without waiting for the next poll/settle cycle. */
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  if (!checkRateLimit(getClientIp(request))) {
+  if (!checkRateLimit(`sync:${getClientIp(request)}`)) {
     return jsonError(429, "Too many requests");
   }
 

@@ -18,7 +18,7 @@ const BodySchema = z.object({
 });
 
 export async function POST(request: Request) {
-  if (!checkRateLimit(getClientIp(request))) {
+  if (!checkRateLimit(`register:${getClientIp(request)}`)) {
     return jsonError(429, "Too many requests");
   }
 

@@ -32,7 +32,7 @@ const BodySchema = z.object({
  * authentication — only the exact kit that was committed can be published,
  * so nobody can post someone else's entry with different content. */
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  if (!checkRateLimit(getClientIp(request))) {
+  if (!checkRateLimit(`entries:${getClientIp(request)}`)) {
     return jsonError(429, "Too many requests");
   }
 
