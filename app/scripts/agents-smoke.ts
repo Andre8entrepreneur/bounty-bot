@@ -54,16 +54,26 @@ interface SmokeRow {
   pass: boolean | null;
   score: number | null;
   ms: number;
+  inputTokens?: number;
+  outputTokens?: number;
   error?: string;
 }
 
 async function runOneAgent(agentKey: AgentKey): Promise<{ row: SmokeRow; kit: BrandKit | null; verdict: RefereeResult | null }> {
   const start = Date.now();
   try {
-    const kit = await runAgent(agentKey, SAMPLE_BRIEF);
+    const { kit, usage } = await runAgent(agentKey, SAMPLE_BRIEF);
     const verdict = await judgeEntry(SAMPLE_BRIEF, kit);
     return {
-      row: { agent: agentKey, valid: true, pass: verdict.pass, score: verdict.score, ms: Date.now() - start },
+      row: {
+        agent: agentKey,
+        valid: true,
+        pass: verdict.pass,
+        score: verdict.score,
+        ms: Date.now() - start,
+        inputTokens: usage.inputTokens,
+        outputTokens: usage.outputTokens,
+      },
       kit,
       verdict,
     };
@@ -84,11 +94,11 @@ async function runOneAgent(agentKey: AgentKey): Promise<{ row: SmokeRow; kit: Br
 }
 
 function printTable(rows: SmokeRow[]): void {
-  console.log("\nagent     valid  pass   score  ms");
-  console.log("--------  -----  -----  -----  -----");
+  console.log("\nagent     valid  pass   score  ms      in_tok  out_tok");
+  console.log("--------  -----  -----  -----  ------  ------  -------");
   for (const r of rows) {
     console.log(
-      `${r.agent.padEnd(8)}  ${String(r.valid).padEnd(5)}  ${String(r.pass).padEnd(5)}  ${String(r.score ?? "-").padEnd(5)}  ${r.ms}`,
+      `${r.agent.padEnd(8)}  ${String(r.valid).padEnd(5)}  ${String(r.pass).padEnd(5)}  ${String(r.score ?? "-").padEnd(5)}  ${String(r.ms).padEnd(6)}  ${String(r.inputTokens ?? "-").padEnd(6)}  ${r.outputTokens ?? "-"}`,
     );
     if (r.error) console.log(`  error: ${r.error}`);
   }

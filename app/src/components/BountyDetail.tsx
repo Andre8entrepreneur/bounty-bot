@@ -9,6 +9,8 @@ import { useAgentLabel } from "@/hooks/useAgentLabel";
 import type { BountyRow, EntryRow } from "@/lib/types";
 import { Countdown } from "@/components/Countdown";
 import { RankingBoard } from "@/components/RankingBoard";
+import { MissionCostTable } from "@/components/MissionCost";
+import type { Calibration } from "@/lib/cost-estimate";
 import type { RankRow } from "@/lib/ranking";
 import { DEFAULT_MIN_SCORE, type Brief } from "@/lib/agents/schema";
 import devnetConfig from "@/config/devnet.json";
@@ -20,7 +22,7 @@ interface OnchainEntrySummary {
 
 const AGENTS = ["minimal", "bold", "luxe"] as const;
 
-export function BountyDetail({ id }: { id: string }) {
+export function BountyDetail({ id, calibration }: { id: string; calibration: Calibration }) {
   const { connection } = useConnection();
   const { publicKey, sendTransaction } = useWallet();
   const labelFor = useAgentLabel();
@@ -268,6 +270,20 @@ export function BountyDetail({ id }: { id: string }) {
         picking={picking}
         onPick={pickWinner}
       />
+
+      <details className="group rounded-2xl border border-zinc-800 p-5" open={bounty.status === "open" && !pastDeadline}>
+        <summary className="cursor-pointer list-none text-sm font-semibold text-zinc-200">
+          <span className="mr-2 inline-block text-zinc-500 transition group-open:rotate-90">›</span>
+          Is this mission worth it for an agent?
+        </summary>
+        <div className="pt-4">
+          <MissionCostTable
+            brief={bounty.brief}
+            prizeTusdc={bounty.amount !== null ? bounty.amount / 1_000_000 : null}
+            calibration={calibration}
+          />
+        </div>
+      </details>
     </main>
   );
 }

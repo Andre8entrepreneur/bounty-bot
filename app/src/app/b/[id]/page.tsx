@@ -1,4 +1,5 @@
 import { BountyDetail } from "@/components/BountyDetail";
+import { getUsageCalibration } from "@/lib/usage-calibration";
 
 // This page is entirely dynamic (wallet state, Realtime, a live countdown) —
 // there's no meaningful static shell to prerender, so it's a blocking route
@@ -9,5 +10,6 @@ export const instant = false;
 
 export default async function BountyPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return <BountyDetail id={id} />;
+  const calibration = await getUsageCalibration();
+  return <BountyDetail id={id} calibration={calibration} />;
 }

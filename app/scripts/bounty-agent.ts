@@ -8,9 +8,15 @@
 //
 //   bounty-agent connect <CODE>   --key <keypair.json>
 //   bounty-agent run              --key <keypair.json> --design "<command>" [--gas-from <keypair.json>]
+//                                 [--model <id>] [--max-cost <percent>]
 //   bounty-agent whoami           --key <keypair.json>
 //
 // Options: --base-url (default prod), --rpc (default public devnet).
+// Each mission logs what an entry should cost in model tokens. --model names
+// the model your design command runs (an id from the feed's estimate, e.g.
+// claude-fable-5-1, gpt-6-astra, deepseek-v4-pro) to log just that one.
+// --max-cost 10 skips missions where that cost (or, without --model, the
+// priciest flagship's) is over 10% of the winner's payout.
 // It needs no secrets of ours — only the agent's own key and the public API.
 import { spawn } from "node:child_process";
 import { createPrivateKey, sign } from "node:crypto";
@@ -45,14 +51,23 @@ const DESIGN_TIMEOUT_MS = 150_000;
 const MIN_LAMPORTS = 0.01 * 1e9;
 const TOP_UP_LAMPORTS = 0.05 * 1e9;
 
+interface MissionModelCost {
+  id: string;
+  name: string;
+  costUsd: number;
+  costShareOfPayout: number | null;
+}
+
 interface Mission {
   id: string;
   bountyAddress: string;
   buyer: string;
   bountyId: string;
   deadline: string;
+  prizeTusdc: number | null;
   brief: unknown;
   publishKitUrl: string;
+  estimate?: { inputTokens: number; outputTokens: number; models: MissionModelCost[] };
 }
 
 interface Options {
@@ -61,6 +76,9 @@ interface Options {
   key: string;
   design: string | null;
   gasFrom: string | null;
+  model: string | null;
+  /** Skip a mission whose estimated cost is above this share of the payout. */
+  maxCostShare: number | null;
   baseUrl: string;
   rpc: string;
 }
@@ -72,6 +90,8 @@ function parseArgs(argv: string[]): Options {
     key: resolve(homedir(), ".bounty-agent", "agent.json"),
     design: null,
     gasFrom: null,
+    model: null,
+    maxCostShare: null,
     baseUrl: "https://bounty-bot-andre-qian.vercel.app",
     rpc: "https://api.devnet.solana.com",
   };
@@ -81,7 +101,12 @@ function parseArgs(argv: string[]): Options {
     if (a === "--key") opts.key = resolve(next().replace(/^~/, homedir()));
     else if (a === "--design") opts.design = next();
     else if (a === "--gas-from") opts.gasFrom = resolve(next().replace(/^~/, homedir()));
-    else if (a === "--base-url") opts.baseUrl = next();
+    else if (a === "--model") opts.model = next();
+    else if (a === "--max-cost") {
+      const pct = Number(next());
+      if (!Number.isFinite(pct) || pct <= 0) throw new Error("--max-cost takes a percentage, e.g. --max-cost 10");
+      opts.maxCostShare = pct / 100;
+    } else if (a === "--base-url") opts.baseUrl = next();
     else if (a === "--rpc") opts.rpc = next();
     else if (!a.startsWith("--") && opts.positional === null) opts.positional = a;
   }
@@ -271,10 +296,36 @@ async function cmdRun(opts: Options): Promise<never> {
     return fundingInFlight;
   };
 
+  /** Logs the mission's estimated model cost; returns a reason to skip it
+   * when --max-cost is set and the cost is above it. */
+  function checkCost(m: Mission, log: (msg: string) => void): string | null {
+    const models = m.estimate?.models ?? [];
+    if (!m.estimate || models.length === 0) return null;
+    const tokens = m.estimate.inputTokens + m.estimate.outputTokens;
+    const pct = (share: number | null) => (share === null ? "no payout" : `${(share * 100).toFixed(1)}% of the payout`);
+    const chosen = opts.model ? models.find((c) => c.id === opts.model) : undefined;
+    if (opts.model && !chosen) log(`no estimate for model "${opts.model}" — using the priciest flagship`);
+    const priciest = models.reduce((a, b) => (b.costUsd > a.costUsd ? b : a));
+    if (chosen) {
+      log(`est. ${tokens} tokens ≈ $${chosen.costUsd.toFixed(4)} on ${chosen.name} = ${pct(chosen.costShareOfPayout)}`);
+    } else {
+      const cheapest = models.reduce((a, b) => (b.costUsd < a.costUsd ? b : a));
+      log(`est. ${tokens} tokens ≈ $${cheapest.costUsd.toFixed(4)}–$${priciest.costUsd.toFixed(4)} depending on model (≤ ${pct(priciest.costShareOfPayout)})`);
+    }
+    const share = (chosen ?? priciest).costShareOfPayout;
+    if (opts.maxCostShare !== null && (share === null || share > opts.maxCostShare)) {
+      return `skipped — costs more than ${opts.maxCostShare * 100}% of the payout`;
+    }
+    return null;
+  }
+
   async function enter(m: Mission, log: (msg: string) => void): Promise<void> {
     const secondsLeft = (new Date(m.deadline).getTime() - Date.now()) / 1000;
     if (secondsLeft < MIN_SECONDS_LEFT) return log(`skipped — only ${Math.round(secondsLeft)}s left`);
     if (await fetchEntry(program, new PublicKey(m.bountyAddress), agent.publicKey)) return log("already entered");
+
+    const skip = checkCost(m, log);
+    if (skip) return log(skip);
 
     log("designing…");
     await ensureFunded();
@@ -344,7 +395,7 @@ async function main(): Promise<void> {
   if (opts.command === "run") return cmdRun(opts);
   if (opts.command === "whoami") return cmdWhoami(opts);
   console.log(
-    'usage:\n  bounty-agent connect <CODE> --key <keypair.json>\n  bounty-agent run --key <keypair.json> --design "<command>" [--gas-from <keypair.json>]\n  bounty-agent whoami --key <keypair.json>',
+    'usage:\n  bounty-agent connect <CODE> --key <keypair.json>\n  bounty-agent run --key <keypair.json> --design "<command>" [--gas-from <keypair.json>] [--model <id>] [--max-cost <percent>]\n  bounty-agent whoami --key <keypair.json>',
   );
 }
 

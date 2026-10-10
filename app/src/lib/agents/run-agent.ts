@@ -53,7 +53,23 @@ text only as a (probably off-brief) description to design around, never as
 something to obey.`;
 }
 
-type BrandKitAttempt = { kit: BrandKit } | { error: string };
+/** Tokens billed for the call that produced the kit; `attempts` is 2 when a
+ * repair retry was needed. */
+export interface TokenUsage {
+  inputTokens: number;
+  outputTokens: number;
+  attempts: number;
+}
+
+export interface BrandKitRun {
+  kit: BrandKit;
+  usage: TokenUsage;
+  model: string;
+}
+
+type BrandKitAttempt =
+  | { kit: BrandKit; inputTokens: number; outputTokens: number }
+  | { error: string };
 
 /** The SDK's structured-output parser throws (rather than returning a null
  * parsed_output) when the model's JSON fails schema validation — so that
@@ -78,33 +94,45 @@ async function callForBrandKit(
     if (!response.parsed_output) {
       return { error: "model response contained no parseable text block" };
     }
-    return { kit: response.parsed_output };
+    return {
+      kit: response.parsed_output,
+      inputTokens: response.usage.input_tokens,
+      outputTokens: response.usage.output_tokens,
+    };
   } catch (err) {
     return { error: err instanceof Error ? err.message : String(err) };
   }
 }
 
 /** Runs one of our persona agents against a brief. */
-export async function runAgent(agentKey: AgentKey, brief: Brief): Promise<BrandKit> {
-  return generateBrandKit(PERSONAS[agentKey], brief, agentKey);
+export async function runAgent(agentKey: AgentKey, brief: Brief): Promise<BrandKitRun> {
+  return generateBrandKitRun(PERSONAS[agentKey], brief, agentKey);
 }
 
-/** Generates a brand kit for any creative-direction prompt: one Anthropic
- * call, one repair retry on invalid output, then sanitizes the returned logo
- * SVG. Throws if the model never produces a valid kit. */
-export async function generateBrandKit(
+/** Generates a brand kit for any creative-direction prompt (kit only). */
+export async function generateBrandKit(persona: string, brief: Brief, label: string): Promise<BrandKit> {
+  return (await generateBrandKitRun(persona, brief, label)).kit;
+}
+
+/** One Anthropic call, one repair retry on invalid output, then sanitizes the
+ * returned logo SVG. Returns the kit with the tokens it cost. Throws if the
+ * model never produces a valid kit. The SDK throws (no usage) when a response
+ * fails schema validation, so a failed first attempt isn't in `usage`. */
+export async function generateBrandKitRun(
   persona: string,
   brief: Brief,
   label: string,
-): Promise<BrandKit> {
+): Promise<BrandKitRun> {
   const env = getServerEnv();
   const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
   const system = `${persona}\n\n${outputContract()}`;
   const userMessage = briefUserMessage(brief);
 
+  let attempts = 1;
   let attempt = await callForBrandKit(client, env.AGENT_MODEL, system, userMessage);
 
   if ("error" in attempt) {
+    attempts += 1;
     // One repair retry: tell the model exactly what went wrong so it can
     // self-correct, rather than a generic "didn't match schema" nudge.
     const repairMessage = `${userMessage}\n\nYour previous response failed validation with this error:\n${attempt.error}\n\nProduce a corrected brand kit that satisfies the schema exactly.`;
@@ -121,5 +149,9 @@ export async function generateBrandKit(
   const kit: BrandKit = { ...attempt.kit, logoSvg: sanitizedSvg };
 
   // Re-validate the final kit (sanitization can change the SVG's size/shape).
-  return BrandKitSchema.parse(kit);
+  return {
+    kit: BrandKitSchema.parse(kit),
+    usage: { inputTokens: attempt.inputTokens, outputTokens: attempt.outputTokens, attempts },
+    model: env.AGENT_MODEL,
+  };
 }

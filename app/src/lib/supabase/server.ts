@@ -5,7 +5,8 @@ import { getServerEnv, getPublicEnv } from "../env";
 let cached: SupabaseClient | undefined;
 
 /** Service-role Supabase client — bypasses RLS. Only ever used from route
- * handlers (never a client component): it can write anywhere. */
+ * handlers and server-only modules (never a client component): it can write
+ * anywhere. */
 export function getSupabaseServerClient(): SupabaseClient {
   if (!cached) {
     const env = getServerEnv();

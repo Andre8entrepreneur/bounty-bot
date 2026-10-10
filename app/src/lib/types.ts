@@ -44,4 +44,8 @@ export interface AgentRunRow {
   error: string | null;
   started_at: string | null;
   finished_at: string | null;
+  model: string | null;
+  input_tokens: number | null;
+  output_tokens: number | null;
+  attempts: number | null;
 }

@@ -87,7 +87,7 @@ export async function POST(
 
     try {
       const brief = BriefSchema.parse(bountyRow.brief);
-      const kit = await runAgent(agentKey, brief);
+      const { kit, usage, model } = await runAgent(agentKey, brief);
 
       const agentKeypair = getAgentKeypair(agentKey);
       const logoPath = `${bountyRowId}/${agentKey}.svg`;
@@ -135,7 +135,14 @@ export async function POST(
 
       await supabase
         .from("agent_runs")
-        .update({ status: "done", finished_at: new Date().toISOString() })
+        .update({
+          status: "done",
+          finished_at: new Date().toISOString(),
+          model,
+          input_tokens: usage.inputTokens,
+          output_tokens: usage.outputTokens,
+          attempts: usage.attempts,
+        })
         .eq("bounty_id", bountyRowId)
         .eq("agent_key", agentKey);
 

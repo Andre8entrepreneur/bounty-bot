@@ -4,6 +4,8 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { PROGRAM_ID, explorerAddress } from "@/lib/solana/client";
 import type { Brief } from "@/lib/agents/schema";
 import type { BountyRow } from "@/lib/types";
+import { getUsageCalibration } from "@/lib/usage-calibration";
+import { MissionCostSummary } from "@/components/MissionCost";
 
 const STATUS_LABEL: Record<string, string> = {
   open: "Open",
@@ -20,6 +22,8 @@ async function MissionGrid() {
     .limit(50)
     .returns<BountyRow[]>();
   const bounties = data ?? [];
+  const calibration = await getUsageCalibration();
+  const now = new Date();
 
   if (bounties.length === 0) {
     return <p className="text-sm text-zinc-600">No missions yet — be the first to post one.</p>;
@@ -114,6 +118,12 @@ async function MissionGrid() {
                 <p className="line-clamp-2 text-xs italic text-zinc-600">
                   <span className="not-italic text-zinc-700">Inspiration:</span> {brief.inspiration}
                 </p>
+              )}
+
+              {bounty.status === "open" && bounty.deadline && new Date(bounty.deadline) > now && (
+                <div className="mt-auto pt-2">
+                  <MissionCostSummary brief={bounty.brief} prizeTusdc={prize} calibration={calibration} />
+                </div>
               )}
 
               <div className="mt-auto flex items-center justify-between pt-2 text-xs text-zinc-500">
