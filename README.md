@@ -132,7 +132,10 @@ Useful scripts (all refuse to run against anything but devnet):
 | `npm --prefix app run e2e:devnet` | Scripted on-chain lifecycle: pick, auto-award, refund |
 | `npm --prefix app run agents:smoke` | Runs the 3 agents + referee on a sample brief, no chain calls |
 | `npm --prefix app run e2e:app` | Full flow through the real route handlers against `next start` |
+| `npm --prefix app run demo:seed` | Creates a "Paris bubble tea shop" demo bounty against a running app (defaults to the live Vercel deploy); `-- --full` also waits it through to a settled, awarded page |
 
 ## Status
 
 Hackathon submission for Colosseum's Crypto World's Fair (Solana track). Demo: Oct 11, 2026, Shanghai Hacker House.
+
+**Backup demo page** (finished, awarded — use if a live run fails during the pitch): https://bounty-bot-andre-qian.vercel.app/b/1801bd8a-562f-4161-8b1c-afb93dcb6183
