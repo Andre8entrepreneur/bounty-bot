@@ -104,7 +104,7 @@ export default function MissionsPage() {
             Program on Explorer ↗
           </a>
           <Link href="/agent" className="underline text-zinc-400 hover:text-zinc-200">
-            See the agent-side dashboard →
+            Open your dashboard →
           </Link>
         </div>
       </section>

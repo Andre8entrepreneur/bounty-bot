@@ -14,7 +14,7 @@ import {
 } from "@/lib/solana/client";
 import { getAssociatedTokenAddressSync, getAccount } from "@solana/spl-token";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
-import { personaLabel } from "@/lib/agents/display-names";
+import { personaLabel, winnerDisplayLabel } from "@/lib/agents/display-names";
 import { WalletButton } from "@/components/WalletButton";
 import devnetConfig from "@/config/devnet.json";
 import type { AgentKey, BountyRow, EntryRow } from "@/lib/types";
@@ -45,6 +45,7 @@ export default function AgentDashboardPage() {
   const [solBalance, setSolBalance] = useState<number | null>(null);
   const [tusdcBalance, setTusdcBalance] = useState<number | null>(null);
   const [rows, setRows] = useState<DashboardRow[] | null>(null);
+  const [posted, setPosted] = useState<BountyRow[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const target = viewAddress ?? publicKey;
@@ -68,6 +69,7 @@ export default function AgentDashboardPage() {
           setSolBalance(null);
           setTusdcBalance(null);
           setRows(null);
+          setPosted(null);
         }
         return;
       }
@@ -85,6 +87,15 @@ export default function AgentDashboardPage() {
           if (!cancelled) setTusdcBalance(0);
         }
 
+        const supabase = getSupabaseBrowserClient();
+        const { data: postedRows } = await supabase
+          .from("bounties")
+          .select("*")
+          .eq("buyer", target.toBase58())
+          .order("created_at", { ascending: false })
+          .returns<BountyRow[]>();
+        if (!cancelled) setPosted(postedRows ?? []);
+
         const program = getProgram(connection);
         const onchainEntries = await fetchEntriesByAgent(program, target);
 
@@ -98,7 +109,6 @@ export default function AgentDashboardPage() {
         );
 
         const bountyAddresses = onchainEntries.map((e) => e.account.bounty.toBase58());
-        const supabase = getSupabaseBrowserClient();
         const [{ data: dbBounties }, { data: dbEntries }] = await Promise.all([
           supabase.from("bounties").select("*").in("onchain_address", bountyAddresses).returns<BountyRow[]>(),
           supabase
@@ -167,12 +177,12 @@ export default function AgentDashboardPage() {
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-4 py-16">
       <section className="flex flex-col gap-3">
-        <h1 className="text-3xl font-semibold tracking-tight">Agent dashboard</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>
         <p className="max-w-2xl text-zinc-400">
-          Connect any wallet to see every entry it has submitted on-chain, across every bounty.
-          Submitting is permissionless: the <code>submit_entry</code> instruction has no
-          whitelist, so any agent, built by anyone, can register an entry directly against the
-          program.{" "}
+          One wallet, both sides of the market: the bounties it has posted as a buyer, and every
+          entry its agent has submitted on-chain as a competitor. Submitting is permissionless:
+          the <code>submit_entry</code> instruction has no whitelist, so any agent, built by
+          anyone, can register an entry directly against the program.{" "}
           <a
             href={explorerAddress(PROGRAM_ID.toBase58())}
             target="_blank"
@@ -237,9 +247,10 @@ export default function AgentDashboardPage() {
               (read-only — not connected)
             </p>
           )}
-          <section className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <section className="grid grid-cols-2 gap-4 sm:grid-cols-5">
             <Stat label="SOL" value={solBalance === null ? "…" : solBalance.toFixed(3)} />
             <Stat label="tUSDC" value={tusdcBalance === null ? "…" : tusdcBalance.toFixed(2)} />
+            <Stat label="Posted" value={posted === null ? "…" : String(posted.length)} />
             <Stat label="Entries" value={rows === null ? "…" : String(rows.length)} />
             <Stat
               label="Won"
@@ -252,6 +263,33 @@ export default function AgentDashboardPage() {
               {loadError}
             </p>
           )}
+
+          <section className="flex flex-col gap-3">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">
+              As a buyer — bounties posted
+            </h2>
+            {posted === null ? (
+              <p className="text-sm text-zinc-600">Loading…</p>
+            ) : posted.length === 0 ? (
+              <p className="rounded-2xl border border-zinc-800 p-6 text-sm text-zinc-400">
+                This wallet hasn&apos;t posted any bounties.{" "}
+                <Link href="/new" className="underline hover:text-zinc-200">
+                  Post one
+                </Link>
+              </p>
+            ) : (
+              <ul className="flex flex-col gap-3">
+                {posted.map((b) => (
+                  <PostedBountyRow key={b.id} bounty={b} />
+                ))}
+              </ul>
+            )}
+          </section>
+
+          <section className="flex flex-col gap-3">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">
+            As an agent — entries submitted
+          </h2>
 
           {rows === null ? (
             <p className="text-sm text-zinc-600">Loading on-chain entries…</p>
@@ -323,9 +361,48 @@ export default function AgentDashboardPage() {
               ))}
             </ul>
           )}
+          </section>
         </>
       )}
     </main>
+  );
+}
+
+function PostedBountyRow({ bounty }: { bounty: BountyRow }) {
+  const brief = bounty.brief as { businessName?: string } | null;
+  const prize = bounty.amount !== null ? bounty.amount / 1_000_000 : null;
+  return (
+    <li className="flex flex-col gap-2 rounded-xl border border-zinc-800 p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex min-w-0 flex-col gap-1">
+        <div className="flex items-center gap-2">
+          <Link href={`/b/${bounty.id}`} className="truncate font-medium text-zinc-100 hover:underline">
+            {brief?.businessName ?? "Untitled bounty"}
+          </Link>
+          <StatusBadge status={bounty.status} />
+        </div>
+        <div className="flex flex-wrap gap-x-3 text-xs text-zinc-500">
+          {prize !== null && <span>{prize} tUSDC prize</span>}
+          <span>{new Date(bounty.created_at).toLocaleString()}</span>
+        </div>
+      </div>
+
+      {bounty.status === "awarded" && bounty.winner_agent && (
+        <div className="flex items-center gap-2 rounded-full border border-zinc-700 px-3 py-1 text-sm text-zinc-300">
+          Paid {prize !== null ? (prize * 0.9).toFixed(2) : "?"} tUSDC to{" "}
+          {winnerDisplayLabel(bounty.winner_agent)}
+          {bounty.settle_tx && (
+            <a href={explorerTx(bounty.settle_tx)} target="_blank" rel="noreferrer" className="underline">
+              payout ↗
+            </a>
+          )}
+        </div>
+      )}
+      {bounty.status === "refunded" && (
+        <div className="rounded-full border border-zinc-700 px-3 py-1 text-sm text-zinc-400">
+          Refunded
+        </div>
+      )}
+    </li>
   );
 }
 

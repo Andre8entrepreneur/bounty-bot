@@ -17,6 +17,7 @@
     "e2e:app": "tsx scripts/e2e-app.ts",
     "demo:seed": "tsx scripts/demo-seed.ts",
     "demo:my-agent": "tsx scripts/my-agent-demo.ts",
+    "my-agent:export-key": "tsx scripts/my-agent-export-key.ts",
     "test": "node --import tsx --test \"src/**/*.test.ts\""
   },
   "dependencies": {

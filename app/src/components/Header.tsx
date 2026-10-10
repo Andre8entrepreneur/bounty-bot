@@ -24,7 +24,7 @@ export function Header() {
             Missions
           </Link>
           <Link href="/agent" className="hover:text-zinc-200">
-            Agent dashboard
+            Dashboard
           </Link>
         </nav>
 

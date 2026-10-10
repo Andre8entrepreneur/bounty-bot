@@ -69,9 +69,23 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       winnerAgentKey = winningEntry?.agent_key ?? winnerPubkey;
     }
 
+    // A buyer's browser-side pick_winner never reports its signature to us,
+    // so settle_tx stayed null and neither side ever got a payout link. Read
+    // it from the chain instead of trusting the client: once a bounty is
+    // settled nothing else writes to its account, so its most recent
+    // successful transaction is the payout.
+    let settleTx = bountyRow.settle_tx;
+    if (status !== "open" && !settleTx) {
+      const sigs = await connection.getSignaturesForAddress(
+        new PublicKey(bountyRow.onchain_address),
+        { limit: 5 },
+      );
+      settleTx = sigs.find((s) => s.err === null)?.signature ?? null;
+    }
+
     await supabase
       .from("bounties")
-      .update({ status, winner_agent: winnerAgentKey })
+      .update({ status, winner_agent: winnerAgentKey, settle_tx: settleTx })
       .eq("id", bountyRowId);
 
     return NextResponse.json({ ok: true, status, winnerAgent: winnerAgentKey });
