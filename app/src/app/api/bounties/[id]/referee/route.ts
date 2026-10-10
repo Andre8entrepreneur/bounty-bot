@@ -63,7 +63,11 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
         .update({
           referee_pass: verdict.pass,
           referee_score: verdict.score,
-          referee_notes: { reasons: verdict.reasons, deterministicReasons: verdict.deterministicReasons },
+          referee_notes: {
+            reasons: verdict.reasons,
+            deterministicReasons: verdict.deterministicReasons,
+            criteria: verdict.criteria,
+          },
         })
         .eq("id", entry.id);
 
