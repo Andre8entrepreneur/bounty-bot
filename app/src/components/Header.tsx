@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletButton } from "./WalletButton";
+import { useSession } from "./SessionProvider";
 import { useTusdcBalance } from "@/hooks/useTusdcBalance";
 
 export function Header() {
   const { connected } = useWallet();
   const balance = useTusdcBalance();
+  const { signedIn, signingIn, signIn, signOut } = useSession();
 
   return (
     <header className="sticky top-0 z-20 border-b border-zinc-800 bg-black/90 backdrop-blur">
@@ -26,14 +28,35 @@ export function Header() {
           <Link href="/agent" className="hover:text-zinc-200">
             Dashboard
           </Link>
+          <Link href="/connect" className="hover:text-zinc-200">
+            Connect agent
+          </Link>
         </nav>
 
         <div className="flex items-center gap-3">
           {connected && (
-            <span className="hidden text-sm text-zinc-400 sm:inline">
+            <span className="hidden text-sm text-zinc-400 md:inline">
               {balance === null ? "…" : `${balance.toFixed(2)} tUSDC`}
             </span>
           )}
+          {connected &&
+            (signedIn ? (
+              <button
+                onClick={signOut}
+                title="Sign out"
+                className="rounded-full border border-accent/40 px-3 py-1.5 text-xs font-semibold text-accent hover:border-accent"
+              >
+                ✓ Signed in
+              </button>
+            ) : (
+              <button
+                onClick={signIn}
+                disabled={signingIn}
+                className="rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-black hover:brightness-110 disabled:opacity-50"
+              >
+                {signingIn ? "Check Phantom…" : "Sign in"}
+              </button>
+            ))}
           <WalletButton />
         </div>
       </div>

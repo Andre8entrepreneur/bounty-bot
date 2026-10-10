@@ -1,54 +1,50 @@
-// Demonstrates a genuinely third-party agent (not one of our 3 built-in
-// personas) competing for real.
+// "Agent of David" — a complete outside agent, the reference for
+// /connect. It uses ONLY what any developer gets: the public mission feed
+// (GET /api/missions), the on-chain program (submit_entry, signed with its own
+// key), and the publish endpoint (POST /api/bounties/[id]/entries). It never
+// touches our database. Its kit comes from its own creative direction below.
 //
-// Two modes:
-//   --bounty <row id>   JOIN a bounty that already exists (e.g. one YOU
-//     posted yourself through /new with your own Phantom wallet). This is
-//     the one that matters for a live demo: only the real on-chain buyer
-//     can click "Pick this one", so a bounty my scripts create (buyer = the
-//     deployer keypair) can never be picked by your own connected wallet.
-//     Submits my agent's entry directly on-chain to that bounty — no DB
-//     row, no kit content, exactly what a real external agent calling
-//     submit_entry would produce.
-//   (no --bounty)       CREATE a fresh bounty too, buyer = the deployer
-//     keypair. Useful for unattended backend testing (e.g. confirming the
-//     4-card render, the payout math) — NOT for a live demo, since you
-//     can't click "Pick this one" on a bounty you didn't personally create.
-//
-//   --loop              NON-STOP: watch the mission board forever and join
-//     every new bounty (several at once if needed), topping up its own gas.
-//     Run it detached with `npm run agent:david:start` (stop / logs scripts
-//     next to it in package.json).
-//   --watch             join only the next new bounty, then exit.
+// Modes:
+//   --loop                NON-STOP: enter every open mission it hasn't
+//     entered yet, forever (several at once if needed), topping up its own
+//     gas. Run detached with `npm run agent:david:start`.
+//   --watch               enter only the next new mission, then exit.
+//   --bounty <row id>     enter one specific mission (the id in /b/<id>).
+//   (none)                test mode: CREATE a bounty too (buyer = deployer
+//     keypair) and enter it. Not for live demos — only the real buyer can
+//     pick, and here that's a script key.
+//   --connect <code>      first link this agent to a developer's account
+//     (the one-time code from Dashboard → Your agents). Combinable with any
+//     mode above.
 //
 // Usage:
-//   npx tsx scripts/my-agent-demo.ts --loop
-//   npx tsx scripts/my-agent-demo.ts --bounty <bounty row id from the /b/ URL>
-//   npx tsx scripts/my-agent-demo.ts                         # create mode
+//   npx tsx scripts/my-agent-demo.ts --loop --connect BB-XXXX-XXXX-XX
+//   npx tsx scripts/my-agent-demo.ts --bounty <id>
 //   npx tsx scripts/my-agent-demo.ts --base-url http://localhost:3000
-//   npx tsx scripts/my-agent-demo.ts --deadline-secs 300 --pick-window-secs 600
 import { config } from "dotenv";
+import { createPrivateKey, sign } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { resolve } from "node:path";
+import bs58 from "bs58";
 import { Keypair, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { getPublicEnv, getServerEnv } from "../src/lib/env";
 import { hash } from "../src/lib/hash";
 import { BriefSchema, type Brief } from "../src/lib/agents/schema";
 import { generateBrandKit } from "../src/lib/agents/run-agent";
+import { connectAgentMessage } from "../src/lib/auth/messages";
 import {
   buildCreateBountyIx,
   buildSubmitEntryIx,
   explorerAddress,
   explorerTx,
+  fetchEntry,
   findBountyPda,
   getConnection,
   getProgram,
   sendSignedInstruction,
 } from "../src/lib/solana/client";
 import type { AgentKey } from "../src/lib/solana/keys";
-import type { BountyRow } from "../src/lib/types";
 import devnetConfig from "../src/config/devnet.json";
 
 config({ path: resolve(process.cwd(), ".env.local"), override: true });
@@ -56,6 +52,11 @@ config({ path: resolve(process.cwd(), ".env.local"), override: true });
 const DEFAULT_BASE_URL = "https://bounty-bot-andre-qian.vercel.app";
 const MY_AGENT_KEY_PATH = resolve(homedir(), "my-agent-keys", "my-agent.json");
 const AGENTS: AgentKey[] = ["minimal", "bold", "luxe"];
+// The feed allows 60 req/min per IP; every 3s is 20/min.
+const POLL_MS = 3_000;
+const WATCH_TIMEOUT_MS = 15 * 60_000;
+// Designing + committing takes ~20-45s; don't start a mission that closes sooner.
+const MIN_SECONDS_LEFT = 45;
 
 const BRIEF: Brief = {
   businessName: "Lantern & Leaf",
@@ -80,15 +81,32 @@ of history in them, built from simple geometry so they still read at 16px.
 Every kit should feel like it has been around for decades and earned its
 place. Taglines are short, warm, and a little witty.`;
 
+/** One entry of GET /api/missions. */
+interface Mission {
+  id: string;
+  bountyAddress: string;
+  buyer: string;
+  bountyId: string;
+  deadline: string;
+  brief: unknown;
+  publishKitUrl: string;
+}
+
+interface Ctx {
+  baseUrl: string;
+  connection: ReturnType<typeof getConnection>;
+  program: ReturnType<typeof getProgram>;
+  myAgent: Keypair;
+}
+
 function loadDeployerKeypair(): Keypair {
   const path = resolve(homedir(), ".config/solana/id.json");
   const raw = readFileSync(path, "utf-8");
   return Keypair.fromSecretKey(Uint8Array.from(JSON.parse(raw) as number[]));
 }
 
-/** Idempotent: reuses the same "my agent" wallet across runs instead of
- * generating a new throwaway one every time, so its on-chain history
- * accumulates and it's easy to point back at on /agent. */
+/** Idempotent: reuses the same agent wallet across runs, so its on-chain
+ * history accumulates and its account link stays valid. */
 function loadOrCreateMyAgentKeypair(): Keypair {
   if (existsSync(MY_AGENT_KEY_PATH)) {
     const raw = readFileSync(MY_AGENT_KEY_PATH, "utf-8");
@@ -100,53 +118,42 @@ function loadOrCreateMyAgentKeypair(): Keypair {
   return kp;
 }
 
+/** ed25519 over the exact message bytes — what any Solana wallet produces. */
+function signWithKeypair(kp: Keypair, message: string): string {
+  const key = createPrivateKey({
+    key: {
+      kty: "OKP",
+      crv: "Ed25519",
+      d: Buffer.from(kp.secretKey.slice(0, 32)).toString("base64url"),
+      x: Buffer.from(kp.publicKey.toBytes()).toString("base64url"),
+    },
+    format: "jwk",
+  });
+  return bs58.encode(sign(null, Buffer.from(message, "utf8"), key));
+}
+
 function parseArgs(argv: string[]) {
   let baseUrl = DEFAULT_BASE_URL;
   let deadlineSecs = 300;
   let pickWindowSecs = 600;
-  let bountyAddress: string | null = null;
+  let bountyId: string | null = null;
+  let connectCode: string | null = null;
   let watch = false;
   let loop = false;
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--base-url" && argv[i + 1]) baseUrl = argv[++i];
     else if (argv[i] === "--deadline-secs" && argv[i + 1]) deadlineSecs = Number(argv[++i]);
     else if (argv[i] === "--pick-window-secs" && argv[i + 1]) pickWindowSecs = Number(argv[++i]);
-    else if (argv[i] === "--bounty" && argv[i + 1]) bountyAddress = argv[++i];
+    else if (argv[i] === "--bounty" && argv[i + 1]) bountyId = argv[++i];
+    else if (argv[i] === "--connect" && argv[i + 1]) connectCode = argv[++i];
     else if (argv[i] === "--watch") watch = true;
     else if (argv[i] === "--loop") loop = true;
   }
-  return { baseUrl, deadlineSecs, pickWindowSecs, bountyAddress, watch, loop };
+  return { baseUrl, deadlineSecs, pickWindowSecs, bountyId, connectCode, watch, loop };
 }
 
-const WATCH_POLL_MS = 2_000;
-const WATCH_TIMEOUT_MS = 15 * 60_000;
-
-/** Waits for the next bounty posted after this script started — the way a
- * real agent would sit on the mission board and jump into new missions —
- * and returns its row id. */
-async function waitForNewBounty(
-  supabase: SupabaseClient,
-  startedAt: Date,
-): Promise<string> {
-  const giveUpAt = Date.now() + WATCH_TIMEOUT_MS;
-  while (Date.now() < giveUpAt) {
-    const { data } = await supabase
-      .from("bounties")
-      .select("id,deadline")
-      .eq("status", "open")
-      .gt("created_at", startedAt.toISOString())
-      .order("created_at", { ascending: true })
-      .limit(1)
-      .returns<Array<{ id: string; deadline: string | null }>>();
-    const next = data?.[0];
-    if (next?.deadline && new Date(next.deadline).getTime() > Date.now()) return next.id;
-    await new Promise((r) => setTimeout(r, WATCH_POLL_MS));
-  }
-  throw new Error("no new bounty was posted within 15 minutes");
-}
-
-async function postJson(baseUrl: string, path: string, body: unknown) {
-  const res = await fetch(`${baseUrl}${path}`, {
+async function postJson(url: string, body: unknown) {
+  const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -155,21 +162,37 @@ async function postJson(baseUrl: string, path: string, body: unknown) {
   return { status: res.status, json: json as Record<string, unknown> };
 }
 
-interface Ctx {
-  baseUrl: string;
-  connection: ReturnType<typeof getConnection>;
-  program: ReturnType<typeof getProgram>;
-  supabase: SupabaseClient;
-  myAgent: Keypair;
+async function fetchMissions(baseUrl: string): Promise<Mission[]> {
+  const res = await fetch(`${baseUrl}/api/missions`);
+  if (!res.ok) throw new Error(`mission feed ${res.status}`);
+  return ((await res.json()) as { missions: Mission[] }).missions;
+}
+
+/** Links this agent to a developer's account: sign the one-time code with
+ * the agent's own key and send it. */
+async function connect(ctx: Ctx, code: string): Promise<void> {
+  const agentPubkey = ctx.myAgent.publicKey.toBase58();
+  const normalized = code.trim().toUpperCase();
+  const res = await postJson(`${ctx.baseUrl}/api/agents/connect`, {
+    code: normalized,
+    agentPubkey,
+    signature: signWithKeypair(ctx.myAgent, connectAgentMessage(normalized, agentPubkey)),
+  });
+  if (res.status === 200) {
+    const agent = res.json.agent as { name: string; owner: string };
+    console.log(`Connected as "${agent.name}" (owner ${agent.owner.slice(0, 6)}…)\n`);
+  } else {
+    console.log(`Connect: ${res.status} ${JSON.stringify(res.json)} — continuing anyway\n`);
+  }
 }
 
 const MIN_LAMPORTS = 0.01 * 1e9;
 const TOP_UP_LAMPORTS = 0.05 * 1e9;
 let fundingInFlight: Promise<void> | null = null;
 
-/** Each entry costs the agent a little SOL (the Entry account's rent + the
- * fee), so top it up from the deployer whenever it runs low. Serialized so
- * concurrent joins don't each send a top-up. */
+/** Each entry costs the agent the Entry account's rent + the fee, so top it
+ * up from the deployer whenever it runs low. Serialized so concurrent joins
+ * don't each send a top-up. */
 function ensureFunded(ctx: Ctx): Promise<void> {
   fundingInFlight ??= (async () => {
     const balance = await ctx.connection.getBalance(ctx.myAgent.publicKey);
@@ -195,24 +218,23 @@ function ensureFunded(ctx: Ctx): Promise<void> {
   return fundingInFlight;
 }
 
-/** The agent's whole job on one bounty: read the brief, design a kit, commit
- * its hash on-chain (submit_entry, signed by the agent), then publish the
- * kit so the buyer can see it and the referee can score it. */
-async function joinBounty(ctx: Ctx, bountyRowId: string, log: (msg: string) => void): Promise<string> {
-  const { data: row } = await ctx.supabase
-    .from("bounties")
-    .select("*")
-    .eq("id", bountyRowId)
-    .single<BountyRow>();
-  if (!row) throw new Error(`no bounty row found for id ${bountyRowId}`);
-  if (row.status !== "open") throw new Error(`bounty is "${row.status}", not open`);
-  if (!row.deadline || Date.now() >= new Date(row.deadline).getTime()) {
-    throw new Error("bounty's submission deadline has already passed");
+/** The agent's whole job on one mission: design a kit, commit its hash
+ * on-chain (submit_entry, signed by the agent), then publish the kit. Returns
+ * false if it skipped (already entered, or too little time left). */
+async function joinMission(ctx: Ctx, m: Mission, log: (msg: string) => void): Promise<boolean> {
+  const secondsLeft = (new Date(m.deadline).getTime() - Date.now()) / 1000;
+  if (secondsLeft < MIN_SECONDS_LEFT) {
+    log(`skipped — only ${Math.round(secondsLeft)}s left`);
+    return false;
   }
-  const brief = BriefSchema.parse(row.brief);
-  const buyerPubkey = new PublicKey(row.buyer!);
-  log(`joining "${brief.businessName}" (buyer ${buyerPubkey.toBase58().slice(0, 6)}…)`);
+  const bounty = new PublicKey(m.bountyAddress);
+  if (await fetchEntry(ctx.program, bounty, ctx.myAgent.publicKey)) {
+    log("already entered — skipping");
+    return false;
+  }
 
+  const brief = BriefSchema.parse(m.brief);
+  log(`entering "${brief.businessName}" (buyer ${m.buyer.slice(0, 6)}…)`);
   await ensureFunded(ctx);
 
   const kit = await generateBrandKit(MY_AGENT_PERSONA, brief, "my-agent");
@@ -222,14 +244,14 @@ async function joinBounty(ctx: Ctx, bountyRowId: string, log: (msg: string) => v
   // we publish is the one this agent actually entered.
   const submitIx = await buildSubmitEntryIx(ctx.program, {
     agent: ctx.myAgent.publicKey,
-    buyer: buyerPubkey,
-    bountyId: BigInt(row.bounty_id!),
+    buyer: new PublicKey(m.buyer),
+    bountyId: BigInt(m.bountyId),
     contentHash: Buffer.from(hash(kit), "hex"),
   });
   const submitSig = await sendSignedInstruction(ctx.connection, submitIx, ctx.myAgent);
-  log(`submitted on-chain — ${explorerTx(submitSig)}`);
+  log(`committed on-chain — ${explorerTx(submitSig)}`);
 
-  const publishRes = await postJson(ctx.baseUrl, `/api/bounties/${bountyRowId}/entries`, {
+  const publishRes = await postJson(`${ctx.baseUrl}${m.publishKitUrl}`, {
     agentPubkey: ctx.myAgent.publicKey.toBase58(),
     kit,
   });
@@ -237,124 +259,123 @@ async function joinBounty(ctx: Ctx, bountyRowId: string, log: (msg: string) => v
     throw new Error(`publish failed (${publishRes.status}): ${JSON.stringify(publishRes.json)}`);
   }
   log("kit published");
-  return `${ctx.baseUrl}/b/${bountyRowId}`;
+  return true;
 }
 
-/** Non-stop: watch the mission board and join every new bounty, several at
- * once if needed. One failed join is logged and never stops the loop. */
+/** Non-stop: enter every open mission not yet entered, forever. One failed
+ * mission is logged and never stops the loop. */
 async function runForever(ctx: Ctx): Promise<never> {
-  const since = new Date().toISOString();
-  const seen = new Set<string>();
+  const handled = new Set<string>();
   const stamp = () => new Date().toLocaleTimeString();
-  console.log(`[${stamp()}] watching the mission board non-stop — Ctrl+C (or npm run agent:david:stop) to stop`);
+  console.log(`[${stamp()}] watching the mission board non-stop — npm run agent:david:stop to stop`);
 
   for (;;) {
     try {
-      const { data } = await ctx.supabase
-        .from("bounties")
-        .select("id,deadline")
-        .eq("status", "open")
-        .gt("created_at", since)
-        .order("created_at", { ascending: true })
-        .returns<Array<{ id: string; deadline: string | null }>>();
-      for (const b of data ?? []) {
-        if (seen.has(b.id)) continue;
-        seen.add(b.id);
-        const short = b.id.slice(0, 8);
+      for (const m of await fetchMissions(ctx.baseUrl)) {
+        if (handled.has(m.id)) continue;
+        handled.add(m.id);
+        const short = m.id.slice(0, 8);
         const log = (msg: string) => console.log(`[${stamp()}] ${short}: ${msg}`);
-        log("spotted a new bounty");
-        joinBounty(ctx, b.id, log).catch((err) =>
+        joinMission(ctx, m, log).catch((err) =>
           log(`FAILED — ${err instanceof Error ? err.message : String(err)}`),
         );
       }
     } catch (err) {
-      console.log(`[${stamp()}] poll error (will retry): ${err instanceof Error ? err.message : String(err)}`);
+      console.log(`[${stamp()}] feed error (will retry): ${err instanceof Error ? err.message : String(err)}`);
     }
-    await new Promise((r) => setTimeout(r, WATCH_POLL_MS));
+    await new Promise((r) => setTimeout(r, POLL_MS));
   }
 }
 
-async function main(): Promise<void> {
-  const startedAt = new Date();
-  const args = parseArgs(process.argv.slice(2));
-  const { baseUrl, deadlineSecs, pickWindowSecs, watch, loop } = args;
-  let bountyAddress = args.bountyAddress;
-  const serverEnv = getServerEnv();
-  const publicEnv = getPublicEnv();
+/** Waits for a mission that wasn't open when we started, and returns it. */
+async function waitForNewMission(ctx: Ctx): Promise<Mission> {
+  const existing = new Set((await fetchMissions(ctx.baseUrl)).map((m) => m.id));
+  const giveUpAt = Date.now() + WATCH_TIMEOUT_MS;
+  while (Date.now() < giveUpAt) {
+    await new Promise((r) => setTimeout(r, POLL_MS));
+    const fresh = (await fetchMissions(ctx.baseUrl)).find((m) => !existing.has(m.id));
+    if (fresh) return fresh;
+  }
+  throw new Error("no new mission was posted within 15 minutes");
+}
 
-  if (publicEnv.NEXT_PUBLIC_CLUSTER !== "devnet") {
-    console.error(`my-agent-demo refuses to run: NEXT_PUBLIC_CLUSTER is "${publicEnv.NEXT_PUBLIC_CLUSTER}", not "devnet".`);
+async function findMission(ctx: Ctx, id: string): Promise<Mission> {
+  const m = (await fetchMissions(ctx.baseUrl)).find((x) => x.id === id);
+  if (!m) throw new Error(`mission ${id} isn't open (closed, settled, or unknown)`);
+  return m;
+}
+
+/** Test mode: create + register a bounty (buyer = deployer) and fire our 3
+ * built-in agents at it, then return its row id. */
+async function createTestBounty(ctx: Ctx, deadlineSecs: number, pickWindowSecs: number): Promise<string> {
+  const deployer = loadDeployerKeypair();
+  const createProgram = getProgram(ctx.connection, deployer);
+  const newBountyId = BigInt(Date.now());
+  const [bountyPda] = findBountyPda(deployer.publicKey, newBountyId, createProgram.programId);
+  const createIx = await buildCreateBountyIx(createProgram, {
+    buyer: deployer.publicKey,
+    mint: new PublicKey(devnetConfig.mint),
+    bountyId: newBountyId,
+    amount: BRIEF.prizeTusdc * 1_000_000,
+    deadline: Math.floor(Date.now() / 1000) + deadlineSecs,
+    pickWindowSecs,
+    briefHash: Buffer.from(hash(BRIEF), "hex"),
+  });
+  const createSig = await sendSignedInstruction(ctx.connection, createIx, deployer);
+  console.log(`Test bounty ${bountyPda.toBase58()} (buyer = deployer) — ${explorerTx(createSig)}`);
+
+  const registerRes = await postJson(`${ctx.baseUrl}/api/bounties`, {
+    address: bountyPda.toBase58(),
+    txSig: createSig,
+    brief: BRIEF,
+  });
+  if (registerRes.status !== 201) {
+    throw new Error(`register failed (${registerRes.status}): ${JSON.stringify(registerRes.json)}`);
+  }
+  const id = registerRes.json.id as string;
+  for (const agent of AGENTS) {
+    postJson(`${ctx.baseUrl}/api/bounties/${id}/run/${agent}`, {}).catch(() => {});
+  }
+  return id;
+}
+
+async function main(): Promise<void> {
+  const args = parseArgs(process.argv.slice(2));
+  if (getPublicEnv().NEXT_PUBLIC_CLUSTER !== "devnet") {
+    console.error("my-agent-demo refuses to run: NEXT_PUBLIC_CLUSTER is not \"devnet\".");
     process.exit(1);
   }
 
-  const connection = getConnection(serverEnv.SOLANA_RPC_URL);
+  const connection = getConnection(getServerEnv().SOLANA_RPC_URL);
   const ctx: Ctx = {
-    baseUrl,
+    baseUrl: args.baseUrl,
     connection,
     program: getProgram(connection),
-    supabase: createClient(publicEnv.NEXT_PUBLIC_SUPABASE_URL, serverEnv.SUPABASE_SERVICE_ROLE_KEY),
     myAgent: loadOrCreateMyAgentKeypair(),
   };
 
-  console.log(`My agent's wallet (safe to share — this is a public key, not a secret):`);
-  console.log(`  ${ctx.myAgent.publicKey.toBase58()}`);
+  console.log(`Agent wallet (public, safe to share): ${ctx.myAgent.publicKey.toBase58()}`);
   console.log(`  ${explorerAddress(ctx.myAgent.publicKey.toBase58())}\n`);
 
-  if (loop) {
+  if (args.connectCode) await connect(ctx, args.connectCode);
+
+  if (args.loop) {
     await ensureFunded(ctx);
     await runForever(ctx);
   }
 
-  if (watch) {
-    console.log("=== Watching the mission board for the next new bounty... ===");
-    bountyAddress = await waitForNewBounty(ctx.supabase, startedAt);
-    console.log(`  spotted ${bountyAddress}`);
+  let mission: Mission;
+  if (args.bountyId) {
+    mission = await findMission(ctx, args.bountyId);
+  } else if (args.watch) {
+    console.log("Watching for the next new mission...");
+    mission = await waitForNewMission(ctx);
+  } else {
+    mission = await findMission(ctx, await createTestBounty(ctx, args.deadlineSecs, args.pickWindowSecs));
   }
 
-  if (!bountyAddress) {
-    const deployer = loadDeployerKeypair();
-    const now = Math.floor(Date.now() / 1000);
-    const newBountyId = BigInt(Date.now());
-
-    console.log("=== Creating bounty on-chain (deployer as buyer — NOT suitable for a live demo) ===");
-    const createProgram = getProgram(connection, deployer);
-    const [bountyPda] = findBountyPda(deployer.publicKey, newBountyId, createProgram.programId);
-    const createIx = await buildCreateBountyIx(createProgram, {
-      buyer: deployer.publicKey,
-      mint: new PublicKey(devnetConfig.mint),
-      bountyId: newBountyId,
-      amount: BRIEF.prizeTusdc * 1_000_000,
-      deadline: now + deadlineSecs,
-      pickWindowSecs,
-      briefHash: Buffer.from(hash(BRIEF), "hex"),
-    });
-    const createSig = await sendSignedInstruction(connection, createIx, deployer);
-    console.log(`  bounty ${bountyPda.toBase58()} — ${explorerTx(createSig)}`);
-
-    const registerRes = await postJson(baseUrl, "/api/bounties", {
-      address: bountyPda.toBase58(),
-      txSig: createSig,
-      brief: BRIEF,
-    });
-    if (registerRes.status !== 201) {
-      throw new Error(`register failed (${registerRes.status}): ${JSON.stringify(registerRes.json)}`);
-    }
-    bountyAddress = registerRes.json.id as string;
-
-    // Fire-and-forget, same as /new does client-side — awaiting these one by
-    // one (15-45s each) could eat the deadline before our own submission.
-    for (const agent of AGENTS) {
-      postJson(baseUrl, `/api/bounties/${bountyAddress}/run/${agent}`, {}).catch(() => {});
-    }
-    console.log("  fired the 3 built-in agents");
-  }
-
-  const url = await joinBounty(ctx, bountyAddress, (msg) => console.log(`  ${msg}`));
-
-  console.log(`\nOpen this and pick it (only works if you're connected as the buyer wallet that posted it):`);
-  console.log(`  ${url}`);
-  console.log(`\nThen check the payout by pasting this address into ${baseUrl}/agent:`);
-  console.log(`  ${ctx.myAgent.publicKey.toBase58()}`);
+  await joinMission(ctx, mission, (msg) => console.log(`  ${msg}`));
+  console.log(`\n${ctx.baseUrl}/b/${mission.id}`);
 }
 
 main().catch((err) => {

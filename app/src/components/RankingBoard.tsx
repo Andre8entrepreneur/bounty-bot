@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { BrandKit } from "@/lib/agents/schema";
-import { agentDisplayLabel } from "@/lib/agents/display-names";
+import { useAgentLabel } from "@/hooks/useAgentLabel";
 import type { EntryRow } from "@/lib/types";
 import { rankRows, rowState, type RankRow } from "@/lib/ranking";
 import { AgentCard } from "./AgentCard";
@@ -27,6 +27,7 @@ export function RankingBoard({
   onPick: (entry: EntryRow) => void;
 }) {
   const ranked = rankRows(rows);
+  const labelFor = useAgentLabel();
   const [hoveredKey, setHoveredKey] = useState<string | null>(null);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const topRef = useRef<HTMLDivElement>(null);
@@ -98,7 +99,12 @@ export function RankingBoard({
 
         <div className="mx-auto flex w-full max-w-xl flex-col gap-4">
           {selected.entry || rowState(selected) === "working" ? (
-            <AgentCard agentKey={selected.key} entry={selected.entry} revealed={isWinner} />
+            <AgentCard
+              agentKey={selected.key}
+              label={labelFor(selected.key)}
+              entry={selected.entry}
+              revealed={isWinner}
+            />
           ) : (
             <ExternalEntryCard
               agentPubkey={selected.key}
@@ -121,7 +127,7 @@ export function RankingBoard({
               >
                 {picking === pickable.id
                   ? "Confirm in wallet…"
-                  : `Pick ${agentDisplayLabel(selected.key)} — pay the prize`}
+                  : `Pick ${labelFor(selected.key)} — pay the prize`}
               </button>
             </div>
           )}
@@ -144,6 +150,7 @@ export function RankingBoard({
             <RankLine
               key={row.key}
               row={row}
+              label={labelFor(row.key)}
               rank={rowState(row) === "scored" ? i + 1 : null}
               minScore={minScore}
               isWinner={winnerKey === row.key}
@@ -160,7 +167,7 @@ export function RankingBoard({
       <aside className="hidden lg:block">
         <div className="sticky top-20">
           {hovered ? (
-            <PreviewPanel row={hovered} isWinner={winnerKey === hovered.key} />
+            <PreviewPanel row={hovered} label={labelFor(hovered.key)} isWinner={winnerKey === hovered.key} />
           ) : (
             <div className="flex h-48 items-center justify-center rounded-2xl border border-dashed border-zinc-800 p-6 text-center text-sm text-zinc-600">
               Hover a row to preview its kit
@@ -174,6 +181,7 @@ export function RankingBoard({
 
 function RankLine({
   row,
+  label,
   rank,
   minScore,
   isWinner,
@@ -181,6 +189,7 @@ function RankLine({
   onOpen,
 }: {
   row: RankRow;
+  label: string;
   rank: number | null;
   minScore: number;
   isWinner: boolean;
@@ -207,7 +216,7 @@ function RankLine({
 
         <span className="flex min-w-0 flex-1 flex-col">
           <span className="truncate text-sm font-semibold text-zinc-100">
-            {agentDisplayLabel(row.key)}
+            {label}
             {isWinner && (
               <span className="ml-2 rounded-full bg-accent/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-accent">
                 Winner
@@ -252,8 +261,7 @@ function RankLine({
   );
 }
 
-function PreviewPanel({ row, isWinner }: { row: RankRow; isWinner: boolean }) {
-  const label = agentDisplayLabel(row.key);
+function PreviewPanel({ row, label, isWinner }: { row: RankRow; label: string; isWinner: boolean }) {
   return (
     <div className="flex flex-col gap-3 rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
       <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">{label}</h3>

@@ -14,7 +14,9 @@ import {
 } from "@/lib/solana/client";
 import { getAssociatedTokenAddressSync, getAccount } from "@solana/spl-token";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
-import { personaLabel, agentDisplayLabel } from "@/lib/agents/display-names";
+import { personaLabel } from "@/lib/agents/display-names";
+import { useAgentLabel } from "@/hooks/useAgentLabel";
+import { MyAgents } from "@/components/MyAgents";
 import { WalletButton } from "@/components/WalletButton";
 import devnetConfig from "@/config/devnet.json";
 import type { AgentKey, BountyRow, EntryRow } from "@/lib/types";
@@ -258,6 +260,16 @@ export default function AgentDashboardPage() {
             />
           </section>
 
+          {!viewAddress && (
+            <MyAgents
+              onViewWallet={(pubkey) => {
+                setViewAddress(new PublicKey(pubkey));
+                setAddressInput(pubkey);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            />
+          )}
+
           {loadError && (
             <p className="rounded-xl border border-red-500/30 bg-red-500/5 px-4 py-3 text-sm text-red-400">
               {loadError}
@@ -369,6 +381,7 @@ export default function AgentDashboardPage() {
 }
 
 function PostedBountyRow({ bounty }: { bounty: BountyRow }) {
+  const labelFor = useAgentLabel();
   const brief = bounty.brief as { businessName?: string } | null;
   const prize = bounty.amount !== null ? bounty.amount / 1_000_000 : null;
   return (
@@ -389,7 +402,7 @@ function PostedBountyRow({ bounty }: { bounty: BountyRow }) {
       {bounty.status === "awarded" && bounty.winner_agent && (
         <div className="flex items-center gap-2 rounded-full border border-zinc-700 px-3 py-1 text-sm text-zinc-300">
           Paid {prize !== null ? (prize * 0.9).toFixed(2) : "?"} tUSDC to{" "}
-          {agentDisplayLabel(bounty.winner_agent)}
+          {labelFor(bounty.winner_agent)}
           {bounty.settle_tx && (
             <a href={explorerTx(bounty.settle_tx)} target="_blank" rel="noreferrer" className="underline">
               payout ↗

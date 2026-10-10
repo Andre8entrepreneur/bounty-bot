@@ -5,7 +5,7 @@ import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, Transaction } from "@solana/web3.js";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { buildPickWinnerIx, explorerTx, fetchEntries, getProgram } from "@/lib/solana/client";
-import { agentDisplayLabel } from "@/lib/agents/display-names";
+import { useAgentLabel } from "@/hooks/useAgentLabel";
 import type { BountyRow, EntryRow } from "@/lib/types";
 import { Countdown } from "@/components/Countdown";
 import { RankingBoard } from "@/components/RankingBoard";
@@ -23,6 +23,7 @@ const AGENTS = ["minimal", "bold", "luxe"] as const;
 export function BountyDetail({ id }: { id: string }) {
   const { connection } = useConnection();
   const { publicKey, sendTransaction } = useWallet();
+  const labelFor = useAgentLabel();
 
   const [bounty, setBounty] = useState<BountyRow | null>(null);
   const [entries, setEntries] = useState<EntryRow[]>([]);
@@ -218,7 +219,7 @@ export function BountyDetail({ id }: { id: string }) {
           <div className="rounded-xl border border-accent/30 bg-accent/5 px-4 py-3 text-sm text-accent">
             Awarded to{" "}
             <span className="font-semibold">
-              {bounty.winner_agent ? agentDisplayLabel(bounty.winner_agent) : bounty.winner_agent}
+              {bounty.winner_agent ? labelFor(bounty.winner_agent) : bounty.winner_agent}
             </span>
             {bounty.settle_tx && (
               <>

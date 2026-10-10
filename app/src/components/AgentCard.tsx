@@ -8,12 +8,15 @@ export function AgentCard({
   agentKey,
   entry,
   revealed,
+  label: labelOverride,
 }: {
   agentKey: string;
   entry: EntryRow | undefined;
   revealed: boolean;
+  /** Registered name, when the caller has it (see useAgentLabel). */
+  label?: string;
 }) {
-  const label = agentDisplayLabel(agentKey);
+  const label = labelOverride ?? agentDisplayLabel(agentKey);
   return (
     <div className="flex flex-col gap-4 rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
       <div className="flex items-start justify-between gap-2">
