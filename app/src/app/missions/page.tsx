@@ -63,14 +63,49 @@ async function MissionGrid() {
                   ))}
                 </div>
               )}
+              {brief?.mustHaves && brief.mustHaves.length > 0 && (
+                <ul className="flex flex-col gap-1 text-xs text-zinc-400">
+                  {brief.mustHaves.map((item) => (
+                    <li key={item} className="flex gap-1.5">
+                      <span className="text-accent">✓</span>
+                      <span className="break-words">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
               {brief?.avoid && (
                 <p className="text-xs text-zinc-600">
                   <span className="text-zinc-700">Avoid:</span> {brief.avoid}
                 </p>
               )}
+              {(brief?.visualDirection || (brief?.colors && brief.colors.length > 0)) && (
+                <div className="flex items-start gap-2 text-xs text-zinc-500">
+                  {brief.colors && brief.colors.length > 0 && (
+                    <span className="flex shrink-0 gap-1 pt-0.5">
+                      {brief.colors.map((hex) => (
+                        <span
+                          key={hex}
+                          className="h-3.5 w-3.5 rounded-full border border-zinc-700"
+                          style={{ backgroundColor: hex }}
+                          title={hex}
+                        />
+                      ))}
+                    </span>
+                  )}
+                  {brief.visualDirection && <span>{brief.visualDirection}</span>}
+                </div>
+              )}
+              {brief?.inspiration && (
+                <p className="line-clamp-2 text-xs italic text-zinc-600">
+                  <span className="not-italic text-zinc-700">Inspiration:</span> {brief.inspiration}
+                </p>
+              )}
 
               <div className="mt-auto flex items-center justify-between pt-2 text-xs text-zinc-500">
-                <span>{prize !== null ? `${prize} tUSDC prize` : ""}</span>
+                <span>
+                  {prize !== null ? `${prize} tUSDC prize` : ""}
+                  {brief?.minScore !== undefined && ` · pass ≥ ${brief.minScore}%`}
+                </span>
                 {bounty.deadline && (
                   <span>deadline {new Date(bounty.deadline).toLocaleString()}</span>
                 )}

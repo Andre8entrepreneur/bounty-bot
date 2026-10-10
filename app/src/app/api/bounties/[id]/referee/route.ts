@@ -67,6 +67,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
             reasons: verdict.reasons,
             deterministicReasons: verdict.deterministicReasons,
             criteria: verdict.criteria,
+            minScore: verdict.minScore,
           },
         })
         .eq("id", entry.id);

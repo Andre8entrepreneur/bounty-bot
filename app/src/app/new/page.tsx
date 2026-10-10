@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, Transaction } from "@solana/web3.js";
@@ -8,6 +8,9 @@ import {
   BriefSchema,
   VIBE_ALLOWLIST,
   DEADLINE_PRESETS,
+  MUST_HAVES_MAX,
+  COLORS_MAX,
+  DEFAULT_MIN_SCORE,
   type Brief,
 } from "@/lib/agents/schema";
 import { hash } from "@/lib/hash";
@@ -26,6 +29,13 @@ export default function NewBountyPage() {
   const [audience, setAudience] = useState("");
   const [vibe, setVibe] = useState<string[]>([]);
   const [avoid, setAvoid] = useState("");
+  const [mustHaves, setMustHaves] = useState<string[]>([]);
+  const [mustHaveDraft, setMustHaveDraft] = useState("");
+  const [visualDirection, setVisualDirection] = useState("");
+  const [colors, setColors] = useState<string[]>([]);
+  const [colorDraft, setColorDraft] = useState("#34d399");
+  const [inspiration, setInspiration] = useState("");
+  const [minScore, setMinScore] = useState(DEFAULT_MIN_SCORE);
   const [prizeTusdc, setPrizeTusdc] = useState(10);
   const [deadlinePreset, setDeadlinePreset] = useState<keyof typeof DEADLINE_PRESETS>("demo");
   const [submitting, setSubmitting] = useState(false);
@@ -33,6 +43,19 @@ export default function NewBountyPage() {
 
   function toggleVibe(v: string) {
     setVibe((prev) => (prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v].slice(0, 5)));
+  }
+
+  function addMustHave() {
+    const item = mustHaveDraft.trim().slice(0, 120);
+    if (!item || mustHaves.length >= MUST_HAVES_MAX || mustHaves.includes(item)) return;
+    setMustHaves((prev) => [...prev, item]);
+    setMustHaveDraft("");
+  }
+
+  function addColor() {
+    const hex = colorDraft.toLowerCase();
+    if (colors.length >= COLORS_MAX || colors.includes(hex)) return;
+    setColors((prev) => [...prev, hex]);
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -49,7 +72,12 @@ export default function NewBountyPage() {
       whatItDoes,
       audience,
       vibe,
-      avoid: avoid || undefined,
+      avoid: avoid.trim() || undefined,
+      mustHaves: mustHaves.length > 0 ? mustHaves : undefined,
+      visualDirection: visualDirection.trim() || undefined,
+      colors: colors.length > 0 ? colors : undefined,
+      inspiration: inspiration.trim() || undefined,
+      minScore,
       prizeTusdc,
       deadlinePreset,
     });
@@ -167,13 +195,138 @@ export default function NewBountyPage() {
           </div>
         </Field>
 
-        <Field label="Avoid (optional)">
+        <Field
+          label={`Must-have checklist (optional, up to ${MUST_HAVES_MAX})`}
+          hint="Each item is scored on its own. Add them one by one."
+        >
+          {mustHaves.length > 0 && (
+            <ul className="flex flex-col gap-2">
+              {mustHaves.map((item) => (
+                <li
+                  key={item}
+                  className="flex items-center justify-between gap-3 rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-200"
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    <span className="text-accent">✓</span>
+                    <span className="break-words">{item}</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setMustHaves((prev) => prev.filter((x) => x !== item))}
+                    className="shrink-0 text-zinc-500 hover:text-zinc-200"
+                    aria-label={`Remove "${item}"`}
+                  >
+                    ✕
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          {mustHaves.length < MUST_HAVES_MAX && (
+            <div className="flex gap-2">
+              <input
+                value={mustHaveDraft}
+                onChange={(e) => setMustHaveDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addMustHave();
+                  }
+                }}
+                maxLength={120}
+                className="input flex-1"
+                placeholder="e.g. a teapot in the logo"
+              />
+              <button
+                type="button"
+                onClick={addMustHave}
+                className="rounded-full border border-zinc-700 px-4 text-sm text-zinc-200 hover:border-zinc-500"
+              >
+                Add
+              </button>
+            </div>
+          )}
+        </Field>
+
+        <Field label="Avoid (optional)" hint="Anything here that shows up in a kit is penalized.">
           <input
             value={avoid}
             onChange={(e) => setAvoid(e.target.value)}
             maxLength={200}
             className="input"
             placeholder="nothing cartoonish, no neon"
+          />
+        </Field>
+
+        <Field label="Look & feel (optional)" hint="Scored: does the kit look the way you describe?">
+          <textarea
+            value={visualDirection}
+            onChange={(e) => setVisualDirection(e.target.value)}
+            maxLength={300}
+            rows={2}
+            className="input"
+            placeholder="hand-drawn, warm pastels, rounded shapes, lots of white space"
+          />
+          <div className="flex flex-wrap items-center gap-2">
+            {colors.map((hex) => (
+              <button
+                type="button"
+                key={hex}
+                onClick={() => setColors((prev) => prev.filter((c) => c !== hex))}
+                className="flex items-center gap-2 rounded-full border border-zinc-800 py-1 pl-1 pr-3 text-xs text-zinc-300 hover:border-zinc-600"
+                aria-label={`Remove color ${hex}`}
+              >
+                <span className="h-5 w-5 rounded-full" style={{ backgroundColor: hex }} />
+                {hex} ✕
+              </button>
+            ))}
+            {colors.length < COLORS_MAX && (
+              <span className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={colorDraft}
+                  onChange={(e) => setColorDraft(e.target.value)}
+                  className="h-8 w-10 cursor-pointer rounded border border-zinc-800 bg-transparent"
+                  aria-label="Pick a color"
+                />
+                <button
+                  type="button"
+                  onClick={addColor}
+                  className="rounded-full border border-zinc-700 px-3 py-1 text-xs text-zinc-200 hover:border-zinc-500"
+                >
+                  Add color
+                </button>
+              </span>
+            )}
+          </div>
+        </Field>
+
+        <Field
+          label="Inspiration (optional)"
+          hint="Ideas the agents may use — not required, and never scored."
+        >
+          <textarea
+            value={inspiration}
+            onChange={(e) => setInspiration(e.target.value)}
+            maxLength={500}
+            rows={3}
+            className="input"
+            placeholder="We love old Paris café signs, our cat Mochi is the shop mascot…"
+          />
+        </Field>
+
+        <Field
+          label={`Minimum match to pass: ${minScore}%`}
+          hint="Entries scoring below this are marked Failed. You can still pick a failed entry."
+        >
+          <input
+            type="range"
+            min={0}
+            max={100}
+            step={5}
+            value={minScore}
+            onChange={(e) => setMinScore(Number(e.target.value))}
+            className="w-full accent-[var(--accent)]"
           />
         </Field>
 
@@ -222,11 +375,36 @@ export default function NewBountyPage() {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  hint,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  // A labelled group, not a <label>: several fields hold more than one
+  // control (list + input + button), and a <label> would forward clicks to
+  // the first one.
+  const labelId = useId();
+  const hintId = useId();
   return (
-    <label className="flex flex-col gap-2">
-      <span className="text-xs uppercase tracking-wider text-zinc-500">{label}</span>
+    <div
+      role="group"
+      aria-labelledby={labelId}
+      aria-describedby={hint ? hintId : undefined}
+      className="flex flex-col gap-2"
+    >
+      <span id={labelId} className="text-xs uppercase tracking-wider text-zinc-500">
+        {label}
+      </span>
+      {hint && (
+        <span id={hintId} className="-mt-1 text-xs text-zinc-600">
+          {hint}
+        </span>
+      )}
       {children}
-    </label>
+    </div>
   );
 }

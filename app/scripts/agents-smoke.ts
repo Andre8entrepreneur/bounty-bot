@@ -14,6 +14,11 @@ const SAMPLE_BRIEF: Brief = {
   audience: "Students and young professionals in the 11th arrondissement who want an affordable treat between classes or after work.",
   vibe: ["warm", "friendly", "playful"],
   avoid: "Nothing too childish or cartoonish — this should feel like a real, grown-up neighborhood spot, not a kids' snack bar.",
+  mustHaves: ["a tea leaf or lantern in the logo", "a tagline in English, under 6 words"],
+  visualDirection: "warm, hand-crafted, soft rounded shapes, cozy café lighting",
+  colors: ["#2f5d50", "#f4e3c1"],
+  inspiration: "Old Paris café signs; our cat Mochi naps in the window every afternoon.",
+  minScore: 50,
   prizeTusdc: 50,
   deadlinePreset: "demo",
 };
@@ -110,6 +115,9 @@ async function main(): Promise<void> {
     `off-brief fixture: pass=${offBriefVerdict.pass} score=${offBriefVerdict.score} ms=${offBriefMs}`,
   );
   console.log(`  reasons: ${offBriefVerdict.reasons.join(" | ")}`);
+  for (const c of offBriefVerdict.criteria) {
+    console.log(`  ${String(c.score).padStart(3)}  ${c.label}`);
+  }
   writeFileSync(
     resolve(outDir, "agents-smoke-off-brief.json"),
     JSON.stringify({ kit: OFF_BRIEF_KIT, verdict: offBriefVerdict }, null, 2),

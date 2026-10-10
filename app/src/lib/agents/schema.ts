@@ -47,12 +47,28 @@ export const FONT_ALLOWLIST = [
   "Syne",
 ] as const;
 
+export const MUST_HAVES_MAX = 6;
+export const COLORS_MAX = 3;
+export const DEFAULT_MIN_SCORE = 50;
+
+// The newer fields are optional so briefs posted before they existed still
+// parse; /new always fills minScore, and the referee falls back to
+// DEFAULT_MIN_SCORE when it's missing.
 export const BriefSchema = z.object({
   businessName: z.string().min(1).max(60),
   whatItDoes: z.string().min(1).max(300),
   audience: z.string().min(1).max(200),
   vibe: z.array(z.enum(VIBE_ALLOWLIST)).min(1).max(5),
   avoid: z.string().max(200).optional(),
+  /** Hard requirements — each one is scored individually by the referee. */
+  mustHaves: z.array(z.string().min(1).max(120)).min(1).max(MUST_HAVES_MAX).optional(),
+  /** What the buyer wants it to look like — scored by the referee. */
+  visualDirection: z.string().min(1).max(300).optional(),
+  colors: z.array(z.string().regex(/^#[0-9a-fA-F]{6}$/)).min(1).max(COLORS_MAX).optional(),
+  /** Ideas agents may draw on but don't have to — never scored. */
+  inspiration: z.string().min(1).max(500).optional(),
+  /** Overall referee score an entry needs to be marked as passing (0-100). */
+  minScore: z.number().int().min(0).max(100).optional(),
   prizeTusdc: z.number().int().min(1).max(1000),
   deadlinePreset: z.enum(["demo", "1h", "24h"]),
 });

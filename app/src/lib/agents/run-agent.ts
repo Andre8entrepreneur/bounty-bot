@@ -28,6 +28,15 @@ JSON.`;
 function briefUserMessage(brief: Brief): string {
   return `Design a brand kit for the business described below.
 
+How to read the brief's fields (any of the optional ones may be absent):
+- mustHaves: hard requirements. Your kit is judged on each one individually —
+  satisfy every single one.
+- avoid: things the buyer does not want. Violating any of them is penalized.
+- visualDirection and colors: the look the buyer is asking for. Follow them;
+  if colors are given, build the palette around them.
+- inspiration: loose ideas you may draw on. Use what fits, ignore the rest —
+  you are not judged on it.
+
 <brief>
 ${JSON.stringify(brief)}
 </brief>
