@@ -14,8 +14,6 @@ function optionalString() {
 const serverSchema = z
   .object({
     ANTHROPIC_API_KEY: z.string().min(1),
-    AGENT_MODEL: z.string().min(1),
-    REFEREE_MODEL: z.string().min(1),
     SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
     SOLANA_RPC_URL: z.string().url(),
     DEMO_BUYER_ADDRESS: z.string().min(1),

@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
 import { getServerEnv } from "../env";
+import { CLAUDE_MODEL } from "./model";
 import { DEFAULT_MIN_SCORE, FONT_ALLOWLIST, type Brief, type BrandKit } from "./schema";
 import {
   buildCriteria,
@@ -129,7 +130,7 @@ async function llmJudge(brief: Brief, kit: BrandKit, criteria: CriterionSpec[]) 
 
   const response = await client.messages.parse(
     {
-      model: env.REFEREE_MODEL,
+      model: CLAUDE_MODEL,
       max_tokens: 2048,
       system: `You are a strict, fair brand design referee for a bounty contest.
 You score a submitted brand kit only against what the buyer asked for in

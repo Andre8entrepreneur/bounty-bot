@@ -1,5 +1,6 @@
 import "server-only";
 import { getSupabaseServerClient } from "./supabase/server";
+import { CLAUDE_MODEL } from "./agents/model";
 import { briefTokens, calibrate, DEFAULT_CALIBRATION, type Calibration, type UsageSample } from "./cost-estimate";
 
 const LIVE_RUNS = 60;
@@ -24,6 +25,8 @@ export async function getUsageCalibration(): Promise<Calibration> {
     .from("agent_runs")
     .select("bounty_id,input_tokens,output_tokens")
     .eq("status", "done")
+    // Only runs on the model our agents use now; older runs used another one.
+    .eq("model", CLAUDE_MODEL)
     // A retried run's prompt also carries the repair message: keep clean runs.
     .eq("attempts", 1)
     .not("input_tokens", "is", null)

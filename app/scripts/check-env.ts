@@ -6,8 +6,6 @@ config({ path: resolve(process.cwd(), ".env.local"), override: true });
 
 const REQUIRED = [
   "ANTHROPIC_API_KEY",
-  "AGENT_MODEL",
-  "REFEREE_MODEL",
   "SUPABASE_SERVICE_ROLE_KEY",
   "SOLANA_RPC_URL",
   "DEMO_BUYER_ADDRESS",

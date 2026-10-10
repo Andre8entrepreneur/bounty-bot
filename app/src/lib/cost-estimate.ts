@@ -39,6 +39,14 @@ export const MODEL_PRICES: readonly ModelPrice[] = [
     outputPerM: 3.96,
     note: "peak rate, half off-peak",
   },
+  {
+    id: "claude-opus-5-5",
+    provider: "Anthropic",
+    name: "Claude Opus 5.5",
+    inputPerM: 4,
+    outputPerM: 20,
+    note: "runs our house agents",
+  },
 ];
 
 /** Measured token usage of one complete brand-kit run. */
@@ -49,13 +57,16 @@ export interface UsageSample {
   outputTokens: number;
 }
 
-/** Three runs measured on 2026-10-10 (agents:smoke, our 3 personas): input
- * 2,686 / 2,950 / 2,678, output 1,632 / 1,654 / 1,974 tokens, on an 834-char
- * brief. Live runs recorded in agent_runs are added on top. */
+const seedRuns = (overheadTokens: number, outputs: number[]): UsageSample[] =>
+  outputs.map((outputTokens) => ({ overheadTokens, outputTokens }));
+
+/** 18 clean runs measured on 2026-10-10 with Claude Opus 5.5 — 6 per house
+ * persona on the Lantern & Leaf demo brief (105 brief tokens), all first
+ * attempt. Live runs recorded in agent_runs are added on top. */
 export const SEED_SAMPLES: readonly UsageSample[] = [
-  { overheadTokens: 2477, outputTokens: 1632 },
-  { overheadTokens: 2741, outputTokens: 1654 },
-  { overheadTokens: 2469, outputTokens: 1974 },
+  ...seedRuns(2501, [1186, 1244, 1108, 1143, 1191, 1291]), // minimal
+  ...seedRuns(2467, [1620, 1972, 1826, 2113, 1570, 1434]), // bold
+  ...seedRuns(2493, [1813, 1717, 1718, 1926, 1614, 1734]), // luxe
 ];
 
 export interface Calibration {

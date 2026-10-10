@@ -3,6 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import type { z } from "zod";
 import { getServerEnv } from "../env";
+import { CLAUDE_MODEL } from "./model";
 import { VIBE_ALLOWLIST } from "./schema";
 import {
   FormSpecSchema,
@@ -40,7 +41,7 @@ async function structuredCall<T extends z.ZodType>(
     try {
       const response = await client.messages.parse(
         {
-          model: env.AGENT_MODEL,
+          model: CLAUDE_MODEL,
           max_tokens: maxTokens,
           system,
           messages: [
@@ -62,6 +63,12 @@ async function structuredCall<T extends z.ZodType>(
   throw new Error(`brief assistant: model output invalid after retry — ${lastError}`);
 }
 
+/** What a brand-kit mission delivers — fixed, so neither the interview nor the
+ * form may promise anything else. */
+const KIT_CONTENTS = `3 name ideas, one tagline, a 5-color
+  palette (hex codes), a heading font and a body font, ONE logo (a single SVG),
+  4 short moodboard scene descriptions, and a short rationale`;
+
 /** Next interview question: narrower than the previous ones, never repeating
  * what's already known. */
 export async function nextInterviewQuestion(category: string, turns: InterviewTurn[]): Promise<NextQuestion> {
@@ -72,7 +79,11 @@ export async function nextInterviewQuestion(category: string, turns: InterviewTu
 deliver work for a buyer. You go from broad to specific: each question narrows
 down what the previous answers left open (sector → what exactly they offer →
 who it's for → what success looks like → constraints). One question at a time,
-short and plain, no jargon. Never ask something already answered.`,
+short and plain, no jargon. Never ask something already answered.
+What gets delivered is fixed by the category — a brand kit is always exactly:
+${KIT_CONTENTS}. Never ask what they want delivered, which formats or files,
+or anything beyond the kit; ask about their business, audience, style and
+constraints instead.`,
     `The buyer needs: the category below. Ask the single most useful next question.
 Offer 3-5 short suggested answers they can tap (concrete, specific to what they
 said so far). Set done=true only if you already know enough to design a great
@@ -105,9 +116,7 @@ suggestions: the buyer fills in every answer themselves.`,
   Placeholders are realistic examples for THIS business.
 - suggestedVibes: up to 5 from exactly this list: ${VIBE_ALLOWLIST.join(", ")}.
 - suggestedMustHaves: up to 6 concrete requirements this buyer is likely to want.
-  A delivered brand kit contains EXACTLY: 3 name ideas, one tagline, a 5-color
-  palette (hex codes), a heading font and a body font, ONE logo (a single SVG),
-  4 short moodboard scene descriptions, and a short rationale. Every must-have
+  A delivered brand kit contains EXACTLY: ${KIT_CONTENTS}. Every must-have
   must be checkable inside those elements (e.g. "a lantern in the logo", "a
   tagline under 6 words", "a deep green in the palette"). Never suggest
   anything outside them: no mockups, logo variants, usage guides, menus,

@@ -4,22 +4,31 @@ import { getServerEnv } from "../env";
 import type { AgentKey } from "../solana/keys";
 import { BrandKitSchema, FONT_ALLOWLIST, type Brief, type BrandKit } from "./schema";
 import { PERSONAS } from "./personas";
+import { CLAUDE_MODEL } from "./model";
 import { sanitizeSvg } from "./sanitize-svg";
 
 const REQUEST_TIMEOUT_MS = 90_000;
 
 function outputContract(): string {
+  // Length limits are spelled out because the schema's string limits are
+  // only checked after generation: a moodboard scene over 120 characters
+  // used to fail ~1 run in 4 and force a full retry.
   return `You produce a brand kit as structured JSON matching the required
-schema exactly. Rules for specific fields:
-- names: exactly 3 distinct business name candidates.
+schema exactly. Rules for specific fields — the length limits are hard
+limits, checked character by character:
+- names: exactly 3 distinct business name candidates, each at most 40
+  characters.
+- tagline: at most 80 characters.
 - palette: exactly 5 colors, each a distinct 6-digit hex value, with a short
-  human name (e.g. "Ink Navy", not just the hex).
+  human name of at most 24 characters (e.g. "Ink Navy", not just the hex).
 - fonts.heading and fonts.body: pick two names from this allowlist (they may
   be the same font for both, but prefer a heading/body pairing): ${FONT_ALLOWLIST.join(", ")}.
 - logoSvg: a single self-contained <svg> element with a viewBox, using only
   basic shapes/paths (no <script>, no <foreignObject>, no external
   references, no embedded raster images). Keep it under 20KB.
-- moodboard: exactly 4 short visual scene descriptions (not image URLs).
+- moodboard: exactly 4 visual scene descriptions (not image URLs). Each one
+  is a single short sentence of at most 15 words and MUST stay under 120
+  characters — evocative, not exhaustive.
 - rationale: at most 120 words explaining your creative choices.
 Output must satisfy the schema exactly — no extra commentary outside the
 JSON.`;
@@ -129,14 +138,15 @@ export async function generateBrandKitRun(
   const userMessage = briefUserMessage(brief);
 
   let attempts = 1;
-  let attempt = await callForBrandKit(client, env.AGENT_MODEL, system, userMessage);
+  let attempt = await callForBrandKit(client, CLAUDE_MODEL, system, userMessage);
 
   if ("error" in attempt) {
     attempts += 1;
+    console.warn(`[generateBrandKit ${label}] attempt 1 invalid, retrying: ${attempt.error.slice(0, 600)}`);
     // One repair retry: tell the model exactly what went wrong so it can
     // self-correct, rather than a generic "didn't match schema" nudge.
     const repairMessage = `${userMessage}\n\nYour previous response failed validation with this error:\n${attempt.error}\n\nProduce a corrected brand kit that satisfies the schema exactly.`;
-    attempt = await callForBrandKit(client, env.AGENT_MODEL, system, repairMessage);
+    attempt = await callForBrandKit(client, CLAUDE_MODEL, system, repairMessage);
   }
 
   if ("error" in attempt) {
@@ -152,6 +162,6 @@ export async function generateBrandKitRun(
   return {
     kit: BrandKitSchema.parse(kit),
     usage: { inputTokens: attempt.inputTokens, outputTokens: attempt.outputTokens, attempts },
-    model: env.AGENT_MODEL,
+    model: CLAUDE_MODEL,
   };
 }

@@ -23,7 +23,7 @@ Context: Colosseum "Crypto World's Fair" hackathon (Solana track), Shanghai Hack
 - `programs/escrow/` — Anchor (Rust) program. Tests in `tests/`.
 - `app/` — Next.js (App Router, TypeScript strict, Tailwind). Deployed on Vercel with Root Directory = `app`.
 - Supabase — Postgres (migrations in `supabase/migrations/`), Storage bucket `kits`, Realtime.
-- Anthropic API for agents and referee. Models come from env `AGENT_MODEL` and `REFEREE_MODEL`.
+- Anthropic API for agents, referee and guided interview. Every call uses **Claude Opus 5.5** (`claude-opus-5-5`), pinned in `app/src/lib/agents/model.ts` — André's decision, 2026-10-10. Never switch to another model.
 - Phantom via the Solana wallet adapter, buyer side only. Agents and platform sign server-side.
 - Token: our own mint **"tUSDC (devnet)"**, 6 decimals. Never real USDC, never mainnet.
 - Use current stable versions. Check installed versions first (`anchor --version`, `solana --version`, `node --version`) and match the Anchor TS client to the installed Anchor CLI.

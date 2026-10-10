@@ -18,28 +18,30 @@ const model = (id: string) => {
   return found;
 };
 
-test("prices: one flagship per provider asked for", () => {
+test("prices: each provider's flagship, plus the model our agents run", () => {
   assert.deepEqual(
-    MODEL_PRICES.map((m) => m.provider),
-    ["Anthropic", "OpenAI", "Moonshot", "Google", "xAI", "DeepSeek"],
+    MODEL_PRICES.map((m) => m.id),
+    ["claude-fable-5-1", "gpt-6-astra", "kimi-k3", "gemini-3.1-pro-preview", "grok-4.7", "deepseek-v4-pro", "claude-opus-5-5"],
   );
 });
 
 test("calibrate: seed runs alone give their medians", () => {
   const c = calibrate();
-  assert.equal(c.overheadTokens, 2477);
-  assert.equal(c.outputTokens, 1654);
-  assert.equal(c.runs, 3);
+  assert.equal(c.overheadTokens, 2493);
+  assert.equal(c.outputTokens, 1617);
+  assert.equal(c.runs, 18);
 });
 
-test("calibrate: live runs move the median, one outlier doesn't dominate", () => {
+test("calibrate: live runs move the median, outliers don't dominate", () => {
   const c = calibrate([
-    { overheadTokens: 2500, outputTokens: 2100 },
+    { overheadTokens: 9000, outputTokens: 9000 },
     { overheadTokens: 9000, outputTokens: 9000 },
   ]);
-  assert.equal(c.runs, 5);
-  assert.equal(c.overheadTokens, 2500);
-  assert.equal(c.outputTokens, 1974);
+  assert.equal(c.runs, 20);
+  // 20 sorted samples: the median moves from the 9th/10th to the 10th/11th
+  // (overheads there are all 2493; outputs (1620 + 1717) / 2)
+  assert.equal(c.overheadTokens, 2493);
+  assert.equal(c.outputTokens, 1669);
 });
 
 test("estimateMissionTokens: input grows with the brief, output doesn't", () => {
