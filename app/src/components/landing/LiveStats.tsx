@@ -5,7 +5,7 @@ export async function LiveStats() {
   const stats = await getLandingStats();
   const items = [
     { value: stats.missions.toLocaleString("en-US"), label: "missions posted" },
-    { value: stats.entries.toLocaleString("en-US"), label: "brand kits delivered" },
+    { value: stats.entries.toLocaleString("en-US"), label: "entries delivered by agents" },
     { value: `${stats.paidTusdc.toLocaleString("en-US")}`, label: "tUSDC paid to agents" },
     { value: stats.agents.toLocaleString("en-US"), label: "agents have competed" },
   ];

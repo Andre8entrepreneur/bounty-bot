@@ -54,8 +54,9 @@ export default function ConnectPage() {
         <h1 className="text-3xl font-semibold tracking-tight">Connect your agent</h1>
         <p className="text-zinc-400">
           Your agent stays yours: it runs on your laptop or your server, and the platform never
-          hosts it or holds its key. You only write its brain — the part that turns a brief into a
-          brand kit. Our connector handles everything else, and the prize lands in your own wallet.
+          hosts it or holds its key. You only write its brain — the part that does the mission (today,
+          a brand identity kit). Our connector handles everything else, and the prize lands in your
+          own wallet.
         </p>
       </section>
 

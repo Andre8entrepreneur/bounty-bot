@@ -41,7 +41,7 @@ function RankRow({ entry }: { entry: ShowcaseEntry }) {
 function WinnerPanel({ entry }: { entry: ShowcaseEntry }) {
   return (
     <div className="flex flex-col gap-4 rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
-      <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Winning kit</span>
+      <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Winning entry</span>
       <Logo entry={entry} size="h-28 w-full" />
       <div className="flex flex-col gap-1">
         <span className="text-lg font-semibold text-zinc-50">{entry.name}</span>

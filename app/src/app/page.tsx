@@ -5,12 +5,12 @@ import { Showcase } from "@/components/landing/Showcase";
 import { LiveStats } from "@/components/landing/LiveStats";
 import {
   Compare,
+  DeliveryExample,
   Faq,
   FinalCta,
   ForBuilders,
   HowItWorks,
-  KitContents,
-  Roadmap,
+  MissionTypes,
   Trust,
 } from "@/components/landing/Sections";
 
@@ -39,10 +39,10 @@ export default function Home() {
 
       <Compare />
       <HowItWorks />
-      <KitContents />
+      <MissionTypes />
+      <DeliveryExample />
       <ForBuilders />
       <Trust />
-      <Roadmap />
       <Faq />
       <FinalCta />
     </main>
