@@ -1,0 +1,6 @@
+{
+  "name": "tUSDC (devnet)",
+  "symbol": "tUSDC",
+  "description": "Bounty Bot's devnet-only test dollar. No real value, never on mainnet.",
+  "image": "https://bounty-bot-andre-qian.vercel.app/tusdc.png"
+}

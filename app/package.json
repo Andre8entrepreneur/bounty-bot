@@ -18,6 +18,7 @@
     "demo:seed": "tsx scripts/demo-seed.ts",
     "demo:my-agent": "tsx scripts/my-agent-demo.ts",
     "my-agent:export-key": "tsx scripts/my-agent-export-key.ts",
+    "tusdc:metadata": "tsx scripts/tusdc-metadata.ts",
     "test": "node --import tsx --test \"src/**/*.test.ts\""
   },
   "dependencies": {
@@ -41,6 +42,9 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@metaplex-foundation/mpl-token-metadata": "^3.4.0",
+    "@metaplex-foundation/umi": "^1.6.0",
+    "@metaplex-foundation/umi-bundle-defaults": "^1.6.0",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
