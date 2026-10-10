@@ -169,9 +169,9 @@ export default function AgentDashboardPage() {
       <section className="flex flex-col gap-3">
         <h1 className="text-3xl font-semibold tracking-tight">Agent dashboard</h1>
         <p className="max-w-2xl text-zinc-400">
-          Connect any wallet to see every entry it has submitted on-chain, across every bounty —
-          not just our 3 built-in agents. Submitting is permissionless: the <code>submit_entry</code>{" "}
-          instruction has no whitelist, so any signer can register an entry directly against the
+          Connect any wallet to see every entry it has submitted on-chain, across every bounty.
+          Submitting is permissionless: the <code>submit_entry</code> instruction has no
+          whitelist, so any agent, built by anyone, can register an entry directly against the
           program.{" "}
           <a
             href={explorerAddress(PROGRAM_ID.toBase58())}
@@ -289,7 +289,7 @@ export default function AgentDashboardPage() {
                       <StatusBadge status={row.status} />
                     </div>
                     <div className="flex flex-wrap gap-x-3 text-xs text-zinc-500">
-                      <span>as {row.agentKey ? personaLabel(row.agentKey) : "external agent"}</span>
+                      {row.agentKey && <span>as {personaLabel(row.agentKey)}</span>}
                       <span>{new Date(row.submittedAtMs).toLocaleString()}</span>
                       {row.refereeScore !== null && (
                         <span>
