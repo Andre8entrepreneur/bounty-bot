@@ -72,26 +72,3 @@ export const FormSpecSchema = z.object({
   extraFields: z.array(ExtraFieldSchema).min(2).max(6),
 });
 export type FormSpec = z.infer<typeof FormSpecSchema>;
-
-/** The plain form, for buyers who skip the interview. */
-export const DEFAULT_FORM_SPEC: FormSpec = {
-  title: "Post a bounty",
-  intro: "",
-  core: {
-    businessName: { label: "Business name", placeholder: "Lantern & Leaf" },
-    whatItDoes: { label: "What it does", help: "", placeholder: "A cozy bubble tea shop serving fresh fruit teas..." },
-    audience: { label: "Audience", help: "", placeholder: "Students and young professionals nearby" },
-    avoid: { label: "Avoid (optional)", placeholder: "nothing cartoonish, no neon" },
-    visualDirection: {
-      label: "Look & feel (optional)",
-      placeholder: "hand-drawn, warm pastels, rounded shapes, lots of white space",
-    },
-    inspiration: {
-      label: "Inspiration (optional)",
-      placeholder: "We love old Paris café signs, our cat Mochi is the shop mascot…",
-    },
-  },
-  suggestedVibes: [],
-  suggestedMustHaves: [],
-  extraFields: [],
-};

@@ -15,7 +15,6 @@ import {
 } from "@/lib/agents/schema";
 import { hash } from "@/lib/hash";
 import {
-  DEFAULT_FORM_SPEC,
   type ExtraField,
   type FormSpec,
   type InterviewTurn,
@@ -47,17 +46,18 @@ export default function NewBountyPage() {
   const [deadlinePreset, setDeadlinePreset] = useState<keyof typeof DEADLINE_PRESETS>("demo");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Guided flow: interview first, then a form generated for this mission.
+  // Every bounty: interview first, then a form generated for this mission.
+  // There is no generic form — spec is null until the interview builds one.
   const [phase, setPhase] = useState<"interview" | "form">("interview");
-  const [spec, setSpec] = useState<FormSpec>(DEFAULT_FORM_SPEC);
+  const [spec, setSpec] = useState<FormSpec | null>(null);
   const [category, setCategory] = useState<string | undefined>(undefined);
   const [turns, setTurns] = useState<InterviewTurn[]>([]);
   const [extraAnswers, setExtraAnswers] = useState<Record<string, string | string[]>>({});
 
-  function startForm(result: InterviewResult | null) {
-    setSpec(result?.spec ?? DEFAULT_FORM_SPEC);
-    setCategory(result?.category);
-    setTurns(result?.turns ?? []);
+  function startForm(result: InterviewResult) {
+    setSpec(result.spec);
+    setCategory(result.category);
+    setTurns(result.turns);
     setExtraAnswers({});
     setPhase("form");
     window.scrollTo({ top: 0 });
@@ -75,7 +75,7 @@ export default function NewBountyPage() {
   /** Interview answers + the tailored questions the buyer answered — the
    * context agents design from and the referee judges fit by. */
   function buildDetails(): Brief["details"] {
-    const fromForm = spec.extraFields
+    const fromForm = (spec?.extraFields ?? [])
       .map((f) => {
         const v = extraAnswers[f.id];
         const answer = Array.isArray(v) ? v.join(", ") : (v ?? "").trim();
@@ -184,14 +184,14 @@ export default function NewBountyPage() {
     }
   }
 
-  if (phase === "interview") {
+  if (phase === "interview" || spec === null) {
     return (
       <main className="mx-auto w-full max-w-xl flex-1 px-4 py-12">
         <h1 className="mb-2 text-2xl font-semibold tracking-tight">Post a bounty</h1>
         <p className="mb-8 text-sm text-zinc-500">
           Tell us what you need — we&apos;ll build a form made for your mission.
         </p>
-        <BriefInterview onComplete={startForm} onSkip={() => startForm(null)} />
+        <BriefInterview onComplete={startForm} />
       </main>
     );
   }
@@ -214,7 +214,7 @@ export default function NewBountyPage() {
           onClick={() => setPhase("interview")}
           className="self-start text-xs text-zinc-500 underline hover:text-zinc-300"
         >
-          ← {turns.length > 0 ? "Redo the questions" : "Answer a few questions instead"}
+          ← Redo the questions
         </button>
       </div>
 

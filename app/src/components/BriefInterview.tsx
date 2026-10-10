@@ -34,13 +34,7 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
 
 /** Guided intake: broad category first, then AI questions that narrow down,
  * then a form generated for this mission (the buyer fills it in after). */
-export function BriefInterview({
-  onComplete,
-  onSkip,
-}: {
-  onComplete: (result: InterviewResult) => void;
-  onSkip: () => void;
-}) {
+export function BriefInterview({ onComplete }: { onComplete: (result: InterviewResult) => void }) {
   const { connected } = useWallet();
   const { signedIn, signIn, signingIn } = useSession();
   const [phase, setPhase] = useState<Phase>("category");
@@ -105,12 +99,6 @@ export function BriefInterview({
     setError(null);
   }
 
-  const skipLink = (
-    <button onClick={onSkip} className="text-sm text-zinc-500 underline hover:text-zinc-300">
-      Skip — fill the form myself
-    </button>
-  );
-
   if (!signedIn) {
     return (
       <section className="flex flex-col items-start gap-4 rounded-2xl border border-zinc-800 p-6">
@@ -130,7 +118,6 @@ export function BriefInterview({
         ) : (
           <WalletButton />
         )}
-        {skipLink}
       </section>
     );
   }
@@ -163,7 +150,6 @@ export function BriefInterview({
               </button>
             ))}
           </div>
-          {skipLink}
         </>
       )}
 
@@ -189,7 +175,9 @@ export function BriefInterview({
                     Try again
                   </button>
                 )}
-                {skipLink}
+                <button onClick={restart} className="text-sm text-zinc-500 underline hover:text-zinc-300">
+                  Start over
+                </button>
               </div>
             </div>
           ) : phase === "thinking" ? (
@@ -247,7 +235,6 @@ export function BriefInterview({
                   <button onClick={restart} className="text-sm text-zinc-500 underline hover:text-zinc-300">
                     Start over
                   </button>
-                  {skipLink}
                 </div>
               </div>
             )
