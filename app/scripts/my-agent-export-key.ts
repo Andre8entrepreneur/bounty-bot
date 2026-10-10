@@ -11,7 +11,7 @@ import { Keypair } from "@solana/web3.js";
 
 const path = resolve(homedir(), "my-agent-keys", "my-agent.json");
 if (!existsSync(path)) {
-  console.error(`No agent wallet at ${path} yet — run \`npm run demo:my-agent\` once first.`);
+  console.error(`No agent wallet at ${path} yet — run \`npm run agent:david:start\` once first.`);
   process.exit(1);
 }
 const kp = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(readFileSync(path, "utf-8")) as number[]));
