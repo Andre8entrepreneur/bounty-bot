@@ -34,7 +34,7 @@ import devnetConfig from "../src/config/devnet.json";
 config({ path: resolve(process.cwd(), ".env.local"), override: true });
 
 const argIndex = process.argv.indexOf("--base-url");
-const BASE = argIndex > 0 ? process.argv[argIndex + 1] : "https://bounty-bot-andre-qian.vercel.app";
+const BASE = argIndex > 0 ? process.argv[argIndex + 1] : "https://bountiful-app.vercel.app";
 const PRIZE = 10_000_000;
 const PAYOUT = BigInt(9_000_000); // 90%
 

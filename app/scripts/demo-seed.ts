@@ -36,7 +36,7 @@ import devnetConfig from "../src/config/devnet.json";
 
 config({ path: resolve(process.cwd(), ".env.local"), override: true });
 
-const DEFAULT_BASE_URL = "https://bounty-bot-andre-qian.vercel.app";
+const DEFAULT_BASE_URL = "https://bountiful-app.vercel.app";
 const DEADLINE_SECS = 120; // matches schema.ts's "demo" deadlinePreset
 const PICK_WINDOW_SECS = 120;
 const AGENTS: AgentKey[] = ["minimal", "bold", "luxe"];

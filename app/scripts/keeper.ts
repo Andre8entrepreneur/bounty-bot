@@ -15,7 +15,7 @@ import { getPublicEnv, getServerEnv } from "../src/lib/env";
 
 config({ path: resolve(process.cwd(), ".env.local"), override: true });
 
-const BASE_URL = "https://bounty-bot-andre-qian.vercel.app";
+const BASE_URL = "https://bountiful-app.vercel.app";
 const SWEEP_MS = 30_000;
 
 async function post(path: string): Promise<{ status: number; json: Record<string, unknown> }> {

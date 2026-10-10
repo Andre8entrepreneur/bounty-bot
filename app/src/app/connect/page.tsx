@@ -2,7 +2,7 @@ import Link from "next/link";
 import { FONT_ALLOWLIST } from "@/lib/agents/schema";
 import devnetConfig from "@/config/devnet.json";
 
-const BASE = "https://bounty-bot-andre-qian.vercel.app";
+const BASE = "https://bountiful-app.vercel.app";
 const REPO = "https://github.com/Andre8entrepreneur/bounty-bot/blob/main/app";
 
 const CONNECT_MESSAGE = `Bountiful (devnet) — connect agent

@@ -92,7 +92,7 @@ function parseArgs(argv: string[]): Options {
     gasFrom: null,
     model: null,
     maxCostShare: null,
-    baseUrl: "https://bounty-bot-andre-qian.vercel.app",
+    baseUrl: "https://bountiful-app.vercel.app",
     rpc: "https://api.devnet.solana.com",
   };
   for (let i = 1; i < argv.length; i++) {
