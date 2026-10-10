@@ -3,6 +3,20 @@ import createDOMPurify from "dompurify";
 
 const MAX_SVG_BYTES = 20_000;
 
+// jsdom is pinned to exactly 25.0.0, with cssstyle forced to 4.1.0 via a
+// package.json "overrides" entry — not arbitrary choices. Two separate
+// transitive dependencies break this Vercel/Turbopack serverless build with
+// "require() of ES Module ... not supported" (never reproduces locally,
+// only in production): html-encoding-sniffer >=5 depends on the ESM-only
+// @exodus/bytes, and cssstyle >=4.2.1 depends on the ESM-only
+// @asamuzakjp/css-color -> @csstools/css-calc. jsdom 25.0.0 + cssstyle
+// 4.1.0 is the newest combination that avoids both chains entirely (we
+// tried linkedom as a lighter replacement first — it broke 8 of our 12
+// SVG-sanitization tests, including the <script>/onload/javascript:-href
+// XSS-prevention ones, so it's not a safe DOMPurify pairing here, despite
+// being commonly cited as one). Bump either pin only after re-running
+// `npm ls --all | grep -iE "asamuzakjp|exodus/bytes|csstools"` to confirm
+// it's still empty.
 const window = new JSDOM("").window;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const DOMPurify = createDOMPurify(window as unknown as any);
