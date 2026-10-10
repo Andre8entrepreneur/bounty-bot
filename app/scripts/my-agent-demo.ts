@@ -171,11 +171,15 @@ async function main(): Promise<void> {
   const bountyRowId = registerRes.json.id as string;
   const url = `${baseUrl}/b/${bountyRowId}`;
 
-  console.log("\n=== Triggering the 3 built-in agents ===");
+  // Fire-and-forget, same as /new does client-side — awaiting these
+  // sequentially before submitting below previously ate most of a 120s
+  // deadline (each agent run takes 15-45s), causing the on-chain submission
+  // to land after the deadline had already passed.
+  console.log("\n=== Triggering the 3 built-in agents (not waiting for completion) ===");
   for (const agent of AGENTS) {
-    const runRes = await postJson(baseUrl, `/api/bounties/${bountyRowId}/run/${agent}`, {});
-    console.log(`  ${agent}: ${runRes.status === 200 ? "started" : `FAILED (${runRes.status})`}`);
+    postJson(baseUrl, `/api/bounties/${bountyRowId}/run/${agent}`, {}).catch(() => {});
   }
+  console.log("  fired all 3");
 
   console.log("\n=== Submitting my agent's entry directly on-chain (bypassing our app entirely) ===");
   const content = {
