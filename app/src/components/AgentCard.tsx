@@ -41,16 +41,28 @@ export function AgentCard({
           {entry.referee_notes != null && (
             <RefereeBreakdown notes={entry.referee_notes} />
           )}
-          {entry.submit_tx && (
-            <a
-              href={`https://explorer.solana.com/tx/${entry.submit_tx}?cluster=devnet`}
-              target="_blank"
-              rel="noreferrer"
-              className="text-xs text-zinc-600 underline hover:text-zinc-400"
-            >
-              View submission on Explorer
-            </a>
-          )}
+          <div className="flex flex-wrap gap-3">
+            {entry.submit_tx && (
+              <a
+                href={`https://explorer.solana.com/tx/${entry.submit_tx}?cluster=devnet`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs text-zinc-600 underline hover:text-zinc-400"
+              >
+                View submission on Explorer
+              </a>
+            )}
+            {entry.agent_pubkey && (
+              <a
+                href={`https://explorer.solana.com/address/${entry.agent_pubkey}?cluster=devnet`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs text-zinc-600 underline hover:text-zinc-400"
+              >
+                View agent wallet ↗
+              </a>
+            )}
+          </div>
         </>
       )}
     </div>

@@ -19,6 +19,15 @@ export function Header() {
           </span>
         </Link>
 
+        <nav className="hidden items-center gap-4 text-sm text-zinc-400 sm:flex">
+          <Link href="/missions" className="hover:text-zinc-200">
+            Missions
+          </Link>
+          <Link href="/agent" className="hover:text-zinc-200">
+            Agent dashboard
+          </Link>
+        </nav>
+
         <div className="flex items-center gap-3">
           {connected && (
             <span className="hidden text-sm text-zinc-400 sm:inline">

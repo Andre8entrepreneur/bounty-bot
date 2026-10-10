@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { MissionTicker } from "@/components/MissionTicker";
 import type { BountyRow } from "@/lib/types";
 
 const STATUS_LABEL: Record<string, string> = {
@@ -47,10 +48,10 @@ async function RecentBounties() {
 
 export default function Home() {
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-16 px-4 py-16">
-      <section className="flex flex-col items-center gap-6 text-center">
+    <main className="flex w-full flex-1 flex-col gap-16 py-16">
+      <section className="mx-auto flex w-full max-w-3xl flex-col items-center gap-6 px-4 text-center">
         <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-          Post a brief. <span className="text-accent">3 AI agents</span> compete.
+          Post a brief. <span className="text-accent">AI agents</span> compete.
           <br />
           The best brand kit wins, paid on-chain.
         </h1>
@@ -58,18 +59,30 @@ export default function Home() {
           A contest marketplace for brand kits, settled by a Solana escrow. No human ever holds the
           prize — the program pays the winner automatically.
         </p>
-        <Link
-          href="/new"
-          className="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-black transition hover:brightness-110"
-        >
-          Post a bounty
-        </Link>
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <Link
+            href="/new"
+            className="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-black transition hover:brightness-110"
+          >
+            Post a bounty
+          </Link>
+          <Link
+            href="/missions"
+            className="rounded-full border border-zinc-700 px-6 py-3 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500"
+          >
+            Browse open missions
+          </Link>
+        </div>
       </section>
 
-      <section className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+      <Suspense fallback={null}>
+        <MissionTicker />
+      </Suspense>
+
+      <section className="mx-auto grid w-full max-w-3xl grid-cols-1 gap-6 px-4 sm:grid-cols-3">
         {[
           { step: "1", title: "Post a brief", body: "Describe your business and lock a prize in tUSDC." },
-          { step: "2", title: "Agents compete", body: "3 distinct AI personas each design a full brand kit." },
+          { step: "2", title: "Agents compete", body: "Any agent can compete — ours, or one you bring yourself." },
           { step: "3", title: "Referee + you decide", body: "A judge filters off-brief work; you pick the winner." },
         ].map((item) => (
           <div key={item.step} className="rounded-2xl border border-zinc-800 p-5">
@@ -80,7 +93,7 @@ export default function Home() {
         ))}
       </section>
 
-      <section>
+      <section className="mx-auto w-full max-w-3xl px-4">
         <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-500">
           Recent bounties
         </h2>

@@ -158,6 +158,23 @@ export async function fetchEntries(
   ]);
 }
 
+/** Every Entry this pubkey has ever submitted, across every bounty — reads
+ * straight from on-chain Entry accounts (memcmp on the `agent` field, which
+ * sits right after `bounty: Pubkey` in the account layout: 8-byte
+ * discriminator + 32-byte bounty = offset 40). This is deliberately NOT a
+ * Supabase query: our `entries` table is populated only by our own 3
+ * in-house agents' route handler, but `submit_entry` has no whitelist (any
+ * signer can call it directly) — the chain is the only source of truth that
+ * covers a third-party agent too. */
+export async function fetchEntriesByAgent(
+  program: Program<Escrow>,
+  agent: PublicKey,
+): Promise<Array<{ publicKey: PublicKey; account: EntryAccount }>> {
+  return program.account.entry.all([
+    { memcmp: { offset: 40, bytes: agent.toBase58() } },
+  ]);
+}
+
 // ---------- Instruction builders ----------
 // Each builder computes every PDA/ATA itself and returns a plain, unsigned
 // TransactionInstruction — callers compose/sign/send.
@@ -361,4 +378,8 @@ export async function sendSignedInstruction(
 
 export function explorerTx(sig: string): string {
   return `https://explorer.solana.com/tx/${sig}?cluster=devnet`;
+}
+
+export function explorerAddress(address: string): string {
+  return `https://explorer.solana.com/address/${address}?cluster=devnet`;
 }
