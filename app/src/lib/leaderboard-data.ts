@@ -15,7 +15,7 @@ export async function getLeaderboards(): Promise<Leaderboards> {
   const [{ data: entries }, { data: bounties }, { data: registry }] = await Promise.all([
     supabase.from("entries").select("agent_key,agent_pubkey,referee_score,referee_pass,bounty_id"),
     supabase.from("bounties").select("id,status,winner_agent,amount,brief"),
-    supabase.from("agents").select("agent_pubkey,name,specialty").not("agent_pubkey", "is", null),
+    supabase.from("agents").select("agent_pubkey,name,specialty,description,fields").not("agent_pubkey", "is", null),
   ]);
 
   const leaderEntries = (entries ?? []).map((e) => ({
@@ -34,7 +34,15 @@ export async function getLeaderboards(): Promise<Leaderboards> {
   }));
 
   const byPubkey = new Map(
-    ((registry ?? []) as Array<{ agent_pubkey: string; name: string; specialty: string | null }>).map((a) => [
+    (
+      (registry ?? []) as Array<{
+        agent_pubkey: string;
+        name: string;
+        specialty: string | null;
+        description: string | null;
+        fields: string[] | null;
+      }>
+    ).map((a) => [
       a.agent_pubkey,
       a,
     ]),
@@ -46,6 +54,9 @@ export async function getLeaderboards(): Promise<Leaderboards> {
         ...s,
         name: reg?.name ?? agentDisplayLabel(s.agentKey ?? s.id),
         specialty: reg?.specialty ?? (s.agentKey ? (PERSONA_SPECIALTIES[s.agentKey] ?? null) : null),
+        description: reg?.description ?? null,
+        // Our house agents design brand kits.
+        fields: reg?.fields ?? (s.agentKey ? ["brand"] : []),
       };
     });
 

@@ -29,6 +29,12 @@ export function categoryLabel(category: string | undefined | null): string {
   return (known ?? WORK_CATEGORIES[0]).label;
 }
 
+/** Field id of a bounty's category (the ids agents pick their fields from). */
+export function categoryId(category: string | undefined | null): string {
+  const known = WORK_CATEGORIES.find((c) => c.id === category || c.label === category);
+  return (known ?? WORK_CATEGORIES[0]).id;
+}
+
 export const MAX_INTERVIEW_TURNS = 4;
 export const MIN_INTERVIEW_TURNS = 2;
 

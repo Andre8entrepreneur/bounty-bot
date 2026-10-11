@@ -3,11 +3,12 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useSession } from "./SessionProvider";
+import { AgentSettingsPanel, type AgentSettingsValues } from "./AgentSettingsPanel";
+import { fieldLabel } from "@/lib/agent-settings";
 
-interface AgentRecord {
+interface AgentRecord extends AgentSettingsValues {
   id: string;
   name: string;
-  specialty: string | null;
   agent_pubkey: string | null;
   connected_at: string | null;
   connect_code_expires_at: string | null;
@@ -34,6 +35,7 @@ export function MyAgents({ onViewWallet }: { onViewWallet: (pubkey: string) => v
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [now, setNow] = useState(() => Date.now());
+  const [openSettings, setOpenSettings] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const res = await fetch("/api/agents");
@@ -143,34 +145,47 @@ export function MyAgents({ onViewWallet }: { onViewWallet: (pubkey: string) => v
               !a.agent_pubkey &&
               (!a.connect_code_expires_at || new Date(a.connect_code_expires_at).getTime() < now);
             return (
-              <li
-                key={a.id}
-                className="flex flex-col gap-2 rounded-xl border border-stone-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div className="flex min-w-0 flex-col">
-                  <span className="truncate font-medium text-stone-900">{a.name}</span>
-                  <span className="text-xs text-stone-500">{a.specialty ?? "No specialty set"}</span>
+              <li key={a.id} className="flex flex-col gap-3 rounded-xl border border-stone-200 px-4 py-3">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex min-w-0 flex-col gap-1">
+                    <span className="truncate font-medium text-stone-900">{a.name}</span>
+                    <span className="text-xs text-stone-500">{a.specialty ?? "No specialty set"}</span>
+                    {(a.fields ?? []).length > 0 && (
+                      <span className="flex flex-wrap gap-1">
+                        {(a.fields ?? []).map((f) => (
+                          <span key={f} className="rounded-full border border-stone-200 bg-background px-2 py-0.5 text-[11px] text-stone-600">
+                            {fieldLabel(f)}
+                          </span>
+                        ))}
+                      </span>
+                    )}
+                  </div>
+                  {a.agent_pubkey ? (
+                    <div className="flex flex-wrap items-center gap-3 text-xs">
+                      <span className="rounded-full bg-accent/10 px-2.5 py-1 font-semibold text-accent-ink">✓ Connected</span>
+                      <button
+                        onClick={() => onViewWallet(a.agent_pubkey!)}
+                        className="font-mono text-stone-600 underline hover:text-stone-800"
+                        title="View this agent's entries and earnings"
+                      >
+                        {a.agent_pubkey.slice(0, 4)}…{a.agent_pubkey.slice(-4)} · earnings
+                      </button>
+                      <SettingsToggle open={openSettings === a.id} onClick={() => setOpenSettings(openSettings === a.id ? null : a.id)} />
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap items-center gap-3 text-xs">
+                      <span className="rounded-full bg-amber-500/10 px-2.5 py-1 font-semibold text-amber-700">
+                        {expired ? "Code expired" : "Waiting for your agent…"}
+                      </span>
+                      <button onClick={() => newCode(a.id)} className="text-stone-600 underline hover:text-stone-800">
+                        New code
+                      </button>
+                      <SettingsToggle open={openSettings === a.id} onClick={() => setOpenSettings(openSettings === a.id ? null : a.id)} />
+                    </div>
+                  )}
                 </div>
-                {a.agent_pubkey ? (
-                  <div className="flex flex-wrap items-center gap-3 text-xs">
-                    <span className="rounded-full bg-accent/10 px-2.5 py-1 font-semibold text-accent-ink">✓ Connected</span>
-                    <button
-                      onClick={() => onViewWallet(a.agent_pubkey!)}
-                      className="font-mono text-stone-600 underline hover:text-stone-800"
-                      title="View this agent's entries and earnings"
-                    >
-                      {a.agent_pubkey.slice(0, 4)}…{a.agent_pubkey.slice(-4)} · earnings
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex flex-wrap items-center gap-3 text-xs">
-                    <span className="rounded-full bg-amber-500/10 px-2.5 py-1 font-semibold text-amber-700">
-                      {expired ? "Code expired" : "Waiting for your agent…"}
-                    </span>
-                    <button onClick={() => newCode(a.id)} className="text-stone-600 underline hover:text-stone-800">
-                      New code
-                    </button>
-                  </div>
+                {openSettings === a.id && (
+                  <AgentSettingsPanel agentId={a.id} initial={a} onSaved={() => load().catch(() => {})} />
                 )}
               </li>
             );
@@ -233,5 +248,17 @@ export function MyAgents({ onViewWallet }: { onViewWallet: (pubkey: string) => v
       </form>
       {error && <p className="text-sm text-red-600">{error}</p>}
     </section>
+  );
+}
+
+function SettingsToggle({ open, onClick }: { open: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      aria-expanded={open}
+      className="rounded-full border border-stone-300 px-3 py-1 font-semibold text-stone-700 hover:border-stone-500"
+    >
+      {open ? "Close settings" : "Settings"}
+    </button>
   );
 }

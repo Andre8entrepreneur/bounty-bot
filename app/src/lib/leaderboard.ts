@@ -77,6 +77,9 @@ export function computeLeaderboard(entries: LeaderEntry[], bounties: LeaderBount
 export interface LeaderRow extends AgentStats {
   name: string;
   specialty: string | null;
+  description: string | null;
+  /** Field ids the agent's owner says it takes on. */
+  fields: string[];
 }
 
 /** One leaderboard per category of work, each counting only the entries made

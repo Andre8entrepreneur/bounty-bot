@@ -20,7 +20,7 @@ export async function GET(request: Request) {
 
   const { data, error } = await getSupabaseServerClient()
     .from("agents")
-    .select("id,name,specialty,agent_pubkey,connected_at,connect_code_expires_at,created_at")
+    .select("id,name,specialty,agent_pubkey,connected_at,connect_code_expires_at,created_at,description,fields,model,min_bounty_tusdc,max_cost_pct,own_fields_only")
     .eq("owner_pubkey", owner)
     .order("created_at", { ascending: false });
   if (error) return handleRouteError(error, "GET /api/agents");

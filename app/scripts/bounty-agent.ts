@@ -8,7 +8,7 @@
 //
 //   bounty-agent connect <CODE>   --key <keypair.json>
 //   bounty-agent run              --key <keypair.json> --design "<command>" [--gas-from <keypair.json>]
-//                                 [--model <id>] [--max-cost <percent>]
+//                                 [--model <id>] [--max-cost <percent>] [--min-bounty <tUSDC>]
 //   bounty-agent whoami           --key <keypair.json>
 //
 // Options: --base-url (default prod), --rpc (default public devnet).
@@ -16,7 +16,10 @@
 // the model your design command runs (an id from the feed's estimate, e.g.
 // claude-fable-5-1, gpt-6-astra, deepseek-v4-pro) to log just that one.
 // --max-cost 10 skips missions where that cost (or, without --model, the
-// priciest flagship's) is over 10% of the winner's payout.
+// priciest flagship's) is over 10% of the winner's payout. --min-bounty 20
+// skips bounties under 20 tUSDC.
+// The same settings, plus "only my fields", can be set per agent on the
+// dashboard: the connector reads them every minute, and flags given here win.
 // It needs no secrets of ours — only the agent's own key and the public API.
 import { spawn } from "node:child_process";
 import { createPrivateKey, sign } from "node:crypto";
@@ -43,9 +46,11 @@ import { sanitizeSvg } from "../src/lib/agents/sanitize-svg";
 import { connectAgentMessage } from "../src/lib/auth/messages";
 import { hash } from "../src/lib/hash";
 import { buildSubmitEntryIx, fetchEntry, getProgram } from "../src/lib/solana/client";
+import { NO_RULES, fieldLabel, joinDecision, type JoinRules } from "../src/lib/agent-settings";
 
 const POLL_MS = 3_000; // mission feed allows 60/min per IP
 const SWEEP_MS = 20_000; // how often winnings are forwarded
+const SETTINGS_MS = 60_000; // how often dashboard settings are re-read
 const MIN_SECONDS_LEFT = 45; // don't start a mission closing sooner than this
 const DESIGN_TIMEOUT_MS = 150_000;
 const MIN_LAMPORTS = 0.01 * 1e9;
@@ -65,6 +70,8 @@ interface Mission {
   bountyId: string;
   deadline: string;
   prizeTusdc: number | null;
+  /** Field id of the work asked for. */
+  category?: string;
   brief: unknown;
   publishKitUrl: string;
   estimate?: { inputTokens: number; outputTokens: number; models: MissionModelCost[] };
@@ -79,6 +86,8 @@ interface Options {
   model: string | null;
   /** Skip a mission whose estimated cost is above this share of the payout. */
   maxCostShare: number | null;
+  /** Skip bounties under this many tUSDC. */
+  minBounty: number | null;
   baseUrl: string;
   rpc: string;
 }
@@ -92,6 +101,7 @@ function parseArgs(argv: string[]): Options {
     gasFrom: null,
     model: null,
     maxCostShare: null,
+    minBounty: null,
     baseUrl: "https://bountiful-app.vercel.app",
     rpc: "https://api.devnet.solana.com",
   };
@@ -106,6 +116,10 @@ function parseArgs(argv: string[]): Options {
       const pct = Number(next());
       if (!Number.isFinite(pct) || pct <= 0) throw new Error("--max-cost takes a percentage, e.g. --max-cost 10");
       opts.maxCostShare = pct / 100;
+    } else if (a === "--min-bounty") {
+      const min = Number(next());
+      if (!Number.isFinite(min) || min < 0) throw new Error("--min-bounty takes an amount in tUSDC, e.g. --min-bounty 20");
+      opts.minBounty = min;
     } else if (a === "--base-url") opts.baseUrl = next();
     else if (a === "--rpc") opts.rpc = next();
     else if (!a.startsWith("--") && opts.positional === null) opts.positional = a;
@@ -181,12 +195,38 @@ async function cmdConnect(opts: Options): Promise<void> {
   console.log(`Agent wallet: ${agentPubkey}`);
 }
 
+interface Lookup {
+  connected: boolean;
+  name?: string;
+  owner?: string;
+  settings?: Partial<JoinRules>;
+}
+
 async function lookupOwner(opts: Options, agentPubkey: string) {
-  const res = await api<{ connected: boolean; name?: string; owner?: string }>(
-    opts,
-    `/api/agents/lookup?pubkey=${agentPubkey}`,
-  );
-  return res.json.connected ? { name: res.json.name ?? "agent", owner: res.json.owner ?? null } : null;
+  const res = await api<Lookup>(opts, `/api/agents/lookup?pubkey=${agentPubkey}`);
+  if (!res.json.connected) return null;
+  return { name: res.json.name ?? "agent", owner: res.json.owner ?? null, settings: res.json.settings ?? {} };
+}
+
+/** Dashboard settings, with any command-line flag taking precedence. */
+function effectiveRules(opts: Options, fromDashboard: Partial<JoinRules>): JoinRules {
+  return {
+    fields: fromDashboard.fields ?? NO_RULES.fields,
+    ownFieldsOnly: fromDashboard.ownFieldsOnly ?? NO_RULES.ownFieldsOnly,
+    model: opts.model ?? fromDashboard.model ?? null,
+    minBountyTusdc: opts.minBounty ?? fromDashboard.minBountyTusdc ?? null,
+    maxCostPct: opts.maxCostShare !== null ? opts.maxCostShare * 100 : (fromDashboard.maxCostPct ?? null),
+  };
+}
+
+function describeRules(r: JoinRules): string {
+  const parts = [
+    r.model ? `model ${r.model}` : null,
+    r.minBountyTusdc !== null ? `bounties from ${r.minBountyTusdc} tUSDC` : null,
+    r.maxCostPct !== null ? `cost at most ${r.maxCostPct}% of the payout` : null,
+    r.ownFieldsOnly && r.fields.length > 0 ? `only ${r.fields.map(fieldLabel).join(", ")}` : null,
+  ].filter(Boolean);
+  return parts.length ? parts.join(" · ") : "joins every bounty";
 }
 
 async function tusdcBalance(connection: Connection, mint: PublicKey, owner: PublicKey): Promise<bigint> {
@@ -204,6 +244,7 @@ async function cmdWhoami(opts: Options): Promise<void> {
   const link = await lookupOwner(opts, agent.publicKey.toBase58());
   console.log(`Agent wallet: ${agent.publicKey.toBase58()}`);
   console.log(link ? `Connected as "${link.name}", owner ${link.owner}` : "Not connected to any account");
+  if (link) console.log(`Rules: ${describeRules(effectiveRules(opts, link.settings))}`);
   console.log(`SOL: ${(await connection.getBalance(agent.publicKey)) / 1e9}`);
   console.log(`tUSDC: ${Number(await tusdcBalance(connection, new PublicKey(feed.json.mint), agent.publicKey)) / 1e6}`);
 }
@@ -260,7 +301,9 @@ async function cmdRun(opts: Options): Promise<never> {
   const link = await lookupOwner(opts, agent.publicKey.toBase58());
   const owner = link?.owner ? new PublicKey(link.owner) : null;
   const forwards = owner !== null && !owner.equals(agent.publicKey);
+  let rules = effectiveRules(opts, link?.settings ?? {});
   console.log(`[${stamp()}] ${link ? `"${link.name}"` : "Unconnected agent"} — wallet ${agent.publicKey.toBase58()}`);
+  console.log(`[${stamp()}] rules: ${describeRules(rules)}`);
   console.log(
     forwards
       ? `[${stamp()}] winnings are forwarded to your wallet ${owner!.toBase58()}`
@@ -296,27 +339,25 @@ async function cmdRun(opts: Options): Promise<never> {
     return fundingInFlight;
   };
 
-  /** Logs the mission's estimated model cost; returns a reason to skip it
-   * when --max-cost is set and the cost is above it. */
-  function checkCost(m: Mission, log: (msg: string) => void): string | null {
+  /** Logs the mission's estimated model cost, then applies the agent's rules
+   * (dashboard settings and flags); returns a reason to skip it, if any. */
+  function checkRules(m: Mission, log: (msg: string) => void): string | null {
     const models = m.estimate?.models ?? [];
-    if (!m.estimate || models.length === 0) return null;
-    const tokens = m.estimate.inputTokens + m.estimate.outputTokens;
-    const pct = (share: number | null) => (share === null ? "no payout" : `${(share * 100).toFixed(1)}% of the payout`);
-    const chosen = opts.model ? models.find((c) => c.id === opts.model) : undefined;
-    if (opts.model && !chosen) log(`no estimate for model "${opts.model}" — using the priciest flagship`);
-    const priciest = models.reduce((a, b) => (b.costUsd > a.costUsd ? b : a));
-    if (chosen) {
-      log(`est. ${tokens} tokens ≈ $${chosen.costUsd.toFixed(4)} on ${chosen.name} = ${pct(chosen.costShareOfPayout)}`);
-    } else {
-      const cheapest = models.reduce((a, b) => (b.costUsd < a.costUsd ? b : a));
-      log(`est. ${tokens} tokens ≈ $${cheapest.costUsd.toFixed(4)}–$${priciest.costUsd.toFixed(4)} depending on model (≤ ${pct(priciest.costShareOfPayout)})`);
+    if (m.estimate && models.length > 0) {
+      const tokens = m.estimate.inputTokens + m.estimate.outputTokens;
+      const pct = (share: number | null) => (share === null ? "no payout" : `${(share * 100).toFixed(1)}% of the payout`);
+      const chosen = rules.model ? models.find((c) => c.id === rules.model) : undefined;
+      if (rules.model && !chosen) log(`no estimate for model "${rules.model}" — using the priciest flagship`);
+      if (chosen) {
+        log(`est. ${tokens} tokens ≈ $${chosen.costUsd.toFixed(4)} on ${chosen.name} = ${pct(chosen.costShareOfPayout)}`);
+      } else {
+        const priciest = models.reduce((a, b) => (b.costUsd > a.costUsd ? b : a));
+        const cheapest = models.reduce((a, b) => (b.costUsd < a.costUsd ? b : a));
+        log(`est. ${tokens} tokens ≈ $${cheapest.costUsd.toFixed(4)}–$${priciest.costUsd.toFixed(4)} depending on model (≤ ${pct(priciest.costShareOfPayout)})`);
+      }
     }
-    const share = (chosen ?? priciest).costShareOfPayout;
-    if (opts.maxCostShare !== null && (share === null || share > opts.maxCostShare)) {
-      return `skipped — costs more than ${opts.maxCostShare * 100}% of the payout`;
-    }
-    return null;
+    const decision = joinDecision(rules, { prizeTusdc: m.prizeTusdc, category: m.category ?? "brand", models });
+    return decision.join ? null : `skipped — ${decision.reason}`;
   }
 
   async function enter(m: Mission, log: (msg: string) => void): Promise<void> {
@@ -324,7 +365,7 @@ async function cmdRun(opts: Options): Promise<never> {
     if (secondsLeft < MIN_SECONDS_LEFT) return log(`skipped — only ${Math.round(secondsLeft)}s left`);
     if (await fetchEntry(program, new PublicKey(m.bountyAddress), agent.publicKey)) return log("already entered");
 
-    const skip = checkCost(m, log);
+    const skip = checkRules(m, log);
     if (skip) return log(skip);
 
     log("designing…");
@@ -369,8 +410,19 @@ async function cmdRun(opts: Options): Promise<never> {
   console.log(`[${stamp()}] watching the bounty board…`);
   const handled = new Set<string>();
   let lastSweep = 0;
+  let lastSettings = Date.now();
   for (;;) {
     try {
+      // Settings changed on the dashboard apply without a restart.
+      if (link && Date.now() - lastSettings > SETTINGS_MS) {
+        lastSettings = Date.now();
+        const fresh = await lookupOwner(opts, agent.publicKey.toBase58());
+        const next = effectiveRules(opts, fresh?.settings ?? {});
+        if (JSON.stringify(next) !== JSON.stringify(rules)) {
+          rules = next;
+          console.log(`[${stamp()}] settings updated — rules: ${describeRules(rules)}`);
+        }
+      }
       const { json } = await api<{ missions: Mission[] }>(opts, "/api/missions");
       for (const m of json.missions ?? []) {
         if (handled.has(m.id)) continue;
@@ -395,7 +447,7 @@ async function main(): Promise<void> {
   if (opts.command === "run") return cmdRun(opts);
   if (opts.command === "whoami") return cmdWhoami(opts);
   console.log(
-    'usage:\n  bounty-agent connect <CODE> --key <keypair.json>\n  bounty-agent run --key <keypair.json> --design "<command>" [--gas-from <keypair.json>] [--model <id>] [--max-cost <percent>]\n  bounty-agent whoami --key <keypair.json>',
+    'usage:\n  bounty-agent connect <CODE> --key <keypair.json>\n  bounty-agent run --key <keypair.json> --design "<command>" [--gas-from <keypair.json>] [--model <id>] [--max-cost <percent>] [--min-bounty <tUSDC>]\n  bounty-agent whoami --key <keypair.json>',
   );
 }
 

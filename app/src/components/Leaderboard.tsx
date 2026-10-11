@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { explorerAddress } from "@/lib/solana/client";
 import type { LeaderRow } from "@/lib/leaderboard";
+import { AGENT_FIELDS, fieldLabel } from "@/lib/agent-settings";
 
 export type { LeaderRow };
 
@@ -30,6 +31,7 @@ export function Leaderboard({
   boards: Array<{ category: string; rows: LeaderRow[] }>;
 }) {
   const [category, setCategory] = useState(ALL);
+  const [field, setField] = useState(ALL);
   const [sortKey, setSortKey] = useState<SortKey>("avgScore");
   const [query, setQuery] = useState("");
   const [minScore, setMinScore] = useState(0);
@@ -39,16 +41,23 @@ export function Leaderboard({
   const rows = category === ALL ? allRows : (boards.find((b) => b.category === category)?.rows ?? []);
   const q = query.trim().toLowerCase();
   const visible = rows
+    .filter((r) => field === ALL || r.fields.includes(field))
     .filter((r) => r.entries >= minEntries)
     .filter((r) => (r.avgScore ?? 0) >= minScore)
     .filter((r) => (r.passRate ?? 0) >= minPass)
-    .filter((r) => !q || r.name.toLowerCase().includes(q) || (r.specialty ?? "").toLowerCase().includes(q))
+    .filter(
+      (r) =>
+        !q ||
+        r.name.toLowerCase().includes(q) ||
+        (r.specialty ?? "").toLowerCase().includes(q) ||
+        (r.description ?? "").toLowerCase().includes(q),
+    )
     .sort((a, b) => (b[sortKey] ?? -1) - (a[sortKey] ?? -1));
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-1 gap-4 rounded-2xl border border-stone-200 p-5 sm:grid-cols-2 lg:grid-cols-6">
-        <label className="flex flex-col gap-1.5 lg:col-span-2">
+      <div className="grid grid-cols-1 gap-4 rounded-2xl border border-stone-200 p-5 sm:grid-cols-2 lg:grid-cols-12">
+        <label className="flex flex-col gap-1.5 lg:col-span-3">
           <span className="text-xs uppercase tracking-wider text-stone-500">Category</span>
           <select value={category} onChange={(e) => setCategory(e.target.value)} className="input">
             <option value={ALL}>All categories</option>
@@ -59,7 +68,18 @@ export function Leaderboard({
             ))}
           </select>
         </label>
-        <label className="flex flex-col gap-1.5 lg:col-span-2">
+        <label className="flex flex-col gap-1.5 lg:col-span-3">
+          <span className="text-xs uppercase tracking-wider text-stone-500">Agent fields</span>
+          <select value={field} onChange={(e) => setField(e.target.value)} className="input">
+            <option value={ALL}>Any field</option>
+            {AGENT_FIELDS.map((f) => (
+              <option key={f.id} value={f.id}>
+                {f.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex flex-col gap-1.5 lg:col-span-3">
           <span className="text-xs uppercase tracking-wider text-stone-500">Search</span>
           <input
             value={query}
@@ -68,7 +88,7 @@ export function Leaderboard({
             className="input"
           />
         </label>
-        <label className="flex flex-col gap-1.5 lg:col-span-2">
+        <label className="flex flex-col gap-1.5 lg:col-span-3">
           <span className="text-xs uppercase tracking-wider text-stone-500">Sort by</span>
           <select value={sortKey} onChange={(e) => setSortKey(e.target.value as SortKey)} className="input">
             {SORTS.map((s) => (
@@ -120,6 +140,15 @@ export function Leaderboard({
                     wallet ↗
                   </a>
                 </span>
+                {r.fields.length > 0 && (
+                  <span className="mt-1 flex flex-wrap gap-1" title={r.description ?? undefined}>
+                    {r.fields.map((f) => (
+                      <span key={f} className="rounded-full border border-stone-200 bg-background px-2 py-0.5 text-[11px] text-stone-600">
+                        {fieldLabel(f)}
+                      </span>
+                    ))}
+                  </span>
+                )}
               </span>
               <div className="col-span-2 grid grid-cols-3 gap-3 md:col-span-6 md:grid-cols-6">
                 <Metric label="Bounties" value={String(r.entries)} highlight={sortKey === "entries"} />
@@ -177,7 +206,7 @@ function Slider({
   onChange: (v: number) => void;
 }) {
   return (
-    <label className="flex flex-col gap-1.5 lg:col-span-2">
+    <label className="flex flex-col gap-1.5 lg:col-span-4">
       <span className="text-xs uppercase tracking-wider text-stone-500">{label}</span>
       <input
         type="range"

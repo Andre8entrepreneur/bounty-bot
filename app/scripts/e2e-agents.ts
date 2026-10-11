@@ -140,10 +140,51 @@ async function main() {
       mine.json,
     );
 
+    console.log("\nAgent settings");
+    const settings = {
+      specialty: "Research briefs",
+      description: "Competitor and market research with sources for every claim.",
+      fields: ["research", "sales"],
+      model: "claude-opus-5-5",
+      minBountyTusdc: 15,
+      maxCostPct: 5,
+      ownFieldsOnly: true,
+    };
+    const anonSave = await call("PATCH", `/api/agents/${agentId}`, settings);
+    check(anonSave.status === 401, "saving settings requires sign-in", anonSave);
+    const saved = await call("PATCH", `/api/agents/${agentId}`, settings, cookie);
+    check(saved.status === 200, "the owner saves the agent's settings", saved.json);
+    const stolen = await call("PATCH", `/api/agents/${agentId}`, { ...settings, minBountyTusdc: 0 }, intruderCookie);
+    check(stolen.status === 404, "another account can't change my agent's settings", stolen);
+    const badModel = await call("PATCH", `/api/agents/${agentId}`, { ...settings, model: "made-up-model" }, cookie);
+    check(badModel.status === 400, "an unknown model is refused", badModel);
+    const badField = await call("PATCH", `/api/agents/${agentId}`, { ...settings, fields: ["astrology"] }, cookie);
+    check(badField.status === 400, "an unknown field is refused", badField);
+    const lookup = await call("GET", `/api/agents/lookup?pubkey=${agentPk}`);
+    const read = lookup.json.settings as Record<string, unknown> | undefined;
+    check(
+      read?.minBountyTusdc === 15 &&
+        read?.maxCostPct === 5 &&
+        read?.model === "claude-opus-5-5" &&
+        read?.ownFieldsOnly === true &&
+        JSON.stringify(read?.fields) === JSON.stringify(["research", "sales"]),
+      "the connector reads the saved rules from the lookup",
+      lookup.json,
+    );
+    const listedAgain = await call("GET", "/api/agents", undefined, cookie);
+    const mineNow = ((listedAgain.json.agents as Array<{ id: string; description: string | null }>) ?? []).find((a) => a.id === agentId);
+    check(mineNow?.description === settings.description, "my agents list shows the description", listedAgain.json);
+
     console.log("\nPublic mission feed");
     const missions = await call("GET", "/api/missions");
     check(missions.status === 200 && Array.isArray(missions.json.missions), "/api/missions responds", missions.json);
     check(typeof missions.json.programId === "string", "feed includes the program id");
+    const feedMissions = (missions.json.missions as Array<{ category?: unknown }>) ?? [];
+    check(
+      feedMissions.every((m) => typeof m.category === "string"),
+      "every bounty in the feed says which field it's in",
+      feedMissions.map((m) => m.category),
+    );
     const idl = await call("GET", "/api/idl");
     check(idl.status === 200 && typeof idl.json.address === "string", "/api/idl serves the program IDL");
   } finally {

@@ -6,6 +6,7 @@ import type { BountyRow } from "@/lib/types";
 import devnetConfig from "@/config/devnet.json";
 import { getUsageCalibration } from "@/lib/usage-calibration";
 import { estimateMissionTokens, estimateModelCosts } from "@/lib/cost-estimate";
+import { categoryId } from "@/lib/agents/form-spec";
 
 /** Public mission feed for agents: every bounty still accepting entries,
  * with everything needed to enter it — the on-chain address and seeds for
@@ -42,6 +43,8 @@ export async function GET(request: Request) {
           buyer: b.buyer,
           bountyId: b.bounty_id,
           prizeTusdc,
+          // Field id of the work asked for, so agents can stick to their fields.
+          category: categoryId((b.brief as { category?: string } | null)?.category),
           deadline: b.deadline,
           pickDeadline: b.pick_deadline,
           brief: b.brief,
