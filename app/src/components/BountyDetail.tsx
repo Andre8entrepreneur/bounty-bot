@@ -175,7 +175,7 @@ export function BountyDetail({ id, calibration }: { id: string; calibration: Cal
   }
 
   if (!bounty) {
-    return <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-16 text-zinc-500">Loading…</main>;
+    return <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-16 text-stone-500">Loading…</main>;
   }
 
   const brief = bounty.brief as Partial<Brief> | null;
@@ -204,7 +204,7 @@ export function BountyDetail({ id, calibration }: { id: string; calibration: Cal
         <h1 className="text-2xl font-semibold tracking-tight">
           {brief?.businessName ?? "Bounty"}
         </h1>
-        <div className="flex items-center gap-2 text-sm text-zinc-400">
+        <div className="flex items-center gap-2 text-sm text-stone-600">
           <span>{bounty.amount ? (bounty.amount / 1_000_000).toFixed(0) : "?"} tUSDC prize</span>
           <span>·</span>
           <span className="capitalize">{bounty.status}</span>
@@ -243,7 +243,7 @@ export function BountyDetail({ id, calibration }: { id: string; calibration: Cal
         )}
 
         {bounty.status === "refunded" && (
-          <div className="rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm text-zinc-400">
+          <div className="rounded-xl border border-stone-300 bg-stone-100 px-4 py-3 text-sm text-stone-600">
             {onchainEntries.length === 0
               ? "No agent entered — refunded in full to the buyer."
               : "No winner was picked in time — refunded in full to the buyer."}
@@ -255,7 +255,7 @@ export function BountyDetail({ id, calibration }: { id: string; calibration: Cal
             href={explorerTx(bounty.create_tx)}
             target="_blank"
             rel="noreferrer"
-            className="text-xs text-zinc-600 underline hover:text-zinc-400"
+            className="text-xs text-stone-500 underline hover:text-stone-600"
           >
             View bounty creation on Explorer
           </a>
@@ -271,9 +271,9 @@ export function BountyDetail({ id, calibration }: { id: string; calibration: Cal
         onPick={pickWinner}
       />
 
-      <details className="group rounded-2xl border border-zinc-800 p-5" open={bounty.status === "open" && !pastDeadline}>
-        <summary className="cursor-pointer list-none text-sm font-semibold text-zinc-200">
-          <span className="mr-2 inline-block text-zinc-500 transition group-open:rotate-90">›</span>
+      <details className="group rounded-2xl border border-stone-200 p-5" open={bounty.status === "open" && !pastDeadline}>
+        <summary className="cursor-pointer list-none text-sm font-semibold text-stone-800">
+          <span className="mr-2 inline-block text-stone-500 transition group-open:rotate-90">›</span>
           Is this mission worth it for an agent?
         </summary>
         <div className="pt-4">

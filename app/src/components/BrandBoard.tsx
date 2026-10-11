@@ -28,7 +28,7 @@ export function BrandBoard({
   return (
     <div className="flex flex-col gap-5">
       <div className="flex items-center gap-4">
-        <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-lg bg-white/5">
+        <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-lg bg-stone-100">
           <img
             src={logoDataUri}
             alt={`${kit.names[0]} logo`}
@@ -39,7 +39,7 @@ export function BrandBoard({
               aria-hidden
               className="pointer-events-none absolute inset-0 flex items-center justify-center"
             >
-              <span className="w-[140%] -rotate-45 bg-black/5 py-px text-center text-[8px] font-bold uppercase tracking-widest text-white/30 backdrop-blur-[1px]">
+              <span className="w-[140%] -rotate-45 bg-white/40 py-px text-center text-[8px] font-bold uppercase tracking-widest text-stone-900/30 backdrop-blur-[1px]">
                 {watermark}
               </span>
             </div>
@@ -47,13 +47,13 @@ export function BrandBoard({
         </div>
         <div className="min-w-0">
           <h3
-            className="break-words text-lg font-semibold text-zinc-50"
+            className="break-words text-lg font-semibold text-stone-950"
             style={{ fontFamily: `"${kit.fonts.heading}", sans-serif` }}
           >
             {kit.names[0]}
           </h3>
           <p
-            className="text-sm text-zinc-400"
+            className="text-sm text-stone-600"
             style={{ fontFamily: `"${kit.fonts.body}", sans-serif` }}
           >
             {kit.tagline}
@@ -62,10 +62,10 @@ export function BrandBoard({
       </div>
 
       <div>
-        <div className="mb-1 text-xs uppercase tracking-wider text-zinc-500">Name options</div>
-        <ul className="flex flex-wrap gap-2 text-sm text-zinc-300">
+        <div className="mb-1 text-xs uppercase tracking-wider text-stone-500">Name options</div>
+        <ul className="flex flex-wrap gap-2 text-sm text-stone-700">
           {kit.names.map((name) => (
-            <li key={name} className="rounded-full border border-zinc-800 px-3 py-1">
+            <li key={name} className="rounded-full border border-stone-200 px-3 py-1">
               {name}
             </li>
           ))}
@@ -73,39 +73,39 @@ export function BrandBoard({
       </div>
 
       {!revealed ? (
-        <p className="rounded-lg border border-dashed border-zinc-800 p-3 text-xs text-zinc-600">
+        <p className="rounded-lg border border-dashed border-stone-200 p-3 text-xs text-stone-500">
           Palette, fonts, moodboard, and rationale unlock once this bounty is awarded.
         </p>
       ) : (
         <>
           <div>
-            <div className="mb-1 text-xs uppercase tracking-wider text-zinc-500">Palette</div>
+            <div className="mb-1 text-xs uppercase tracking-wider text-stone-500">Palette</div>
             <div className="flex flex-wrap gap-3">
               {kit.palette.map((color) => (
                 <div key={color.hex} className="flex flex-col items-center gap-1">
                   <span
-                    className="h-10 w-10 rounded-full border border-zinc-800"
+                    className="h-10 w-10 rounded-full border border-stone-200"
                     style={{ backgroundColor: color.hex }}
                   />
-                  <span className="text-[10px] text-zinc-500">{color.name}</span>
-                  <span className="font-mono text-[10px] text-zinc-600">{color.hex}</span>
+                  <span className="text-[10px] text-stone-500">{color.name}</span>
+                  <span className="font-mono text-[10px] text-stone-500">{color.hex}</span>
                 </div>
               ))}
             </div>
           </div>
 
           <div>
-            <div className="mb-1 text-xs uppercase tracking-wider text-zinc-500">
+            <div className="mb-1 text-xs uppercase tracking-wider text-stone-500">
               Fonts — {kit.fonts.heading} / {kit.fonts.body}
             </div>
             <p
-              className="text-xl text-zinc-200"
+              className="text-xl text-stone-800"
               style={{ fontFamily: `"${kit.fonts.heading}", sans-serif` }}
             >
               {kit.names[0]}
             </p>
             <p
-              className="text-sm text-zinc-400"
+              className="text-sm text-stone-600"
               style={{ fontFamily: `"${kit.fonts.body}", sans-serif` }}
             >
               The quick brown fox jumps over the lazy dog.
@@ -113,12 +113,12 @@ export function BrandBoard({
           </div>
 
           <div>
-            <div className="mb-1 text-xs uppercase tracking-wider text-zinc-500">Moodboard</div>
+            <div className="mb-1 text-xs uppercase tracking-wider text-stone-500">Moodboard</div>
             <div className="grid grid-cols-2 gap-2">
               {kit.moodboard.map((scene, i) => (
                 <div
                   key={i}
-                  className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-3 text-xs text-zinc-400"
+                  className="rounded-lg border border-stone-200 bg-stone-100/50 p-3 text-xs text-stone-600"
                 >
                   {scene}
                 </div>
@@ -126,7 +126,7 @@ export function BrandBoard({
             </div>
           </div>
 
-          <details className="text-xs text-zinc-500">
+          <details className="text-xs text-stone-500">
             <summary className="cursor-pointer select-none">Rationale</summary>
             <p className="mt-2 leading-relaxed">{kit.rationale}</p>
           </details>
@@ -134,7 +134,7 @@ export function BrandBoard({
           <button
             type="button"
             onClick={() => downloadKitZip(kit)}
-            className="self-start rounded-full border border-zinc-700 px-4 py-1.5 text-xs font-semibold text-zinc-300 transition hover:border-accent hover:text-accent"
+            className="self-start rounded-full border border-stone-300 px-4 py-1.5 text-xs font-semibold text-stone-700 transition hover:border-accent hover:text-accent"
           >
             Download kit (.zip)
           </button>

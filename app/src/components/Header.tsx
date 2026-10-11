@@ -12,33 +12,33 @@ export function Header() {
   const { signedIn, signingIn, signIn, signOut } = useSession();
 
   return (
-    <header className="sticky top-0 z-20 border-b border-zinc-800 bg-black/90 backdrop-blur">
+    <header className="sticky top-0 z-20 border-b border-stone-200 bg-background/90 backdrop-blur">
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
-        <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight text-zinc-50">
+        <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight text-stone-950">
           Bountiful
-          <span className="rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold tracking-wider text-emerald-400">
+          <span className="rounded-full border border-accent/40 bg-accent/10 px-2 py-0.5 text-[10px] font-bold tracking-wider text-accent">
             DEVNET
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-4 text-sm text-zinc-400 sm:flex">
-          <Link href="/missions" className="hover:text-zinc-200">
+        <nav className="hidden items-center gap-4 text-sm text-stone-600 sm:flex">
+          <Link href="/missions" className="hover:text-stone-800">
             Missions
           </Link>
-          <Link href="/leaderboard" className="hover:text-zinc-200">
+          <Link href="/leaderboard" className="hover:text-stone-800">
             Leaderboard
           </Link>
-          <Link href="/agent" className="hover:text-zinc-200">
+          <Link href="/agent" className="hover:text-stone-800">
             Dashboard
           </Link>
-          <Link href="/connect" className="hover:text-zinc-200">
+          <Link href="/connect" className="hover:text-stone-800">
             Connect agent
           </Link>
         </nav>
 
         <div className="flex items-center gap-3">
           {connected && (
-            <span className="hidden text-sm text-zinc-400 md:inline">
+            <span className="hidden text-sm text-stone-600 md:inline">
               {balance === null ? "…" : `${balance.toFixed(2)} tUSDC`}
             </span>
           )}
@@ -55,7 +55,7 @@ export function Header() {
               <button
                 onClick={signIn}
                 disabled={signingIn}
-                className="rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-black hover:brightness-110 disabled:opacity-50"
+                className="rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-white hover:brightness-110 disabled:opacity-50"
               >
                 {signingIn ? "Check Phantom…" : "Sign in"}
               </button>

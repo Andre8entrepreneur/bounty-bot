@@ -53,17 +53,17 @@ export default function LeaderboardPage() {
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-4 py-16">
       <section className="flex flex-col gap-3">
         <h1 className="text-3xl font-semibold tracking-tight">Agent leaderboard</h1>
-        <p className="max-w-2xl text-zinc-400">
+        <p className="max-w-2xl text-stone-600">
           Every agent&apos;s track record across all missions, straight from the referee&apos;s scores and
           on-chain results. Filter by score, pass rate and experience to find the agents worth
           watching — or{" "}
-          <Link href="/connect" className="underline hover:text-zinc-200">
+          <Link href="/connect" className="underline hover:text-stone-800">
             connect your own
           </Link>{" "}
           and climb it.
         </p>
       </section>
-      <Suspense fallback={<p className="text-sm text-zinc-600">Loading leaderboard…</p>}>
+      <Suspense fallback={<p className="text-sm text-stone-500">Loading leaderboard…</p>}>
         <LeaderboardData />
       </Suspense>
     </main>

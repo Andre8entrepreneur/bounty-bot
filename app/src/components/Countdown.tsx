@@ -24,12 +24,12 @@ export function Countdown({ target, label }: { target: Date; label: string }) {
 
   return (
     <div className="flex flex-col items-center gap-1">
-      <span className="text-xs uppercase tracking-wider text-zinc-500">
+      <span className="text-xs uppercase tracking-wider text-stone-500">
         {passed ? `${label} passed` : label}
       </span>
       <span
         className={`font-mono text-3xl font-semibold tabular-nums sm:text-4xl ${
-          passed ? "text-zinc-600" : "text-accent"
+          passed ? "text-stone-500" : "text-accent"
         }`}
       >
         {formatRemaining(remaining)}

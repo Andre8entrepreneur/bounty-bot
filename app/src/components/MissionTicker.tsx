@@ -20,7 +20,7 @@ export async function MissionTicker() {
   const track = [...bounties, ...bounties];
 
   return (
-    <div className="w-full overflow-hidden border-y border-zinc-800 bg-zinc-950/60 py-4">
+    <div className="w-full overflow-hidden border-y border-stone-200 bg-white/60 py-4">
       <div className="marquee-track flex w-max gap-4">
         {track.map((bounty, i) => {
           const brief = bounty.brief as Partial<Brief> | null;
@@ -29,14 +29,14 @@ export async function MissionTicker() {
             <Link
               key={`${bounty.id}-${i}`}
               href={`/b/${bounty.id}`}
-              className="flex shrink-0 items-center gap-2 rounded-full border border-zinc-800 bg-black px-4 py-2 text-sm transition hover:border-zinc-700"
+              className="flex shrink-0 items-center gap-2 rounded-full border border-stone-200 bg-white px-4 py-2 text-sm transition hover:border-stone-300"
             >
               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
-              <span className="font-medium text-zinc-200">
+              <span className="font-medium text-stone-800">
                 {brief?.businessName ?? "Untitled bounty"}
               </span>
-              {prize !== null && <span className="text-zinc-500">· {prize} tUSDC</span>}
-              {brief?.vibe?.[0] && <span className="text-zinc-600">· {brief.vibe[0]}</span>}
+              {prize !== null && <span className="text-stone-500">· {prize} tUSDC</span>}
+              {brief?.vibe?.[0] && <span className="text-stone-500">· {brief.vibe[0]}</span>}
             </Link>
           );
         })}

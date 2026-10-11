@@ -103,19 +103,19 @@ export function MyAgents({ onViewWallet }: { onViewWallet: (pubkey: string) => v
 
   if (!signedIn) {
     return (
-      <section className="flex flex-col items-start gap-3 rounded-2xl border border-zinc-800 p-6">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">Your agents</h2>
-        <p className="text-sm text-zinc-400">
+      <section className="flex flex-col items-start gap-3 rounded-2xl border border-stone-200 p-6">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-stone-500">Your agents</h2>
+        <p className="text-sm text-stone-600">
           Sign in with your wallet to connect your own agents to your account.
         </p>
         <button
           onClick={signIn}
           disabled={signingIn}
-          className="rounded-full bg-accent px-5 py-2 text-sm font-semibold text-black hover:brightness-110 disabled:opacity-50"
+          className="rounded-full bg-accent px-5 py-2 text-sm font-semibold text-white hover:brightness-110 disabled:opacity-50"
         >
           {signingIn ? "Check Phantom…" : "Sign in"}
         </button>
-        {signInError && <p className="text-sm text-red-400">{signInError}</p>}
+        {signInError && <p className="text-sm text-red-600">{signInError}</p>}
       </section>
     );
   }
@@ -124,18 +124,18 @@ export function MyAgents({ onViewWallet }: { onViewWallet: (pubkey: string) => v
   const issuedStillPending = issued && !issuedAgent?.agent_pubkey;
 
   return (
-    <section className="flex flex-col gap-4 rounded-2xl border border-zinc-800 p-6">
+    <section className="flex flex-col gap-4 rounded-2xl border border-stone-200 p-6">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">Your agents</h2>
-        <Link href="/connect" className="text-xs text-zinc-500 underline hover:text-zinc-300">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-stone-500">Your agents</h2>
+        <Link href="/connect" className="text-xs text-stone-500 underline hover:text-stone-700">
           How connecting works
         </Link>
       </div>
 
       {agents === null ? (
-        <p className="text-sm text-zinc-600">Loading…</p>
+        <p className="text-sm text-stone-500">Loading…</p>
       ) : agents.length === 0 ? (
-        <p className="text-sm text-zinc-500">No agents yet — register your first one below.</p>
+        <p className="text-sm text-stone-500">No agents yet — register your first one below.</p>
       ) : (
         <ul className="flex flex-col gap-2">
           {agents.map((a) => {
@@ -145,18 +145,18 @@ export function MyAgents({ onViewWallet }: { onViewWallet: (pubkey: string) => v
             return (
               <li
                 key={a.id}
-                className="flex flex-col gap-2 rounded-xl border border-zinc-800 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-2 rounded-xl border border-stone-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="flex min-w-0 flex-col">
-                  <span className="truncate font-medium text-zinc-100">{a.name}</span>
-                  <span className="text-xs text-zinc-500">{a.specialty ?? "No specialty set"}</span>
+                  <span className="truncate font-medium text-stone-900">{a.name}</span>
+                  <span className="text-xs text-stone-500">{a.specialty ?? "No specialty set"}</span>
                 </div>
                 {a.agent_pubkey ? (
                   <div className="flex flex-wrap items-center gap-3 text-xs">
                     <span className="rounded-full bg-accent/10 px-2.5 py-1 font-semibold text-accent">✓ Connected</span>
                     <button
                       onClick={() => onViewWallet(a.agent_pubkey!)}
-                      className="font-mono text-zinc-400 underline hover:text-zinc-200"
+                      className="font-mono text-stone-600 underline hover:text-stone-800"
                       title="View this agent's entries and earnings"
                     >
                       {a.agent_pubkey.slice(0, 4)}…{a.agent_pubkey.slice(-4)} · earnings
@@ -164,10 +164,10 @@ export function MyAgents({ onViewWallet }: { onViewWallet: (pubkey: string) => v
                   </div>
                 ) : (
                   <div className="flex flex-wrap items-center gap-3 text-xs">
-                    <span className="rounded-full bg-amber-500/10 px-2.5 py-1 font-semibold text-amber-300">
+                    <span className="rounded-full bg-amber-500/10 px-2.5 py-1 font-semibold text-amber-700">
                       {expired ? "Code expired" : "Waiting for your agent…"}
                     </span>
-                    <button onClick={() => newCode(a.id)} className="text-zinc-400 underline hover:text-zinc-200">
+                    <button onClick={() => newCode(a.id)} className="text-stone-600 underline hover:text-stone-800">
                       New code
                     </button>
                   </div>
@@ -180,29 +180,29 @@ export function MyAgents({ onViewWallet }: { onViewWallet: (pubkey: string) => v
 
       {issued && issuedStillPending && (
         <div className="flex flex-col gap-3 rounded-xl border border-accent/30 bg-accent/5 p-4">
-          <p className="text-sm text-zinc-300">
+          <p className="text-sm text-stone-700">
             Connection code for <span className="font-semibold">{issuedAgent?.name ?? "your agent"}</span> — give it to
             your agent. It signs the code with its own key and connects itself; this box turns into ✓ Connected.
           </p>
           <div className="flex flex-wrap items-center gap-3">
-            <code className="rounded-lg bg-black px-4 py-2 font-mono text-lg tracking-wider text-accent">{issued.code}</code>
+            <code className="rounded-lg bg-stone-100 px-4 py-2 font-mono text-lg tracking-wider text-accent">{issued.code}</code>
             <button
               onClick={() => copyCode(issued.code)}
-              className="rounded-full border border-zinc-700 px-4 py-2 text-xs text-zinc-200 hover:border-zinc-500"
+              className="rounded-full border border-stone-300 px-4 py-2 text-xs text-stone-800 hover:border-stone-500"
             >
               {copied ? "Copied" : "Copy"}
             </button>
           </div>
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-stone-500">
             Works once, until {new Date(issued.expiresAt).toLocaleTimeString()}. Only its fingerprint is stored —
             if you lose it, use “New code”.
           </p>
         </div>
       )}
 
-      <form onSubmit={createAgent} className="flex flex-col gap-3 border-t border-zinc-800 pt-4 sm:flex-row sm:items-end">
+      <form onSubmit={createAgent} className="flex flex-col gap-3 border-t border-stone-200 pt-4 sm:flex-row sm:items-end">
         <label className="flex flex-1 flex-col gap-1.5">
-          <span className="text-xs uppercase tracking-wider text-zinc-500">Agent name</span>
+          <span className="text-xs uppercase tracking-wider text-stone-500">Agent name</span>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -214,7 +214,7 @@ export function MyAgents({ onViewWallet }: { onViewWallet: (pubkey: string) => v
           />
         </label>
         <label className="flex flex-1 flex-col gap-1.5">
-          <span className="text-xs uppercase tracking-wider text-zinc-500">Specialty (optional)</span>
+          <span className="text-xs uppercase tracking-wider text-stone-500">Specialty (optional)</span>
           <input
             value={specialty}
             onChange={(e) => setSpecialty(e.target.value)}
@@ -226,12 +226,12 @@ export function MyAgents({ onViewWallet }: { onViewWallet: (pubkey: string) => v
         <button
           type="submit"
           disabled={busy}
-          className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-black hover:brightness-110 disabled:opacity-50"
+          className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white hover:brightness-110 disabled:opacity-50"
         >
           {busy ? "Creating…" : "Connect an agent"}
         </button>
       </form>
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && <p className="text-sm text-red-600">{error}</p>}
     </section>
   );
 }

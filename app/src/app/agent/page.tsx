@@ -226,7 +226,7 @@ export default function AgentDashboardPage() {
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-4 py-16">
       <section className="flex flex-col gap-3">
         <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>
-        <p className="max-w-2xl text-zinc-400">
+        <p className="max-w-2xl text-stone-600">
           One wallet, both sides of the market: the bounties it has posted as a buyer, and every
           entry it — or any agent it owns — has submitted on-chain as a competitor, with what each
           one earned. Submitting is permissionless:
@@ -236,17 +236,17 @@ export default function AgentDashboardPage() {
             href={explorerAddress(PROGRAM_ID.toBase58())}
             target="_blank"
             rel="noreferrer"
-            className="underline hover:text-zinc-200"
+            className="underline hover:text-stone-800"
           >
             View the program on Explorer ↗
           </a>
         </p>
       </section>
 
-      <section className="flex flex-col gap-3 rounded-2xl border border-zinc-800 p-5">
+      <section className="flex flex-col gap-3 rounded-2xl border border-stone-200 p-5">
         <form onSubmit={handleViewAddress} className="flex flex-wrap items-end gap-3">
           <label className="flex flex-1 flex-col gap-2">
-            <span className="text-xs uppercase tracking-wider text-zinc-500">
+            <span className="text-xs uppercase tracking-wider text-stone-500">
               View any wallet by address
             </span>
             <input
@@ -258,7 +258,7 @@ export default function AgentDashboardPage() {
           </label>
           <button
             type="submit"
-            className="rounded-full border border-zinc-700 px-5 py-2.5 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500"
+            className="rounded-full border border-stone-300 px-5 py-2.5 text-sm font-semibold text-stone-800 transition hover:border-stone-500"
           >
             View
           </button>
@@ -269,30 +269,30 @@ export default function AgentDashboardPage() {
                 setViewAddress(null);
                 setAddressInput("");
               }}
-              className="text-sm text-zinc-500 underline hover:text-zinc-300"
+              className="text-sm text-stone-500 underline hover:text-stone-700"
             >
               Clear
             </button>
           )}
         </form>
-        {addressError && <p className="text-sm text-red-400">{addressError}</p>}
-        <div className="flex items-center gap-3 text-sm text-zinc-500">
+        {addressError && <p className="text-sm text-red-600">{addressError}</p>}
+        <div className="flex items-center gap-3 text-sm text-stone-500">
           <span>or connect a wallet to view your own</span>
           <WalletButton />
         </div>
       </section>
 
       {!target ? (
-        <div className="flex flex-col items-start gap-4 rounded-2xl border border-zinc-800 p-8">
-          <p className="text-zinc-400">
+        <div className="flex flex-col items-start gap-4 rounded-2xl border border-stone-200 p-8">
+          <p className="text-stone-600">
             Connect a wallet or paste an address above to see its on-chain entries and earnings.
           </p>
         </div>
       ) : (
         <>
           {viewAddress && (
-            <p className="text-sm text-zinc-500">
-              Viewing <span className="font-mono text-zinc-300">{viewAddress.toBase58()}</span>{" "}
+            <p className="text-sm text-stone-500">
+              Viewing <span className="font-mono text-stone-700">{viewAddress.toBase58()}</span>{" "}
               (read-only — not connected)
             </p>
           )}
@@ -318,21 +318,21 @@ export default function AgentDashboardPage() {
           )}
 
           {loadError && (
-            <p className="rounded-xl border border-red-500/30 bg-red-500/5 px-4 py-3 text-sm text-red-400">
+            <p className="rounded-xl border border-red-500/30 bg-red-500/5 px-4 py-3 text-sm text-red-600">
               {loadError}
             </p>
           )}
 
           <section className="flex flex-col gap-3">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-stone-500">
               As a buyer — bounties posted
             </h2>
             {posted === null ? (
-              <p className="text-sm text-zinc-600">Loading…</p>
+              <p className="text-sm text-stone-500">Loading…</p>
             ) : posted.length === 0 ? (
-              <p className="rounded-2xl border border-zinc-800 p-6 text-sm text-zinc-400">
+              <p className="rounded-2xl border border-stone-200 p-6 text-sm text-stone-600">
                 This wallet hasn&apos;t posted any bounties.{" "}
-                <Link href="/new" className="underline hover:text-zinc-200">
+                <Link href="/new" className="underline hover:text-stone-800">
                   Post one
                 </Link>
               </p>
@@ -346,19 +346,19 @@ export default function AgentDashboardPage() {
           </section>
 
           <section className="flex flex-col gap-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-stone-500">
             As an agent — entries by this wallet and its agents
           </h2>
 
           {rows === null ? (
-            <p className="text-sm text-zinc-600">Loading on-chain entries…</p>
+            <p className="text-sm text-stone-500">Loading on-chain entries…</p>
           ) : rows.length === 0 ? (
-            <div className="flex flex-col gap-3 rounded-2xl border border-zinc-800 p-8 text-sm text-zinc-400">
+            <div className="flex flex-col gap-3 rounded-2xl border border-stone-200 p-8 text-sm text-stone-600">
               <p>This wallet hasn&apos;t submitted any entries yet.</p>
               <p>
                 To participate, have your agent call <code>submit_entry</code> on the program above
                 for any open bounty — see the recent bounties on the{" "}
-                <Link href="/" className="underline hover:text-zinc-200">
+                <Link href="/" className="underline hover:text-stone-800">
                   mission board
                 </Link>{" "}
                 for open briefs and deadlines.
@@ -369,26 +369,26 @@ export default function AgentDashboardPage() {
               {rows.map((row) => (
                 <li
                   key={row.id}
-                  className="flex flex-col gap-2 rounded-xl border border-zinc-800 p-4 sm:flex-row sm:items-center sm:justify-between"
+                  className="flex flex-col gap-2 rounded-xl border border-stone-200 p-4 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="flex min-w-0 flex-col gap-1">
                     <div className="flex items-center gap-2">
                       {row.bountyDbId ? (
                         <Link
                           href={`/b/${row.bountyDbId}`}
-                          className="truncate font-medium text-zinc-100 hover:underline"
+                          className="truncate font-medium text-stone-900 hover:underline"
                         >
                           {row.businessName}
                         </Link>
                       ) : (
-                        <span className="truncate font-medium text-zinc-100">{row.businessName}</span>
+                        <span className="truncate font-medium text-stone-900">{row.businessName}</span>
                       )}
                       <StatusBadge status={row.status} />
                     </div>
-                    <div className="flex flex-wrap gap-x-3 text-xs text-zinc-500">
+                    <div className="flex flex-wrap gap-x-3 text-xs text-stone-500">
                       <span>
                         as{" "}
-                        <span className="text-zinc-300">
+                        <span className="text-stone-700">
                           {row.agentKey ? personaLabel(row.agentKey) : labelFor(row.agentPubkey)}
                         </span>
                       </span>
@@ -403,7 +403,7 @@ export default function AgentDashboardPage() {
                           href={explorerTx(row.submitTx)}
                           target="_blank"
                           rel="noreferrer"
-                          className="underline hover:text-zinc-300"
+                          className="underline hover:text-stone-700"
                         >
                           submission ↗
                         </a>
@@ -437,7 +437,7 @@ export default function AgentDashboardPage() {
                             → forwarded to you ↗
                           </a>
                         ) : (
-                          <span className="text-amber-300" title="The connector forwards winnings within ~20s while it runs">
+                          <span className="text-amber-700" title="The connector forwards winnings within ~20s while it runs">
                             → forwarding…
                           </span>
                         ))}
@@ -459,22 +459,22 @@ function PostedBountyRow({ bounty }: { bounty: BountyRow }) {
   const brief = bounty.brief as { businessName?: string } | null;
   const prize = bounty.amount !== null ? bounty.amount / 1_000_000 : null;
   return (
-    <li className="flex flex-col gap-2 rounded-xl border border-zinc-800 p-4 sm:flex-row sm:items-center sm:justify-between">
+    <li className="flex flex-col gap-2 rounded-xl border border-stone-200 p-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex min-w-0 flex-col gap-1">
         <div className="flex items-center gap-2">
-          <Link href={`/b/${bounty.id}`} className="truncate font-medium text-zinc-100 hover:underline">
+          <Link href={`/b/${bounty.id}`} className="truncate font-medium text-stone-900 hover:underline">
             {brief?.businessName ?? "Untitled bounty"}
           </Link>
           <StatusBadge status={bounty.status} />
         </div>
-        <div className="flex flex-wrap gap-x-3 text-xs text-zinc-500">
+        <div className="flex flex-wrap gap-x-3 text-xs text-stone-500">
           {prize !== null && <span>{prize} tUSDC prize</span>}
           <span>{new Date(bounty.created_at).toLocaleString()}</span>
         </div>
       </div>
 
       {bounty.status === "awarded" && bounty.winner_agent && (
-        <div className="flex items-center gap-2 rounded-full border border-zinc-700 px-3 py-1 text-sm text-zinc-300">
+        <div className="flex items-center gap-2 rounded-full border border-stone-300 px-3 py-1 text-sm text-stone-700">
           Paid {prize !== null ? (prize * 0.9).toFixed(2) : "?"} tUSDC to{" "}
           {labelFor(bounty.winner_agent)}
           {bounty.settle_tx && (
@@ -485,7 +485,7 @@ function PostedBountyRow({ bounty }: { bounty: BountyRow }) {
         </div>
       )}
       {bounty.status === "refunded" && (
-        <div className="rounded-full border border-zinc-700 px-3 py-1 text-sm text-zinc-400">
+        <div className="rounded-full border border-stone-300 px-3 py-1 text-sm text-stone-600">
           Refunded
         </div>
       )}
@@ -495,9 +495,9 @@ function PostedBountyRow({ bounty }: { bounty: BountyRow }) {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-zinc-800 p-4">
-      <div className="text-xs uppercase tracking-wider text-zinc-500">{label}</div>
-      <div className="mt-1 text-lg font-semibold text-zinc-100">{value}</div>
+    <div className="rounded-xl border border-stone-200 p-4">
+      <div className="text-xs uppercase tracking-wider text-stone-500">{label}</div>
+      <div className="mt-1 text-lg font-semibold text-stone-900">{value}</div>
     </div>
   );
 }
@@ -510,7 +510,7 @@ const STATUS_LABEL: Record<DashboardRow["status"], string> = {
 
 function StatusBadge({ status }: { status: DashboardRow["status"] }) {
   return (
-    <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
+    <span className="rounded-full bg-stone-200 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-stone-600">
       {STATUS_LABEL[status]}
     </span>
   );

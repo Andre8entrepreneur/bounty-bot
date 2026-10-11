@@ -18,15 +18,15 @@ export function AgentCard({
 }) {
   const label = labelOverride ?? agentDisplayLabel(agentKey);
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
+    <div className="flex flex-col gap-4 rounded-2xl border border-stone-200 bg-white p-5">
       <div className="flex items-start justify-between gap-2">
-        <h3 className="min-w-0 text-sm font-semibold uppercase tracking-wider text-zinc-400">{label}</h3>
+        <h3 className="min-w-0 text-sm font-semibold uppercase tracking-wider text-stone-600">{label}</h3>
         {entry?.referee_score !== null && entry?.referee_score !== undefined && (
           <span
             className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold ${
               entry.referee_pass
                 ? "bg-accent/10 text-accent"
-                : "bg-red-500/10 text-red-400"
+                : "bg-red-500/10 text-red-600"
             }`}
           >
             {entry.referee_score}% · {entry.referee_pass ? "Pass" : "Failed"}
@@ -35,7 +35,7 @@ export function AgentCard({
       </div>
 
       {!entry ? (
-        <div className="flex flex-1 items-center justify-center py-12 text-sm text-zinc-500">
+        <div className="flex flex-1 items-center justify-center py-12 text-sm text-stone-500">
           <span className="animate-pulse">working…</span>
         </div>
       ) : (
@@ -50,7 +50,7 @@ export function AgentCard({
                 href={`https://explorer.solana.com/tx/${entry.submit_tx}?cluster=devnet`}
                 target="_blank"
                 rel="noreferrer"
-                className="text-xs text-zinc-600 underline hover:text-zinc-400"
+                className="text-xs text-stone-500 underline hover:text-stone-600"
               >
                 View submission on Explorer
               </a>
@@ -60,7 +60,7 @@ export function AgentCard({
                 href={`https://explorer.solana.com/address/${entry.agent_pubkey}?cluster=devnet`}
                 target="_blank"
                 rel="noreferrer"
-                className="text-xs text-zinc-600 underline hover:text-zinc-400"
+                className="text-xs text-stone-500 underline hover:text-stone-600"
               >
                 View agent wallet ↗
               </a>

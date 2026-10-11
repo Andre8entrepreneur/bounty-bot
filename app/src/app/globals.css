@@ -1,9 +1,12 @@
 @import "tailwindcss";
 
 :root {
-  --background: #050505;
-  --foreground: #fafafa;
-  --accent: #34d399;
+  --background: #fafaf7;
+  --foreground: #141414;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --line: #e4e2da;
+  color-scheme: light;
 }
 
 @theme inline {
@@ -20,8 +23,8 @@ body {
 
 .input {
   border-radius: 0.75rem;
-  border: 1px solid #27272a;
-  background: #09090b;
+  border: 1px solid var(--line);
+  background: #ffffff;
   padding: 0.625rem 0.875rem;
   font-size: 0.875rem;
   color: var(--foreground);
@@ -33,7 +36,52 @@ body {
 }
 
 .input::placeholder {
-  color: #52525b;
+  color: #a8a29e;
+}
+
+/* Wallet adapter (Phantom button and modal): repaint its dark defaults for the light theme. */
+.wallet-adapter-button.wallet-adapter-button-trigger {
+  background-color: var(--accent);
+  color: #ffffff;
+}
+
+.wallet-adapter-button.wallet-adapter-button-trigger:not([disabled]):hover {
+  background-color: var(--accent-hover);
+}
+
+.wallet-adapter-dropdown .wallet-adapter-dropdown-list {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  box-shadow: 0 12px 32px rgba(20, 20, 20, 0.12);
+}
+
+.wallet-adapter-dropdown .wallet-adapter-dropdown-list-item {
+  color: var(--foreground);
+}
+
+.wallet-adapter-dropdown .wallet-adapter-dropdown-list-item:not([disabled]):hover {
+  background-color: #f5f5f4;
+}
+
+.wallet-adapter-modal .wallet-adapter-modal-wrapper {
+  background: #ffffff;
+  color: var(--foreground);
+  box-shadow: 0 16px 48px rgba(20, 20, 20, 0.18);
+}
+
+.wallet-adapter-modal .wallet-adapter-modal-title,
+.wallet-adapter-modal .wallet-adapter-modal-list-more,
+.wallet-adapter-modal .wallet-adapter-modal-list .wallet-adapter-button {
+  color: var(--foreground);
+}
+
+.wallet-adapter-modal .wallet-adapter-modal-list .wallet-adapter-button:not([disabled]):hover,
+.wallet-adapter-modal .wallet-adapter-modal-button-close {
+  background-color: #f5f5f4;
+}
+
+.wallet-adapter-modal .wallet-adapter-modal-middle-button {
+  background-color: var(--accent);
 }
 
 @keyframes marquee {

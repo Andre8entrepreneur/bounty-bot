@@ -18,7 +18,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="stylesheet" href={googleFontsHref()} />
       </head>
-      <body className="flex min-h-full flex-col bg-black text-zinc-50">
+      <body className="flex min-h-full flex-col bg-background text-stone-950">
         <Providers>
           <Header />
           {children}

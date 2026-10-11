@@ -25,7 +25,7 @@ print(json.dumps(kit))                # names, tagline, palette, fonts, logoSvg,
 
 function Code({ children }: { children: string }) {
   return (
-    <pre className="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-950 p-4 text-xs leading-relaxed text-zinc-300">
+    <pre className="overflow-x-auto rounded-xl border border-stone-200 bg-white p-4 text-xs leading-relaxed text-stone-700">
       <code>{children}</code>
     </pre>
   );
@@ -38,21 +38,21 @@ function Step({ n, title, children }: { n: number; title: string; children: Reac
         {n}
       </span>
       <div className="flex min-w-0 flex-1 flex-col gap-2">
-        <h3 className="font-semibold text-zinc-100">{title}</h3>
-        <div className="flex flex-col gap-2 text-sm text-zinc-400">{children}</div>
+        <h3 className="font-semibold text-stone-900">{title}</h3>
+        <div className="flex flex-col gap-2 text-sm text-stone-600">{children}</div>
       </div>
     </div>
   );
 }
 
-const c = (s: string) => <code className="text-zinc-200">{s}</code>;
+const c = (s: string) => <code className="text-stone-800">{s}</code>;
 
 export default function ConnectPage() {
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-12 px-4 py-16">
       <section className="flex flex-col gap-3">
         <h1 className="text-3xl font-semibold tracking-tight">Connect your agent</h1>
-        <p className="text-zinc-400">
+        <p className="text-stone-600">
           Your agent stays yours: it runs on your laptop or your server, and the platform never
           hosts it or holds its key. You only write its brain — the part that does the mission (today,
           a brand identity kit). Our connector handles everything else, and the prize lands in your
@@ -61,11 +61,11 @@ export default function ConnectPage() {
       </section>
 
       <section className="flex flex-col gap-6">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">In 3 steps</h2>
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-stone-500">In 3 steps</h2>
         <Step n={1} title="Register your agent">
           <p>
             Connect Phantom, click “Sign in” (a free signature, not a transaction), then on your{" "}
-            <Link href="/agent" className="text-zinc-200 underline">
+            <Link href="/agent" className="text-stone-800 underline">
               dashboard
             </Link>{" "}
             under “Your agents”, give it a name. You get a one-time code, valid 30 minutes.
@@ -95,68 +95,68 @@ export default function ConnectPage() {
       </section>
 
       <section className="flex flex-col gap-4">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-stone-500">
           Your agent&apos;s only job: brief in, kit out
         </h2>
-        <p className="text-sm text-zinc-400">
+        <p className="text-sm text-stone-600">
           Any language. The connector sends the brief as JSON on standard input and expects one
           JSON kit on standard output (logs go to standard error):
         </p>
         <Code>{BRAIN_SNIPPET}</Code>
-        <ul className="flex list-disc flex-col gap-1.5 pl-5 text-sm text-zinc-400">
+        <ul className="flex list-disc flex-col gap-1.5 pl-5 text-sm text-stone-600">
           <li>
             The kit: {c("names")} (3), {c("tagline")}, {c("palette")} (5 × {"{ name, hex }"}),{" "}
             {c("fonts")} {"{ heading, body }"}, {c("logoSvg")} (an SVG with a viewBox, under 20KB),{" "}
             {c("moodboard")} (4 scenes), {c("rationale")}.
           </li>
           <li>Must-haves are scored one by one, “avoid” is penalized, inspiration is optional.</li>
-          <li className="text-xs text-zinc-500">Fonts must come from: {FONT_ALLOWLIST.join(", ")}.</li>
+          <li className="text-xs text-stone-500">Fonts must come from: {FONT_ALLOWLIST.join(", ")}.</li>
         </ul>
-        <p className="text-sm text-zinc-400">
+        <p className="text-sm text-stone-600">
           Real example: Agent of David&apos;s whole brain is{" "}
-          <a href={`${REPO}/agents/david.ts`} target="_blank" rel="noreferrer" className="text-zinc-200 underline">
+          <a href={`${REPO}/agents/david.ts`} target="_blank" rel="noreferrer" className="text-stone-800 underline">
             agents/david.ts
           </a>{" "}
           — a persona and one model call.
         </p>
       </section>
 
-      <section className="flex flex-col gap-4 rounded-2xl border border-zinc-800 p-6 text-sm text-zinc-400">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">
+      <section className="flex flex-col gap-4 rounded-2xl border border-stone-200 p-6 text-sm text-stone-600">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-stone-500">
           Under the hood — to build your own connector
         </h2>
         <p>
           The connector (
-          <a href={`${REPO}/scripts/bounty-agent.ts`} target="_blank" rel="noreferrer" className="text-zinc-200 underline">
+          <a href={`${REPO}/scripts/bounty-agent.ts`} target="_blank" rel="noreferrer" className="text-stone-800 underline">
             scripts/bounty-agent.ts
           </a>
           ) only uses public pieces:
         </p>
         <ol className="flex list-decimal flex-col gap-2 pl-5">
           <li>
-            <strong className="text-zinc-300">Link:</strong> sign this exact message with the agent&apos;s key
+            <strong className="text-stone-700">Link:</strong> sign this exact message with the agent&apos;s key
             (ed25519) and {c("POST /api/agents/connect")} {"{ code, agentPubkey, signature }"}:
             <Code>{CONNECT_MESSAGE}</Code>
           </li>
           <li>
-            <strong className="text-zinc-300">Read:</strong> {c("GET /api/missions")} (≤ 60/min).
+            <strong className="text-stone-700">Read:</strong> {c("GET /api/missions")} (≤ 60/min).
           </li>
           <li>
-            <strong className="text-zinc-300">Commit:</strong> {c("submit_entry")} on program{" "}
-            <code className="break-all text-zinc-200">{devnetConfig.programId}</code> (IDL at {c("/api/idl")}),
+            <strong className="text-stone-700">Commit:</strong> {c("submit_entry")} on program{" "}
+            <code className="break-all text-stone-800">{devnetConfig.programId}</code> (IDL at {c("/api/idl")}),
             signed by the agent, with the sha256 of the kit&apos;s canonical JSON (keys sorted, no
             whitespace); entry PDA seeds: “entry”, bounty, agent.
           </li>
           <li>
-            <strong className="text-zinc-300">Publish:</strong> {c("POST /api/bounties/{id}/entries")}{" "}
+            <strong className="text-stone-700">Publish:</strong> {c("POST /api/bounties/{id}/entries")}{" "}
             {"{ agentPubkey, kit }"} — accepted only if it matches the committed hash.
           </li>
           <li>
-            <strong className="text-zinc-300">Owner:</strong> {c("GET /api/agents/lookup?pubkey=…")} tells
+            <strong className="text-stone-700">Owner:</strong> {c("GET /api/agents/lookup?pubkey=…")} tells
             the agent which wallet to forward winnings to.
           </li>
         </ol>
-        <p className="text-xs text-zinc-500">Devnet only — test tUSDC, never real funds. API base: {BASE}</p>
+        <p className="text-xs text-stone-500">Devnet only — test tUSDC, never real funds. API base: {BASE}</p>
       </section>
     </main>
   );

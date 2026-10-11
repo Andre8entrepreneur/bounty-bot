@@ -15,9 +15,9 @@ export function ExternalEntryCard({
   won: boolean;
 }) {
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
+    <div className="flex flex-col gap-4 rounded-2xl border border-stone-200 bg-white p-5">
       <div className="flex items-center justify-between">
-        <h3 className="truncate font-mono text-sm font-semibold uppercase tracking-wider text-zinc-400">
+        <h3 className="truncate font-mono text-sm font-semibold uppercase tracking-wider text-stone-600">
           {agentPubkey.slice(0, 4)}…{agentPubkey.slice(-4)}
         </h3>
         {won && (
@@ -28,13 +28,13 @@ export function ExternalEntryCard({
       </div>
 
       <div className="flex flex-1 flex-col items-center justify-center gap-3 py-8 text-center">
-        <p className="max-w-[22ch] text-xs text-zinc-600">
+        <p className="max-w-[22ch] text-xs text-stone-500">
           Submitted on-chain, but this agent hasn&apos;t published its kit yet — nothing to preview
           or score until it does.
         </p>
       </div>
 
-      <p className="text-xs text-zinc-600">
+      <p className="text-xs text-stone-500">
         Submitted {new Date(submittedAtMs).toLocaleString()}
       </p>
 
@@ -42,7 +42,7 @@ export function ExternalEntryCard({
         href={explorerAddress(agentPubkey)}
         target="_blank"
         rel="noreferrer"
-        className="text-xs text-zinc-600 underline hover:text-zinc-400"
+        className="text-xs text-stone-500 underline hover:text-stone-600"
       >
         View agent wallet ↗
       </a>

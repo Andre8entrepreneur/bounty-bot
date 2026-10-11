@@ -40,9 +40,9 @@ export function Leaderboard({ rows }: { rows: LeaderRow[] }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-1 gap-4 rounded-2xl border border-zinc-800 p-5 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 rounded-2xl border border-stone-200 p-5 sm:grid-cols-2 lg:grid-cols-5">
         <label className="flex flex-col gap-1.5 lg:col-span-2">
-          <span className="text-xs uppercase tracking-wider text-zinc-500">Search</span>
+          <span className="text-xs uppercase tracking-wider text-stone-500">Search</span>
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -51,7 +51,7 @@ export function Leaderboard({ rows }: { rows: LeaderRow[] }) {
           />
         </label>
         <label className="flex flex-col gap-1.5">
-          <span className="text-xs uppercase tracking-wider text-zinc-500">Sort by</span>
+          <span className="text-xs uppercase tracking-wider text-stone-500">Sort by</span>
           <select value={sortKey} onChange={(e) => setSortKey(e.target.value as SortKey)} className="input">
             {SORTS.map((s) => (
               <option key={s.key} value={s.key}>
@@ -72,13 +72,13 @@ export function Leaderboard({ rows }: { rows: LeaderRow[] }) {
         />
       </div>
 
-      <p className="text-xs text-zinc-500">
+      <p className="text-xs text-stone-500">
         {visible.length} of {rows.length} agents · win rate counts only finished contests that had a
         winner (refunds excluded) · earned is 90% of each prize won.
       </p>
 
       {visible.length === 0 ? (
-        <p className="rounded-2xl border border-zinc-800 p-8 text-center text-sm text-zinc-500">
+        <p className="rounded-2xl border border-stone-200 p-8 text-center text-sm text-stone-500">
           No agent matches these filters.
         </p>
       ) : (
@@ -86,18 +86,18 @@ export function Leaderboard({ rows }: { rows: LeaderRow[] }) {
           {visible.map((r, i) => (
             <li
               key={r.id}
-              className="grid grid-cols-[2rem_1fr] items-center gap-x-4 gap-y-3 rounded-xl border border-zinc-800 px-4 py-3 md:grid-cols-[2rem_minmax(0,1.6fr)_repeat(6,minmax(0,1fr))]"
+              className="grid grid-cols-[2rem_1fr] items-center gap-x-4 gap-y-3 rounded-xl border border-stone-200 px-4 py-3 md:grid-cols-[2rem_minmax(0,1.6fr)_repeat(6,minmax(0,1fr))]"
             >
-              <span className="font-mono text-sm text-zinc-500">{i + 1}</span>
+              <span className="font-mono text-sm text-stone-500">{i + 1}</span>
               <span className="flex min-w-0 flex-col">
-                <span className="truncate font-semibold text-zinc-100">{r.name}</span>
-                <span className="flex min-w-0 gap-2 text-xs text-zinc-500">
+                <span className="truncate font-semibold text-stone-900">{r.name}</span>
+                <span className="flex min-w-0 gap-2 text-xs text-stone-500">
                   <span className="truncate">{r.specialty ?? "No specialty set"}</span>
                   <a
                     href={explorerAddress(r.id)}
                     target="_blank"
                     rel="noreferrer"
-                    className="shrink-0 underline hover:text-zinc-300"
+                    className="shrink-0 underline hover:text-stone-700"
                   >
                     wallet ↗
                   </a>
@@ -132,10 +132,10 @@ function Metric({
 }) {
   return (
     <span className="flex min-w-0 flex-col gap-1">
-      <span className="text-[10px] uppercase tracking-wider text-zinc-600">{label}</span>
-      <span className={`tabular-nums text-sm ${highlight ? "font-semibold text-accent" : "text-zinc-200"}`}>{value}</span>
+      <span className="text-[10px] uppercase tracking-wider text-stone-500">{label}</span>
+      <span className={`tabular-nums text-sm ${highlight ? "font-semibold text-accent" : "text-stone-800"}`}>{value}</span>
       {bar != null && (
-        <span className="h-1 overflow-hidden rounded-full bg-zinc-800">
+        <span className="h-1 overflow-hidden rounded-full bg-stone-200">
           <span className="block h-full rounded-full bg-accent/70" style={{ width: `${bar}%` }} />
         </span>
       )}
@@ -160,7 +160,7 @@ function Slider({
 }) {
   return (
     <label className="flex flex-col gap-1.5">
-      <span className="text-xs uppercase tracking-wider text-zinc-500">{label}</span>
+      <span className="text-xs uppercase tracking-wider text-stone-500">{label}</span>
       <input
         type="range"
         min={min}

@@ -19,14 +19,14 @@ export default function Home() {
     <main className="flex w-full flex-1 flex-col overflow-x-clip">
       <Hero
         showcase={
-          <Suspense fallback={<div className="h-[30rem] rounded-[1.75rem] border border-zinc-800 bg-zinc-900/30" />}>
+          <Suspense fallback={<div className="h-[30rem] rounded-[1.75rem] border border-stone-200 bg-stone-100/30" />}>
             <Showcase />
           </Suspense>
         }
       />
 
       <div className="mx-auto mt-20 w-full max-w-6xl px-4">
-        <Suspense fallback={<div className="h-40 rounded-3xl border border-zinc-800 bg-zinc-900/30" />}>
+        <Suspense fallback={<div className="h-40 rounded-3xl border border-stone-200 bg-stone-100/30" />}>
           <LiveStats />
         </Suspense>
       </div>

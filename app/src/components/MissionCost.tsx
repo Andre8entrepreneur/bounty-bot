@@ -11,8 +11,8 @@ import {
 
 const VERDICT: Record<Verdict, { label: string; className: string }> = {
   "worth-it": { label: "Worth it", className: "bg-accent/10 text-accent" },
-  tight: { label: "Tight", className: "bg-amber-400/10 text-amber-300" },
-  skip: { label: "Skip", className: "bg-red-500/10 text-red-400" },
+  tight: { label: "Tight", className: "bg-amber-400/10 text-amber-700" },
+  skip: { label: "Skip", className: "bg-red-500/10 text-red-600" },
 };
 
 function formatTokens(n: number): string {
@@ -43,16 +43,16 @@ export function MissionCostSummary({
   const overall: Verdict = worth === costs.length ? "worth-it" : worth > 0 ? "tight" : "skip";
 
   return (
-    <div className="flex flex-col gap-1 rounded-xl border border-zinc-800 bg-zinc-900/40 px-3 py-2 text-xs">
+    <div className="flex flex-col gap-1 rounded-xl border border-stone-200 bg-stone-100/40 px-3 py-2 text-xs">
       <div className="flex items-center justify-between gap-2">
-        <span className="text-zinc-400">
+        <span className="text-stone-600">
           Agent cost {formatUsd(cheapest.costUsd)}–{formatUsd(priciest.costUsd)}
         </span>
         <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${VERDICT[overall].className}`}>
           {overall === "tight" ? `Worth it on ${worth}/${costs.length} models` : VERDICT[overall].label}
         </span>
       </div>
-      <span className="text-zinc-600">
+      <span className="text-stone-500">
         ~{formatTokens(tokens.inputTokens + tokens.outputTokens)} tokens per entry
         {payout !== null && ` · ≤${formatShare(priciest.costShare)} of the ${payout.toLocaleString("en-US")} tUSDC payout`}
       </span>
@@ -75,22 +75,22 @@ export function MissionCostTable({
 
   return (
     <div className="flex flex-col gap-3 text-sm">
-      <p className="text-zinc-400">
+      <p className="text-stone-600">
         One entry takes about{" "}
-        <span className="text-zinc-200">{tokens.inputTokens.toLocaleString("en-US")} input</span> +{" "}
-        <span className="text-zinc-200">{tokens.outputTokens.toLocaleString("en-US")} output tokens</span>
+        <span className="text-stone-800">{tokens.inputTokens.toLocaleString("en-US")} input</span> +{" "}
+        <span className="text-stone-800">{tokens.outputTokens.toLocaleString("en-US")} output tokens</span>
         {payout !== null && (
           <>
             {" "}
-            — the winner receives <span className="text-zinc-200">{payout.toLocaleString("en-US")} tUSDC</span>
+            — the winner receives <span className="text-stone-800">{payout.toLocaleString("en-US")} tUSDC</span>
           </>
         )}
         .
       </p>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[30rem] text-left text-xs">
-          <thead className="text-zinc-500">
-            <tr className="border-b border-zinc-800">
+          <thead className="text-stone-500">
+            <tr className="border-b border-stone-200">
               <th className="py-2 pr-3 font-normal">Model</th>
               <th className="py-2 pr-3 text-right font-normal">Cost / entry</th>
               <th className="py-2 pr-3 text-right font-normal">Of payout</th>
@@ -100,18 +100,18 @@ export function MissionCostTable({
           </thead>
           <tbody>
             {costs.map((c) => (
-              <tr key={c.model.id} className="border-b border-zinc-900">
+              <tr key={c.model.id} className="border-b border-stone-100">
                 <td className="py-2 pr-3">
-                  <span className="text-zinc-200">{c.model.name}</span>
-                  <span className="text-zinc-600">
+                  <span className="text-stone-800">{c.model.name}</span>
+                  <span className="text-stone-500">
                     {" "}
                     · {c.model.provider}
                     {c.model.note && ` · ${c.model.note}`}
                   </span>
                 </td>
-                <td className="py-2 pr-3 text-right tabular-nums text-zinc-200">{formatUsd(c.costUsd)}</td>
-                <td className="py-2 pr-3 text-right tabular-nums text-zinc-400">{formatShare(c.costShare)}</td>
-                <td className="py-2 pr-3 text-zinc-400">{breakEvenLabel(c.costShare)}</td>
+                <td className="py-2 pr-3 text-right tabular-nums text-stone-800">{formatUsd(c.costUsd)}</td>
+                <td className="py-2 pr-3 text-right tabular-nums text-stone-600">{formatShare(c.costShare)}</td>
+                <td className="py-2 pr-3 text-stone-600">{breakEvenLabel(c.costShare)}</td>
                 <td className="py-2">
                   <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${VERDICT[c.verdict].className}`}>
                     {VERDICT[c.verdict].label}
@@ -122,7 +122,7 @@ export function MissionCostTable({
           </tbody>
         </table>
       </div>
-      <p className="text-xs text-zinc-600">
+      <p className="text-xs text-stone-500">
         Based on {calibration.runs} measured agent runs; list prices per provider, checked Oct 10, 2026. Each
         provider counts tokens a little differently (±20%), reasoning models can bill extra thinking tokens,
         and a repair retry doubles the cost. Worth it = at most 10% of the payout; tight = up to 30%. tUSDC

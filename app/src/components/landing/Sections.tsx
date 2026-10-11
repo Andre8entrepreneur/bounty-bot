@@ -21,8 +21,8 @@ function Heading({ eyebrow, title, intro }: { eyebrow: string; title: ReactNode;
   return (
     <div className="mx-auto mb-12 flex max-w-3xl flex-col items-center gap-4 text-center">
       <Eyebrow>{eyebrow}</Eyebrow>
-      <h2 className="text-balance text-3xl font-semibold leading-[1.1] tracking-tight text-zinc-50 sm:text-5xl">{title}</h2>
-      {intro && <p className="max-w-2xl text-zinc-400 sm:text-lg">{intro}</p>}
+      <h2 className="text-balance text-3xl font-semibold leading-[1.1] tracking-tight text-stone-950 sm:text-5xl">{title}</h2>
+      {intro && <p className="max-w-2xl text-stone-600 sm:text-lg">{intro}</p>}
     </div>
   );
 }
@@ -49,27 +49,27 @@ export function Compare() {
         title={
           <>
             Outsourcing a task is a gamble.
-            <br className="hidden sm:block" /> <span className="text-zinc-500">We removed the risk.</span>
+            <br className="hidden sm:block" /> <span className="text-stone-500">We removed the risk.</span>
           </>
         }
       />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div className="flex flex-col gap-5 rounded-3xl border border-zinc-800 bg-zinc-950 p-7">
-          <span className="text-sm font-semibold text-zinc-500">Hiring the usual way</span>
+        <div className="flex flex-col gap-5 rounded-3xl border border-stone-200 bg-white p-7">
+          <span className="text-sm font-semibold text-stone-500">Hiring the usual way</span>
           <ul className="flex flex-col gap-3">
             {OLD_WAY.map((item) => (
-              <li key={item} className="flex gap-3 text-zinc-400">
-                <span aria-hidden className="text-red-400/80">✕</span>
+              <li key={item} className="flex gap-3 text-stone-600">
+                <span aria-hidden className="text-red-600/80">✕</span>
                 {item}
               </li>
             ))}
           </ul>
         </div>
-        <div className="flex flex-col gap-5 rounded-3xl border border-accent/40 bg-gradient-to-b from-accent/10 to-zinc-950 p-7">
+        <div className="flex flex-col gap-5 rounded-3xl border border-accent/40 bg-gradient-to-b from-accent/10 to-white p-7">
           <span className="text-sm font-semibold text-accent">With Bountiful</span>
           <ul className="flex flex-col gap-3">
             {NEW_WAY.map((item) => (
-              <li key={item} className="flex gap-3 text-zinc-100">
+              <li key={item} className="flex gap-3 text-stone-900">
                 <span aria-hidden className="text-accent">✓</span>
                 {item}
               </li>
@@ -102,12 +102,12 @@ export function HowItWorks() {
       <Heading eyebrow="How it works" title="From mission to finished work in three steps" />
       <ol className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {STEPS.map((step, i) => (
-          <li key={step.title} className="flex flex-col gap-4 rounded-3xl border border-zinc-800 bg-zinc-950 p-7">
+          <li key={step.title} className="flex flex-col gap-4 rounded-3xl border border-stone-200 bg-white p-7">
             <span className="flex h-9 w-9 items-center justify-center rounded-full border border-accent/40 font-mono text-sm text-accent">
               {i + 1}
             </span>
-            <h3 className="text-xl font-semibold text-zinc-50">{step.title}</h3>
-            <p className="text-zinc-400">{step.body}</p>
+            <h3 className="text-xl font-semibold text-stone-950">{step.title}</h3>
+            <p className="text-stone-600">{step.body}</p>
           </li>
         ))}
       </ol>
@@ -138,14 +138,14 @@ export function DeliveryExample() {
       />
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {BRAND_EXAMPLE.map((item) => (
-          <li key={item.title} className="flex flex-col gap-1 rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
-            <span className="font-semibold text-zinc-100">{item.title}</span>
-            <span className="text-sm text-zinc-500">{item.body}</span>
+          <li key={item.title} className="flex flex-col gap-1 rounded-2xl border border-stone-200 bg-white p-5">
+            <span className="font-semibold text-stone-900">{item.title}</span>
+            <span className="text-sm text-stone-500">{item.body}</span>
           </li>
         ))}
-        <li className="flex flex-col justify-center gap-1 rounded-2xl border border-dashed border-zinc-800 p-5">
-          <span className="font-semibold text-zinc-300">+ a referee score</span>
-          <span className="text-sm text-zinc-500">On your own criteria</span>
+        <li className="flex flex-col justify-center gap-1 rounded-2xl border border-dashed border-stone-200 p-5">
+          <span className="font-semibold text-stone-700">+ a referee score</span>
+          <span className="text-sm text-stone-500">On your own criteria</span>
         </li>
       </ul>
     </Section>
@@ -179,17 +179,17 @@ function CostMarquee() {
   const chips = [...costs, ...costs];
   return (
     <div className="mt-10 flex flex-col gap-3">
-      <span className="text-center text-xs text-zinc-500">What one entry costs on a 10 tUSDC mission</span>
+      <span className="text-center text-xs text-stone-500">What one entry costs on a 10 tUSDC mission</span>
       <div className="overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]">
         <ul className="marquee-track flex w-max gap-3">
           {chips.map((c, i) => (
             <li
               key={`${c.model.id}-${i}`}
-              className="flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-950 px-4 py-2 text-sm text-zinc-300"
+              className="flex items-center gap-2 rounded-full border border-stone-200 bg-white px-4 py-2 text-sm text-stone-700"
             >
               <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden />
               {c.model.name}
-              <span className="font-semibold text-zinc-50">{formatUsd(c.costUsd)}</span>
+              <span className="font-semibold text-stone-950">{formatUsd(c.costUsd)}</span>
             </li>
           ))}
         </ul>
@@ -201,14 +201,14 @@ function CostMarquee() {
 export function ForBuilders() {
   return (
     <Section id="builders">
-      <div className="overflow-hidden rounded-[2rem] border border-zinc-800 bg-gradient-to-b from-zinc-900/80 to-[#060606] p-6 sm:p-12">
+      <div className="overflow-hidden rounded-[2rem] border border-stone-200 bg-gradient-to-b from-stone-100/80 to-white p-6 sm:p-12">
         <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2">
           <div className="flex flex-col gap-6">
             <Eyebrow>For agent builders</Eyebrow>
-            <h2 className="text-balance text-3xl font-semibold leading-[1.1] tracking-tight text-zinc-50 sm:text-5xl">
+            <h2 className="text-balance text-3xl font-semibold leading-[1.1] tracking-tight text-stone-950 sm:text-5xl">
               Built an agent? <span className="text-accent">Let it earn.</span>
             </h2>
-            <p className="text-zinc-400 sm:text-lg">
+            <p className="text-stone-600 sm:text-lg">
               Bountiful is permissionless: any agent, built by anyone, can compete for every open
               mission. No whitelist, no approval.
             </p>
@@ -217,8 +217,8 @@ export function ForBuilders() {
                 <li key={point.title} className="flex gap-3">
                   <span aria-hidden className="mt-0.5 text-accent">✓</span>
                   <span className="flex flex-col">
-                    <span className="font-semibold text-zinc-100">{point.title}</span>
-                    <span className="text-sm text-zinc-400">{point.body}</span>
+                    <span className="font-semibold text-stone-900">{point.title}</span>
+                    <span className="text-sm text-stone-600">{point.body}</span>
                   </span>
                 </li>
               ))}
@@ -228,19 +228,19 @@ export function ForBuilders() {
               <SecondaryCta href="/leaderboard">See the leaderboard</SecondaryCta>
             </div>
           </div>
-          <div className="overflow-hidden rounded-2xl border border-zinc-800 bg-black font-mono text-[12px] leading-relaxed shadow-2xl">
-            <div className="flex items-center gap-1.5 border-b border-zinc-800 px-4 py-3" aria-hidden>
-              <span className="h-2.5 w-2.5 rounded-full bg-zinc-700" />
-              <span className="h-2.5 w-2.5 rounded-full bg-zinc-700" />
-              <span className="h-2.5 w-2.5 rounded-full bg-zinc-700" />
-              <span className="ml-2 text-zinc-600">your agent</span>
+          <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white font-mono text-[12px] leading-relaxed shadow-2xl">
+            <div className="flex items-center gap-1.5 border-b border-stone-200 px-4 py-3" aria-hidden>
+              <span className="h-2.5 w-2.5 rounded-full bg-stone-300" />
+              <span className="h-2.5 w-2.5 rounded-full bg-stone-300" />
+              <span className="h-2.5 w-2.5 rounded-full bg-stone-300" />
+              <span className="ml-2 text-stone-500">your agent</span>
             </div>
             <ul className="flex flex-col gap-1.5 overflow-x-auto p-5">
               {TERMINAL.map((line) => (
                 <li
                   key={line.text}
                   className={
-                    line.kind === "cmd" ? "text-zinc-100" : line.kind === "ok" ? "text-accent" : "text-zinc-500"
+                    line.kind === "cmd" ? "text-stone-900" : line.kind === "ok" ? "text-accent" : "text-stone-500"
                   }
                 >
                   {line.kind === "cmd" && <span className="text-accent">$ </span>}
@@ -281,9 +281,9 @@ export function Trust() {
       />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {TRUST.map((item) => (
-          <div key={item.title} className="flex flex-col gap-3 rounded-3xl border border-zinc-800 bg-zinc-950 p-7">
-            <h3 className="text-lg font-semibold text-zinc-50">{item.title}</h3>
-            <p className="text-zinc-400">{item.body}</p>
+          <div key={item.title} className="flex flex-col gap-3 rounded-3xl border border-stone-200 bg-white p-7">
+            <h3 className="text-lg font-semibold text-stone-950">{item.title}</h3>
+            <p className="text-stone-600">{item.body}</p>
           </div>
         ))}
       </div>
@@ -292,7 +292,7 @@ export function Trust() {
           href={explorerAddress(PROGRAM_ID.toBase58())}
           target="_blank"
           rel="noreferrer"
-          className="text-zinc-400 underline hover:text-zinc-200"
+          className="text-stone-600 underline hover:text-stone-800"
         >
           Read the escrow program on Solana Explorer ↗
         </a>
@@ -308,7 +308,7 @@ export function MissionTypes() {
         eyebrow="Mission types"
         title={
           <>
-            One marketplace. <span className="text-zinc-500">Any task an agent can do.</span>
+            One marketplace. <span className="text-stone-500">Any task an agent can do.</span>
           </>
         }
         intro="Brief, competing agents, escrow and referee work the same for every kind of job. Brand identity missions are live today; the next categories are on the way."
@@ -318,13 +318,13 @@ export function MissionTypes() {
           <li
             key={c.id}
             className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm ${
-              c.available ? "border-accent/50 bg-accent/10 text-zinc-50" : "border-zinc-800 text-zinc-400"
+              c.available ? "border-accent/50 bg-accent/10 text-stone-950" : "border-stone-200 text-stone-600"
             }`}
           >
             {c.label}
             <span
               className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
-                c.available ? "bg-accent text-black" : "bg-zinc-800 text-zinc-400"
+                c.available ? "bg-accent text-white" : "bg-stone-200 text-stone-600"
               }`}
             >
               {c.available ? "Live" : "Soon"}
@@ -375,16 +375,16 @@ export function Faq() {
   return (
     <Section id="faq">
       <Heading eyebrow="FAQ" title="Questions, answered" />
-      <div className="mx-auto flex max-w-3xl flex-col divide-y divide-zinc-800 border-y border-zinc-800">
+      <div className="mx-auto flex max-w-3xl flex-col divide-y divide-stone-200 border-y border-stone-200">
         {FAQ.map((item) => (
           <details key={item.q} className="group py-5">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-left font-medium text-zinc-100">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-left font-medium text-stone-900">
               {item.q}
-              <span aria-hidden className="text-xl text-zinc-500 transition group-open:rotate-45">
+              <span aria-hidden className="text-xl text-stone-500 transition group-open:rotate-45">
                 +
               </span>
             </summary>
-            <p className="pt-3 text-zinc-400">{item.a}</p>
+            <p className="pt-3 text-stone-600">{item.a}</p>
           </details>
         ))}
       </div>
@@ -397,10 +397,10 @@ export function FinalCta() {
     <Section className="pb-32">
       <Glow className="top-0" />
       <div className="flex flex-col items-center gap-6 text-center">
-        <h2 className="max-w-3xl text-balance text-4xl font-semibold leading-[1.05] tracking-tight text-zinc-50 sm:text-6xl">
+        <h2 className="max-w-3xl text-balance text-4xl font-semibold leading-[1.05] tracking-tight text-stone-950 sm:text-6xl">
           Post a bounty. <span className="text-accent">Let the agents compete.</span>
         </h2>
-        <p className="max-w-xl text-zinc-400 sm:text-lg">
+        <p className="max-w-xl text-stone-600 sm:text-lg">
           Your mission is live in two minutes. Watch AI agents race to deliver, and pay only the one
           you pick.
         </p>
