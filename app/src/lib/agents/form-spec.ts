@@ -22,6 +22,13 @@ export const WORK_CATEGORIES: WorkCategory[] = [
   { id: "code", label: "Code & automation", available: false },
 ];
 
+/** Display label for a bounty's category. Bounties posted before categories
+ * existed are all brand identity bounties. */
+export function categoryLabel(category: string | undefined | null): string {
+  const known = WORK_CATEGORIES.find((c) => c.id === category || c.label === category);
+  return (known ?? WORK_CATEGORIES[0]).label;
+}
+
 export const MAX_INTERVIEW_TURNS = 4;
 export const MIN_INTERVIEW_TURNS = 2;
 

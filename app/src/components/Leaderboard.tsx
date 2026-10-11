@@ -2,12 +2,9 @@
 
 import { useState } from "react";
 import { explorerAddress } from "@/lib/solana/client";
-import type { AgentStats } from "@/lib/leaderboard";
+import type { LeaderRow } from "@/lib/leaderboard";
 
-export interface LeaderRow extends AgentStats {
-  name: string;
-  specialty: string | null;
-}
+export type { LeaderRow };
 
 type SortKey = "avgScore" | "passRate" | "winRate" | "wins" | "earnedTusdc" | "entries";
 
@@ -22,14 +19,24 @@ const SORTS: Array<{ key: SortKey; label: string }> = [
 
 const pct = (n: number | null) => (n === null ? "—" : `${n}%`);
 
-/** Sortable, filterable ranking of every agent across all missions. */
-export function Leaderboard({ rows }: { rows: LeaderRow[] }) {
+const ALL = "all";
+
+/** Sortable, filterable ranking of every agent, overall or for one category of work. */
+export function Leaderboard({
+  rows: allRows,
+  boards,
+}: {
+  rows: LeaderRow[];
+  boards: Array<{ category: string; rows: LeaderRow[] }>;
+}) {
+  const [category, setCategory] = useState(ALL);
   const [sortKey, setSortKey] = useState<SortKey>("avgScore");
   const [query, setQuery] = useState("");
   const [minScore, setMinScore] = useState(0);
   const [minPass, setMinPass] = useState(0);
   const [minEntries, setMinEntries] = useState(1);
 
+  const rows = category === ALL ? allRows : (boards.find((b) => b.category === category)?.rows ?? []);
   const q = query.trim().toLowerCase();
   const visible = rows
     .filter((r) => r.entries >= minEntries)
@@ -40,7 +47,18 @@ export function Leaderboard({ rows }: { rows: LeaderRow[] }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-1 gap-4 rounded-2xl border border-stone-200 p-5 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 rounded-2xl border border-stone-200 p-5 sm:grid-cols-2 lg:grid-cols-6">
+        <label className="flex flex-col gap-1.5 lg:col-span-2">
+          <span className="text-xs uppercase tracking-wider text-stone-500">Category</span>
+          <select value={category} onChange={(e) => setCategory(e.target.value)} className="input">
+            <option value={ALL}>All categories</option>
+            {boards.map((b) => (
+              <option key={b.category} value={b.category}>
+                {b.category}
+              </option>
+            ))}
+          </select>
+        </label>
         <label className="flex flex-col gap-1.5 lg:col-span-2">
           <span className="text-xs uppercase tracking-wider text-stone-500">Search</span>
           <input
@@ -50,7 +68,7 @@ export function Leaderboard({ rows }: { rows: LeaderRow[] }) {
             className="input"
           />
         </label>
-        <label className="flex flex-col gap-1.5">
+        <label className="flex flex-col gap-1.5 lg:col-span-2">
           <span className="text-xs uppercase tracking-wider text-stone-500">Sort by</span>
           <select value={sortKey} onChange={(e) => setSortKey(e.target.value as SortKey)} className="input">
             {SORTS.map((s) => (
@@ -159,7 +177,7 @@ function Slider({
   onChange: (v: number) => void;
 }) {
   return (
-    <label className="flex flex-col gap-1.5">
+    <label className="flex flex-col gap-1.5 lg:col-span-2">
       <span className="text-xs uppercase tracking-wider text-stone-500">{label}</span>
       <input
         type="range"
