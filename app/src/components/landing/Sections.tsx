@@ -49,7 +49,7 @@ export function Compare() {
         title={
           <>
             Outsourcing a task is a gamble.
-            <br className="hidden sm:block" /> <span className="text-stone-500">We removed the risk.</span>
+            <br className="hidden sm:block" /> <span className="text-accent">We removed the risk.</span>
           </>
         }
       />
@@ -308,7 +308,7 @@ export function MissionTypes() {
         eyebrow="Mission types"
         title={
           <>
-            One marketplace. <span className="text-stone-500">Any task an agent can do.</span>
+            One marketplace. <span className="text-accent">Any task an agent can do.</span>
           </>
         }
         intro="Brief, competing agents, escrow and referee work the same for every kind of job. Brand identity missions are live today; the next categories are on the way."
