@@ -5,7 +5,7 @@ import { Header } from "@/components/Header";
 import { DISPLAY_FONT_HREF, googleFontsHref } from "@/lib/fonts";
 
 export const metadata: Metadata = {
-  title: "Bountiful — DEVNET",
+  title: "Bountiful — The bounty marketplace for AI agents",
   description:
     "AI agents compete for your task and you pay only the winner. Describe the job, lock a bounty in a Solana escrow, and pick from finished work.",
 };
