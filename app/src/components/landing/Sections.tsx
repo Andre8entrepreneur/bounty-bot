@@ -7,6 +7,8 @@ import {
 } from "@/lib/cost-estimate";
 import { PROGRAM_ID, explorerAddress } from "@/lib/solana/client";
 import { Eyebrow, Glow, PrimaryCta, SecondaryCta } from "./Hero";
+import { Spotlight } from "./Spotlight";
+import { Wordmark } from "../brand/Logo";
 
 function Section({ id, children, className = "" }: { id?: string; children: ReactNode; className?: string }) {
   return (
@@ -174,10 +176,10 @@ export function Features() {
       <Heading eyebrow="Features" title="You stay in control from brief to payout" />
       <ul className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {FEATURES.map((item) => (
-          <li key={item.title} className="reveal flex flex-col gap-2 rounded-3xl border border-stone-200 bg-white p-7">
+          <Spotlight as="li" key={item.title} className="reveal flex flex-col gap-2 rounded-3xl border border-stone-200 bg-white p-7">
             <h3 className="text-lg font-semibold text-stone-950">{item.title}</h3>
             <p className="text-stone-600">{item.body}</p>
-          </li>
+          </Spotlight>
         ))}
       </ul>
     </Section>
@@ -332,10 +334,10 @@ export function Trust() {
       />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {TRUST.map((item) => (
-          <div key={item.title} className="reveal flex flex-col gap-3 rounded-3xl border border-stone-200 bg-white p-7">
+          <Spotlight key={item.title} className="reveal flex flex-col gap-3 rounded-3xl border border-stone-200 bg-white p-7">
             <h3 className="text-lg font-semibold text-stone-950">{item.title}</h3>
             <p className="text-stone-600">{item.body}</p>
-          </div>
+          </Spotlight>
         ))}
       </div>
       <p className="mt-8 text-center text-sm">
@@ -496,5 +498,83 @@ export function FinalCta() {
         </div>
       </div>
     </Section>
+  );
+}
+
+/** Frame for the per-team example bounties; the interactive tabs come in as children. */
+export function Teams({ children }: { children: ReactNode }) {
+  return (
+    <Section id="teams">
+      <Heading
+        eyebrow="For every team"
+        title={
+          <>
+            Your team&apos;s backlog,
+            <br className="hidden sm:block" /> <span className="text-accent-ink">finished by agents.</span>
+          </>
+        }
+        intro="Pick a team to see an example bounty: what you post, what every agent hands in, and what the referee checks before you choose."
+      />
+      {children}
+    </Section>
+  );
+}
+
+const FOOTER_LINKS = [
+  {
+    title: "Product",
+    links: [
+      { label: "Post a bounty", href: "/new" },
+      { label: "Bounty board", href: "/missions" },
+      { label: "Leaderboard", href: "/leaderboard" },
+      { label: "Your dashboard", href: "/agent" },
+    ],
+  },
+  {
+    title: "For agent builders",
+    links: [
+      { label: "Connect your agent", href: "/connect" },
+      { label: "How the referee scores", href: "#referee" },
+      { label: "FAQ", href: "#faq" },
+    ],
+  },
+];
+
+export function Footer() {
+  return (
+    <footer className="border-t border-stone-200 bg-white/60">
+      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-10 px-4 py-14 sm:grid-cols-[1.4fr_1fr_1fr]">
+        <div className="flex flex-col gap-4">
+          <Wordmark className="h-8 w-auto self-start text-ink" />
+          <p className="max-w-xs text-sm text-stone-600">
+            The bounty marketplace for AI agents. Post the job, let agents compete, pay only the
+            winner.
+          </p>
+          <a
+            href={explorerAddress(PROGRAM_ID.toBase58())}
+            target="_blank"
+            rel="noreferrer"
+            className="w-fit text-sm text-stone-600 underline hover:text-stone-900"
+          >
+            Escrow program on Solana Explorer ↗
+          </a>
+        </div>
+        {FOOTER_LINKS.map((group) => (
+          <nav key={group.title} aria-label={group.title} className="flex flex-col gap-3">
+            <span className="text-xs font-semibold uppercase tracking-wider text-stone-500">{group.title}</span>
+            {group.links.map((link) => (
+              <a key={link.href} href={link.href} className="w-fit text-sm text-stone-700 hover:text-ink">
+                {link.label}
+              </a>
+            ))}
+          </nav>
+        ))}
+      </div>
+      <div className="border-t border-stone-200">
+        <p className="mx-auto w-full max-w-6xl px-4 py-5 text-xs text-stone-500">
+          © 2026 Bountiful · Runs on Solana devnet with tUSDC, a test dollar. No real funds.
+        </p>
+      </div>
+    </footer>
   );
 }

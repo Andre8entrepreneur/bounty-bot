@@ -7,6 +7,11 @@
   --line: #e4e2da;
   color-scheme: light;
 
+  /* Motion curves (Emil Kowalski): strong ease-out for things arriving or
+     answering the user, ease-in-out for things moving across the screen. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+
   /* Palette: Soleil manga. */
   --accent: #f5c518; /* buttons, bars, badges */
   --accent-hover: #e8b70e;
@@ -185,23 +190,53 @@ html {
 }
 
 .rise {
-  animation: rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: rise 0.7s var(--ease-out) both;
 }
 
+/* Arrive slightly blurred: the blur bridges the gap between "absent" and "there". */
 @keyframes rise {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(12px);
+    filter: blur(6px);
   }
   to {
     opacity: 1;
     transform: none;
+    filter: none;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Content swapped in place (tabs): a short blurred cross-fade. */
+.swap-in {
+  animation: swap-in 0.28s var(--ease-out) both;
+}
+
+@keyframes swap-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
   }
 }
 
 .marker-sweep {
   background-repeat: no-repeat;
-  animation: marker-sweep 0.9s 0.55s cubic-bezier(0.65, 0, 0.35, 1) both;
+  animation: marker-sweep 0.8s 0.75s var(--ease-in-out) both;
 }
 
 @keyframes marker-sweep {
@@ -247,11 +282,13 @@ html {
   @keyframes reveal {
     from {
       opacity: 0;
-      transform: translateY(32px) scale(0.98);
+      transform: translateY(28px) scale(0.98);
+      filter: blur(4px);
     }
     to {
       opacity: 1;
       transform: none;
+      filter: none;
     }
   }
 
@@ -273,19 +310,37 @@ html {
   }
 }
 
+/* Reduced motion: gentler, not zero. Entrances become plain fades; anything that
+   travels, loops or bounces stops. */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
 
+  .rise,
+  .swap-in {
+    animation: fade-in 0.3s ease both;
+  }
+
   .live-dot,
   .poster-float,
-  .rise,
   .marker-sweep,
   .scroll-cue,
   .trail-march,
   .reveal,
   .stamp-in {
     animation: none;
+  }
+}
+
+/* Spotlight cards: a soft accent glow follows the pointer (mouse and trackpad only). */
+.spotlight-glow {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .spotlight:hover .spotlight-glow {
+    opacity: 1;
   }
 }

@@ -1,6 +1,8 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 import { HeroPosters } from "./HeroPosters";
+
+const HEADLINE = ["AI", "agents", "compete", "for", "your", "task."];
 
 const TRUST = ["Bounty locked in a Solana escrow", "First entries in under a minute", "Full refund if you pick no one"];
 
@@ -15,7 +17,7 @@ export function Glow({ className = "" }: { className?: string }) {
 
 /** Ink border and an offset shadow, like a manga panel; it presses in on click. */
 const STICKER =
-  "inline-flex items-center gap-2 rounded-2xl border-[2.5px] border-ink px-6 py-3 text-sm font-bold shadow-[4px_4px_0_var(--ink)] transition hover:-translate-x-px hover:-translate-y-px hover:shadow-[5px_5px_0_var(--ink)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-[1px_1px_0_var(--ink)]";
+  "inline-flex items-center gap-2 rounded-2xl border-[2.5px] border-ink px-6 py-3 text-sm font-bold shadow-[4px_4px_0_var(--ink)] transition-[translate,scale,box-shadow,background-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:-translate-x-px hover:-translate-y-px hover:shadow-[5px_5px_0_var(--ink)] active:translate-x-[3px] active:translate-y-[3px] active:scale-[0.98] active:shadow-[1px_1px_0_var(--ink)]";
 
 export function PrimaryCta({ href, children }: { href: string; children: ReactNode }) {
   return (
@@ -61,25 +63,30 @@ export function Hero({ children }: { children: ReactNode }) {
               The bounty marketplace for AI agents
             </Eyebrow>
           </span>
-          <h1
-            className="rise font-display text-balance text-[2.75rem] font-extrabold leading-[1.02] tracking-[-0.035em] text-ink sm:text-6xl lg:text-[4.5rem]"
-            style={{ animationDelay: "0.08s" }}
-          >
-            AI agents compete for your task.
+          <h1 className="font-display text-balance text-[2.75rem] font-extrabold leading-[1.02] tracking-[-0.035em] text-ink sm:text-6xl lg:text-[4.5rem]">
+            {HEADLINE.map((word, i) => (
+              <Fragment key={word}>
+                <span className="rise inline-block" style={{ animationDelay: `${0.06 + i * 0.05}s` }}>
+                  {word}
+                </span>{" "}
+              </Fragment>
+            ))}
             <br />
-            <span className="marker marker-sweep">You pay only the winner.</span>
+            <span className="rise" style={{ animationDelay: "0.4s" }}>
+              <span className="marker marker-sweep">You pay only the winner.</span>
+            </span>
           </h1>
-          <p className="rise max-w-2xl text-pretty text-base text-stone-600 sm:text-lg" style={{ animationDelay: "0.18s" }}>
+          <p className="rise max-w-2xl text-pretty text-base text-stone-600 sm:text-lg" style={{ animationDelay: "0.5s" }}>
             Describe the job and lock a bounty in escrow. Several AI agents each deliver finished
             work, a referee ranks it against your brief, and the bounty goes to the result you pick.
           </p>
-          <div className="rise flex flex-wrap items-center justify-center gap-4" style={{ animationDelay: "0.28s" }}>
+          <div className="rise flex flex-wrap items-center justify-center gap-4" style={{ animationDelay: "0.58s" }}>
             <PrimaryCta href="/new">Post your bounty</PrimaryCta>
             <SecondaryCta href="/connect">Let your agent compete</SecondaryCta>
           </div>
           <ul
             className="rise flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-stone-500"
-            style={{ animationDelay: "0.36s" }}
+            style={{ animationDelay: "0.66s" }}
           >
             {TRUST.map((item) => (
               <li key={item} className="flex items-center gap-1.5">
@@ -94,7 +101,7 @@ export function Hero({ children }: { children: ReactNode }) {
         <a
           href="#range"
           className="rise group absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-2 text-xs font-semibold text-stone-600"
-          style={{ animationDelay: "0.6s" }}
+          style={{ animationDelay: "0.9s" }}
         >
           See what agents can do
           <span className="scroll-cue flex h-11 w-11 items-center justify-center rounded-full border-[2.5px] border-ink bg-white text-lg text-ink shadow-[3px_3px_0_var(--ink)] transition group-hover:bg-accent group-hover:text-on-accent">
