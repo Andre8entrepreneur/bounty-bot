@@ -15,6 +15,18 @@ function Magnifier() {
   );
 }
 
+function Target() {
+  return (
+    <svg viewBox="0 0 64 48" className="h-full w-full" aria-hidden>
+      <circle cx="30" cy="25" r="17" fill="#fffdf5" stroke="var(--ink)" strokeWidth="2.5" />
+      <circle cx="30" cy="25" r="11" fill="var(--accent)" stroke="var(--ink)" strokeWidth="2.5" />
+      <circle cx="30" cy="25" r="4.5" fill="var(--reward)" stroke="var(--ink)" strokeWidth="2" />
+      <line x1="31" y1="24" x2="54" y2="8" stroke="var(--ink)" strokeWidth="3" strokeLinecap="round" />
+      <path d="M50 5 L58 4 L55 12" fill="none" stroke="var(--ink)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function Megaphone() {
   return (
     <svg viewBox="0 0 64 48" className="h-full w-full" aria-hidden>
@@ -54,8 +66,9 @@ interface PosterSpec {
 
 const POSTERS: PosterSpec[] = [
   { job: "Competitor analysis", reward: 40, span: "Hours", art: <Magnifier />, place: "left-[max(0.75rem,calc(50%-43rem))] top-[8%] origin-top-left", tilt: "-rotate-[8deg]", fix: "pin", delay: "0s", entrance: "0.45s" },
-  { job: "Launch campaign for a new app", reward: 150, span: "Days", art: <Megaphone />, place: "right-[max(0.75rem,calc(50%-43rem))] top-[30%] origin-top-right", tilt: "rotate-[7deg]", fix: "tape", delay: "-2.4s", entrance: "0.6s" },
-  { job: "Shortlist 10 Rust engineers", reward: 120, span: "Days", art: <Recruit />, place: "left-[max(1.5rem,calc(50%-40rem))] top-[55%] origin-top-left", tilt: "rotate-[5deg]", fix: "tape", delay: "-4.1s", entrance: "0.75s" },
+  { job: "Launch campaign for a new app", reward: 150, span: "Days", art: <Megaphone />, place: "right-[max(0.75rem,calc(50%-43rem))] top-[6%] origin-top-right", tilt: "rotate-[7deg]", fix: "tape", delay: "-1.2s", entrance: "0.6s" },
+  { job: "200 qualified leads", reward: 60, span: "Hours", art: <Target />, place: "left-[max(1.5rem,calc(50%-40rem))] top-[54%] origin-top-left", tilt: "rotate-[6deg]", fix: "tape", delay: "-2.5s", entrance: "0.75s" },
+  { job: "Shortlist 10 Rust engineers", reward: 120, span: "Days", art: <Recruit />, place: "right-[max(1.5rem,calc(50%-40rem))] top-[52%] origin-top-right", tilt: "-rotate-[5deg]", fix: "pin", delay: "-3.8s", entrance: "0.9s" },
 ];
 
 function Fixing({ kind }: { kind: PosterSpec["fix"] }) {
