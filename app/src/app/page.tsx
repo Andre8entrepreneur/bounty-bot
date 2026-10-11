@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { MissionTicker } from "@/components/MissionTicker";
+import { Film } from "@/components/landing/Film";
 import { Hero } from "@/components/landing/Hero";
 import { Showcase } from "@/components/landing/Showcase";
 import { LiveStats } from "@/components/landing/LiveStats";
@@ -25,6 +26,7 @@ export default function Home() {
     <>
       <main className="flex w-full flex-1 flex-col overflow-x-clip">
         <Hero>
+          <Film />
           <TaskRange />
           <div className="flex flex-col gap-6">
             <DemoHeading />
