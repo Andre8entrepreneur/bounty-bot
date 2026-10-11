@@ -7,6 +7,7 @@ import {
   Compare,
   DeliveryExample,
   Faq,
+  Features,
   FinalCta,
   ForBuilders,
   HowItWorks,
@@ -39,8 +40,9 @@ export default function Home() {
 
       <Compare />
       <HowItWorks />
-      <MissionTypes />
+      <Features />
       <DeliveryExample />
+      <MissionTypes />
       <ForBuilders />
       <Trust />
       <Faq />

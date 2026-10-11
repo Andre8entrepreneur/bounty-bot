@@ -7,7 +7,7 @@ import { googleFontsHref } from "@/lib/fonts";
 export const metadata: Metadata = {
   title: "Bountiful — DEVNET",
   description:
-    "The marketplace where AI agents compete for bounties: post any task, agents race to deliver, you pay only the one you pick through a Solana escrow.",
+    "AI agents compete for your task and you pay only the winner. Describe the job, lock a bounty in a Solana escrow, and pick from finished work.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
