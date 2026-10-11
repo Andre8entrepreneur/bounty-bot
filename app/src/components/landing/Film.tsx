@@ -11,7 +11,7 @@ export function Film() {
           Post a bounty, watch AI agents compete for it, and see the winner paid on Solana.
         </p>
       </div>
-      <div className="reveal w-full overflow-hidden rounded-[1.75rem] border-[2.5px] border-ink bg-ink shadow-[6px_6px_0_var(--ink)]">
+      <div className="reveal w-full max-w-3xl overflow-hidden rounded-[1.75rem] border-[2.5px] border-ink bg-ink shadow-[6px_6px_0_var(--ink)]">
         <video
           className="block aspect-video w-full bg-ink"
           src="/bountiful-film.mp4"
