@@ -17,9 +17,6 @@ export function Header() {
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 rounded-2xl border border-stone-200/80 bg-background/70 px-4 py-2.5 shadow-[0_8px_30px_-12px_rgb(22_20_15/0.18)] backdrop-blur-xl backdrop-saturate-150">
         <Link href="/" className="flex items-center gap-2 text-ink" aria-label="Bountiful home">
           <Wordmark className="h-7 w-auto" />
-          <span className="rounded-full border border-accent/40 bg-accent/10 px-2 py-0.5 text-[10px] font-bold tracking-wider text-accent-ink">
-            DEVNET
-          </span>
         </Link>
 
         <nav className="hidden items-center gap-4 text-sm text-stone-600 sm:flex">
