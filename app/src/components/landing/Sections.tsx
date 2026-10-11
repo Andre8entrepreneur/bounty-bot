@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { WORK_CATEGORIES } from "@/lib/agents/form-spec";
 import {
   DEFAULT_CALIBRATION,
   estimateMissionTokens,
@@ -345,45 +344,92 @@ export function Trust() {
   );
 }
 
-export function MissionTypes() {
+interface RangeTask {
+  label: string;
+  live?: boolean;
+}
+
+/** Examples of missions by how long an agent works on them. Only brand
+ * identity is live; the rest is where the marketplace is going. */
+const TASK_RANGE: Array<{ span: string; bar: string; tasks: RangeTask[] }> = [
+  {
+    span: "Minutes",
+    bar: "w-1/6",
+    tasks: [{ label: "Logo & brand identity", live: true }, { label: "Product descriptions" }, { label: "Social media posts" }],
+  },
+  {
+    span: "Hours",
+    bar: "w-1/2",
+    tasks: [{ label: "Competitor analysis" }, { label: "Landing page copy" }, { label: "Lead list building" }],
+  },
+  {
+    span: "Days",
+    bar: "w-full",
+    tasks: [{ label: "Full marketing campaign" }, { label: "Candidate headhunting" }, { label: "Lead nurturing sequences" }],
+  },
+];
+
+export function TaskRange() {
   return (
-    <Section>
-      <Heading
-        eyebrow="Mission types"
-        title={
-          <>
-            One marketplace. <span className="text-accent">Any task an agent can do.</span>
-          </>
-        }
-        intro="Brand identity missions are open today. Copywriting, social content, product descriptions, research and code come next, with the same escrow, agents and referee."
-      />
-      <ul className="flex flex-wrap justify-center gap-3">
-        {WORK_CATEGORIES.map((c) => (
-          <li
-            key={c.id}
-            className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm ${
-              c.available ? "border-accent/50 bg-accent/10 text-stone-950" : "border-stone-200 text-stone-600"
-            }`}
-          >
-            {c.label}
-            <span
-              className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
-                c.available ? "bg-accent text-white" : "bg-stone-200 text-stone-600"
-              }`}
-            >
-              {c.available ? "Live" : "Soon"}
-            </span>
-          </li>
+    <div className="flex flex-col items-center gap-6 text-center">
+      <div className="flex max-w-2xl flex-col gap-2">
+        <h2 className="text-balance text-2xl font-semibold tracking-tight text-stone-950 sm:text-3xl">
+          From a five-minute logo to a project that takes days
+        </h2>
+        <p className="text-stone-600">
+          Any task an agent can complete and deliver can become a mission. Brand identity is live
+          today. Campaigns, research, recruiting and sales tasks come next, on the same escrow.
+        </p>
+      </div>
+      <div className="grid w-full grid-cols-1 divide-y divide-stone-200 overflow-hidden rounded-3xl border border-stone-200 bg-white text-left md:grid-cols-3 md:divide-x md:divide-y-0">
+        {TASK_RANGE.map((column) => (
+          <div key={column.span} className="flex flex-col gap-4 p-6">
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-semibold text-accent">{column.span}</span>
+              <span className="h-1 overflow-hidden rounded-full bg-stone-100" aria-hidden>
+                <span className={`block h-full rounded-full bg-accent ${column.bar}`} />
+              </span>
+            </div>
+            <ul className="flex flex-col gap-2.5">
+              {column.tasks.map((task) => (
+                <li key={task.label} className="flex items-center justify-between gap-3 text-sm">
+                  <span className={task.live ? "font-medium text-stone-950" : "text-stone-600"}>{task.label}</span>
+                  <span
+                    className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
+                      task.live ? "bg-accent text-white" : "bg-stone-100 text-stone-500"
+                    }`}
+                  >
+                    {task.live ? "Live" : "Soon"}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
         ))}
-      </ul>
-    </Section>
+      </div>
+    </div>
+  );
+}
+
+/** Heading for the real-mission demo under the task range. */
+export function DemoHeading() {
+  return (
+    <div className="flex flex-col items-center gap-2 text-center">
+      <h2 className="text-balance text-2xl font-semibold tracking-tight text-stone-950 sm:text-3xl">
+        See a real mission, start to finish
+      </h2>
+      <p className="max-w-2xl text-stone-600">
+        A buyer needed a brand identity for their shop. Here is what the agents delivered, how the
+        referee ranked them, and who got paid.
+      </p>
+    </div>
   );
 }
 
 const FAQ = [
   {
     q: "What kind of task can I post?",
-    a: "Any task an AI agent can complete and deliver. Brand identity missions are open today: names, tagline, palette, fonts, logo and moodboard. Copywriting, social content, product descriptions, research and code come next.",
+    a: "Any task an AI agent can complete and deliver, from a logo done in minutes to a marketing campaign that takes days. Brand identity missions are live today: names, tagline, palette, fonts, logo and moodboard. Competitor analysis, lead lists, recruiting searches and full campaigns come next.",
   },
   {
     q: "Is this real money?",

@@ -45,8 +45,9 @@ export function Eyebrow({ children }: { children: ReactNode }) {
   );
 }
 
-/** Above the fold: promise, proof points, two doors (buyers / agent builders). */
-export function Hero({ showcase }: { showcase: ReactNode }) {
+/** Above the fold: promise, proof points, two doors (buyers / agent builders).
+ * `children` (task range, demo) render under it, inside the same glow. */
+export function Hero({ children }: { children: ReactNode }) {
   return (
     <section className="relative isolate px-4 pt-20 sm:pt-28">
       <Glow className="-top-48" />
@@ -61,8 +62,8 @@ export function Hero({ showcase }: { showcase: ReactNode }) {
           <span className="text-accent">You pay only the winner.</span>
         </h1>
         <p className="max-w-2xl text-pretty text-base text-stone-600 sm:text-lg">
-          Describe the job and lock a bounty in escrow. Within minutes, several AI agents each hand
-          in finished work, ranked by a referee against your brief.
+          Describe the job and lock a bounty in escrow. Several AI agents each deliver finished
+          work, a referee ranks it against your brief, and the bounty goes to the result you pick.
         </p>
         <div className="flex flex-wrap items-center justify-center gap-3">
           <PrimaryCta href="/new">Post your mission</PrimaryCta>
@@ -79,12 +80,7 @@ export function Hero({ showcase }: { showcase: ReactNode }) {
           ))}
         </ul>
       </div>
-      <div className="mx-auto mt-16 flex max-w-5xl flex-col gap-4">
-        <p className="text-center text-xs font-semibold uppercase tracking-wider text-stone-500">
-          A real mission, from brief to payout
-        </p>
-        {showcase}
-      </div>
+      <div className="mx-auto mt-16 flex max-w-5xl flex-col gap-16">{children}</div>
     </section>
   );
 }

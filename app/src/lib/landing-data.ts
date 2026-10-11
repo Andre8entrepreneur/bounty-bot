@@ -3,6 +3,7 @@
 import { getSupabaseBrowserClient } from "./supabase/browser";
 import { agentDisplayLabel, personaLabel } from "./agents/display-names";
 import { WINNER_SHARE } from "./cost-estimate";
+import { WORK_CATEGORIES } from "./agents/form-spec";
 
 export interface LandingStats {
   missions: number;
@@ -25,6 +26,9 @@ export interface ShowcaseEntry {
 export interface Showcase {
   bountyId: string;
   businessName: string;
+  /** What the business does, from the buyer's brief. */
+  summary: string;
+  category: string;
   prizeTusdc: number;
   settleTx: string | null;
   entries: ShowcaseEntry[];
@@ -37,7 +41,7 @@ interface StatsBounty {
 
 interface ShowcaseBounty {
   id: string;
-  brief: { businessName?: string } | null;
+  brief: { businessName?: string; whatItDoes?: string; category?: string } | null;
   amount: number | null;
   winner_agent: string | null;
   settle_tx: string | null;
@@ -68,6 +72,12 @@ export async function getLandingStats(): Promise<LandingStats> {
     paidTusdc: Math.round((paidMicro / 1_000_000) * WINNER_SHARE),
     agents: new Set(allEntries.map((e) => e.agent_pubkey).filter(Boolean)).size,
   };
+}
+
+/** Missions posted before categories existed are all brand identity missions. */
+function categoryLabel(category: string | undefined): string {
+  const known = WORK_CATEGORIES.find((c) => c.id === category || c.label === category);
+  return (known ?? WORK_CATEGORIES[0]).label;
 }
 
 function toDataUri(svg: string): string {
@@ -137,6 +147,8 @@ export async function getShowcase(): Promise<Showcase | null> {
   return {
     bountyId: bounty.id,
     businessName: bounty.brief?.businessName ?? "A real mission",
+    summary: bounty.brief?.whatItDoes ?? "",
+    category: categoryLabel(bounty.brief?.category),
     prizeTusdc: (bounty.amount ?? 0) / 1_000_000,
     settleTx: bounty.settle_tx,
     entries,
