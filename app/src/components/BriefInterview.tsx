@@ -111,7 +111,7 @@ export function BriefInterview({ onComplete }: { onComplete: (result: InterviewR
           <button
             onClick={signIn}
             disabled={signingIn}
-            className="rounded-full bg-accent px-5 py-2 text-sm font-semibold text-white hover:brightness-110 disabled:opacity-50"
+            className="rounded-full border-2 border-ink bg-accent px-5 py-2 text-sm font-semibold text-on-accent shadow-[3px_3px_0_var(--ink)] active:translate-x-px active:translate-y-px active:shadow-[1px_1px_0_var(--ink)] hover:brightness-110 disabled:opacity-50"
           >
             {signingIn ? "Check Phantom…" : "Sign in"}
           </button>
@@ -199,7 +199,7 @@ export function BriefInterview({ onComplete }: { onComplete: (result: InterviewR
                       <button
                         key={s}
                         onClick={() => answer(s)}
-                        className="rounded-full border border-stone-300 px-3 py-1.5 text-sm text-stone-800 hover:border-accent hover:text-accent"
+                        className="rounded-full border border-stone-300 px-3 py-1.5 text-sm text-stone-800 hover:border-accent hover:text-accent-ink"
                       >
                         {s}
                       </button>
@@ -218,7 +218,7 @@ export function BriefInterview({ onComplete }: { onComplete: (result: InterviewR
                   <button
                     type="submit"
                     disabled={!draft.trim()}
-                    className="rounded-full bg-accent px-5 text-sm font-semibold text-white hover:brightness-110 disabled:opacity-40"
+                    className="rounded-full border-2 border-ink bg-accent px-5 text-sm font-semibold text-on-accent shadow-[3px_3px_0_var(--ink)] active:translate-x-px active:translate-y-px active:shadow-[1px_1px_0_var(--ink)] hover:brightness-110 disabled:opacity-40"
                   >
                     Next
                   </button>
@@ -227,7 +227,7 @@ export function BriefInterview({ onComplete }: { onComplete: (result: InterviewR
                   {turns.length >= MIN_INTERVIEW_TURNS && categoryId && (
                     <button
                       onClick={() => void build(categoryId, turns)}
-                      className="text-sm text-accent underline hover:brightness-110"
+                      className="text-sm text-accent-ink underline hover:brightness-110"
                     >
                       That&apos;s enough — build my form
                     </button>

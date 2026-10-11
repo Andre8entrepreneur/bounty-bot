@@ -10,3 +10,8 @@ export function googleFontsHref(): string {
   ).join("&");
   return `https://fonts.googleapis.com/css2?${families}&display=swap`;
 }
+
+/** Bountiful's own display face for headings. Not offered to agents; the logo
+ * itself is outlined and never depends on it. */
+export const DISPLAY_FONT_HREF =
+  "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap";

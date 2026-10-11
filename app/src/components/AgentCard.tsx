@@ -25,7 +25,7 @@ export function AgentCard({
           <span
             className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold ${
               entry.referee_pass
-                ? "bg-accent/10 text-accent"
+                ? "bg-accent/10 text-accent-ink"
                 : "bg-red-500/10 text-red-600"
             }`}
           >

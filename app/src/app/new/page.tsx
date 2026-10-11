@@ -206,7 +206,7 @@ export default function NewBountyPage() {
   return (
     <main className="mx-auto w-full max-w-xl flex-1 px-4 py-12">
       <div className="mb-8 flex flex-col gap-2">
-        {category && <span className="text-xs uppercase tracking-wider text-accent">{category}</span>}
+        {category && <span className="text-xs uppercase tracking-wider text-accent-ink">{category}</span>}
         <h1 className="text-2xl font-semibold tracking-tight">{spec.title}</h1>
         {spec.intro && <p className="text-sm text-stone-600">{spec.intro}</p>}
         <button
@@ -288,7 +288,7 @@ export default function NewBountyPage() {
                           key={o}
                           onClick={() => setExtra(f, o)}
                           className={`rounded-full border px-3 py-1 text-sm transition ${
-                            on ? "border-accent bg-accent/10 text-accent" : "border-stone-200 text-stone-600 hover:border-stone-300"
+                            on ? "border-accent bg-accent/10 text-accent-ink" : "border-stone-200 text-stone-600 hover:border-stone-300"
                           }`}
                         >
                           {o}
@@ -314,7 +314,7 @@ export default function NewBountyPage() {
                 onClick={() => toggleVibe(v)}
                 className={`rounded-full border px-3 py-1 text-sm transition ${
                   vibe.includes(v)
-                    ? "border-accent bg-accent/10 text-accent"
+                    ? "border-accent bg-accent/10 text-accent-ink"
                     : "border-stone-200 text-stone-600 hover:border-stone-300"
                 }`}
               >
@@ -337,7 +337,7 @@ export default function NewBountyPage() {
                   className="flex items-center justify-between gap-3 rounded-lg border border-stone-200 px-3 py-2 text-sm text-stone-800"
                 >
                   <span className="flex min-w-0 items-center gap-2">
-                    <span className="text-accent">✓</span>
+                    <span className="text-accent-ink">✓</span>
                     <span className="break-words">{item}</span>
                   </span>
                   <button
@@ -387,7 +387,7 @@ export default function NewBountyPage() {
                     onClick={() =>
                       setMustHaves((prev) => (prev.length < MUST_HAVES_MAX && !prev.includes(m) ? [...prev, m] : prev))
                     }
-                    className="rounded-full border border-dashed border-stone-300 px-3 py-1 text-left text-xs text-stone-700 hover:border-accent hover:text-accent"
+                    className="rounded-full border border-dashed border-stone-300 px-3 py-1 text-left text-xs text-stone-700 hover:border-accent hover:text-accent-ink"
                   >
                     + {m}
                   </button>
@@ -497,7 +497,7 @@ export default function NewBountyPage() {
                 onClick={() => setDeadlinePreset(p)}
                 className={`rounded-full border px-3 py-1 text-sm transition ${
                   deadlinePreset === p
-                    ? "border-accent bg-accent/10 text-accent"
+                    ? "border-accent bg-accent/10 text-accent-ink"
                     : "border-stone-200 text-stone-600 hover:border-stone-300"
                 }`}
               >
@@ -512,7 +512,7 @@ export default function NewBountyPage() {
         <button
           type="submit"
           disabled={submitting || !publicKey}
-          className="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded-full border-2 border-ink bg-accent px-6 py-3 text-sm font-semibold text-on-accent shadow-[3px_3px_0_var(--ink)] active:translate-x-px active:translate-y-px active:shadow-[1px_1px_0_var(--ink)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
         >
           {!publicKey ? "Connect wallet to continue" : submitting ? "Creating…" : "Create bounty"}
         </button>

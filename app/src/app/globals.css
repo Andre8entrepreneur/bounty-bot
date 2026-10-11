@@ -1,18 +1,35 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fafaf7;
+  --background: #f7f3e8;
   --foreground: #141414;
-  --accent: #4f46e5;
-  --accent-hover: #4338ca;
+  --ink: #16140f;
   --line: #e4e2da;
   color-scheme: light;
+
+  /* Palette: Indigo nuit. */
+  --accent: #4f46e5; /* buttons, bars, badges */
+  --accent-hover: #4338ca;
+  --accent-ink: #4f46e5; /* accent-coloured text on the light background */
+  --on-accent: #ffffff; /* text on an accent fill */
+  --reward: #d18e1a; /* bounty amounts, stamps, the live dot */
+  --coin: #e3a12f;
+  --marker: #d9d6ff; /* highlighter behind key words */
+  --hat: #4f46e5;
+  --hat-band: #e3a12f;
+  --pattern: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22140%22%20height%3D%22140%22%20viewBox%3D%220%200%20140%20140%22%3E%3Cg%20opacity%3D%22.2%22%20transform%3D%22translate(8%2010)%20rotate(-12%2025%2020)%20scale(.42)%22%3E%3Cpath%20d%3D%22M28%2053%20C%2028%2040%2C%2030%2027%2C%2036%2022.5%20C%2041%2019%2C%2045%2024.5%2C%2050%2024.5%20C%2055%2024.5%2C%2059%2019%2C%2064%2022.5%20C%2070%2027%2C%2072%2040%2C%2072%2053%20Z%22%20fill%3D%22%234f46e5%22%2F%3E%3Crect%20x%3D%2228.5%22%20y%3D%2244.5%22%20width%3D%2243%22%20height%3D%227%22%20fill%3D%22%23e3a12f%22%2F%3E%3Cpath%20d%3D%22M4%2049%20C%2012%2059%2C%2032%2064%2C%2050%2064%20C%2068%2064%2C%2088%2059%2C%2096%2049%20C%2089%2047%2C%2081%2052%2C%2072%2053%20L%2028%2053%20C%2019%2052%2C%2011%2047%2C%204%2049%20Z%22%20fill%3D%22%234f46e5%22%2F%3E%3C%2Fg%3E%3Ccircle%20cx%3D%22104%22%20cy%3D%2238%22%20r%3D%226.5%22%20fill%3D%22%23e3a12f%22%20opacity%3D%22.22%22%2F%3E%3Cpath%20d%3D%22M46%2092%20l3.5%207.2%207.9%201.1%20-5.7%205.5%201.4%207.9%20-7.1-3.8%20-7.1%203.8%201.4-7.9%20-5.7-5.5%207.9-1.1z%22%20fill%3D%22%2316140f%22%20opacity%3D%22.07%22%2F%3E%3Cg%20opacity%3D%22.18%22%20transform%3D%22translate(84%2084)%20rotate(10%2025%2020)%20scale(.32)%22%3E%3Cpath%20d%3D%22M28%2053%20C%2028%2040%2C%2030%2027%2C%2036%2022.5%20C%2041%2019%2C%2045%2024.5%2C%2050%2024.5%20C%2055%2024.5%2C%2059%2019%2C%2064%2022.5%20C%2070%2027%2C%2072%2040%2C%2072%2053%20Z%22%20fill%3D%22%234f46e5%22%2F%3E%3Crect%20x%3D%2228.5%22%20y%3D%2244.5%22%20width%3D%2243%22%20height%3D%227%22%20fill%3D%22%23e3a12f%22%2F%3E%3Cpath%20d%3D%22M4%2049%20C%2012%2059%2C%2032%2064%2C%2050%2064%20C%2068%2064%2C%2088%2059%2C%2096%2049%20C%2089%2047%2C%2081%2052%2C%2072%2053%20L%2028%2053%20C%2019%2052%2C%2011%2047%2C%204%2049%20Z%22%20fill%3D%22%234f46e5%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-ink: var(--ink);
   --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-on-accent: var(--on-accent);
+  --color-reward: var(--reward);
+  --color-coin: var(--coin);
+  --font-display: "Bricolage Grotesque", "Sora", ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
@@ -42,7 +59,10 @@ body {
 /* Wallet adapter (Phantom button and modal): repaint its dark defaults for the light theme. */
 .wallet-adapter-button.wallet-adapter-button-trigger {
   background-color: var(--accent);
-  color: #ffffff;
+  color: var(--on-accent);
+  border: 2px solid var(--ink);
+  border-radius: 0.9rem;
+  box-shadow: 3px 3px 0 var(--ink);
 }
 
 .wallet-adapter-button.wallet-adapter-button-trigger:not([disabled]):hover {
@@ -82,6 +102,7 @@ body {
 
 .wallet-adapter-modal .wallet-adapter-modal-middle-button {
   background-color: var(--accent);
+  color: var(--on-accent);
 }
 
 @keyframes marquee {
@@ -103,6 +124,46 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .marquee-track {
+    animation: none;
+  }
+}
+
+/* Brand elements: manga speed lines, highlighter, live dot, background pattern. */
+.speed-lines {
+  background: repeating-conic-gradient(from 0deg at 50% 45%, rgb(22 20 15 / 0.08) 0deg 1.2deg, transparent 1.2deg 6deg);
+  mask-image: radial-gradient(ellipse 60% 55% at 50% 45%, transparent 0 32%, #000 62%, transparent 100%);
+}
+
+.marker {
+  background: linear-gradient(transparent 56%, var(--marker) 56% 90%, transparent 90%);
+  padding-inline: 0.06em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.live-dot {
+  animation: live-pulse 1.6s infinite;
+}
+
+@keyframes live-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--reward) 60%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 8px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+.bounty-pattern {
+  background-image: var(--pattern);
+  background-size: 140px 140px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-dot {
     animation: none;
   }
 }

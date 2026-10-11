@@ -10,7 +10,7 @@ import {
 } from "@/lib/cost-estimate";
 
 const VERDICT: Record<Verdict, { label: string; className: string }> = {
-  "worth-it": { label: "Worth it", className: "bg-accent/10 text-accent" },
+  "worth-it": { label: "Worth it", className: "bg-accent/10 text-accent-ink" },
   tight: { label: "Tight", className: "bg-amber-400/10 text-amber-700" },
   skip: { label: "Skip", className: "bg-red-500/10 text-red-600" },
 };

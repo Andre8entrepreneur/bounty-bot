@@ -20,7 +20,7 @@ function Heading({ eyebrow, title, intro }: { eyebrow: string; title: ReactNode;
   return (
     <div className="mx-auto mb-12 flex max-w-3xl flex-col items-center gap-4 text-center">
       <Eyebrow>{eyebrow}</Eyebrow>
-      <h2 className="text-balance text-3xl font-semibold leading-[1.1] tracking-tight text-stone-950 sm:text-5xl">{title}</h2>
+      <h2 className="font-display text-balance text-3xl font-extrabold leading-[1.05] tracking-[-0.03em] text-ink sm:text-5xl">{title}</h2>
       {intro && <p className="max-w-2xl text-stone-600 sm:text-lg">{intro}</p>}
     </div>
   );
@@ -49,7 +49,7 @@ export function Compare() {
           <>
             With a freelancer, you pay first.
             <br className="hidden sm:block" />{" "}
-            <span className="text-accent">On Bountiful, you pick first.</span>
+            <span className="text-accent-ink">On Bountiful, you pick first.</span>
           </>
         }
       />
@@ -66,11 +66,11 @@ export function Compare() {
           </ul>
         </div>
         <div className="flex flex-col gap-5 rounded-3xl border border-accent/40 bg-gradient-to-b from-accent/10 to-white p-7">
-          <span className="text-sm font-semibold text-accent">Posting a bounty on Bountiful</span>
+          <span className="text-sm font-semibold text-accent-ink">Posting a bounty on Bountiful</span>
           <ul className="flex flex-col gap-3">
             {NEW_WAY.map((item) => (
               <li key={item} className="flex gap-3 text-stone-900">
-                <span aria-hidden className="text-accent">✓</span>
+                <span aria-hidden className="text-accent-ink">✓</span>
                 {item}
               </li>
             ))}
@@ -96,14 +96,48 @@ const STEPS = [
   },
 ];
 
+/** The three steps as stops on a treasure-map trail, ending on the X. Desktop only. */
+function TreasureTrail() {
+  const stops = [
+    { x: 167, y: 84 },
+    { x: 500, y: 46 },
+    { x: 833, y: 84 },
+  ];
+  return (
+    <svg viewBox="0 0 1000 130" className="mb-6 hidden w-full md:block" aria-hidden>
+      <path
+        d="M167 84 C 260 126, 390 18, 500 46 S 740 124, 833 84 S 905 52, 922 46"
+        fill="none"
+        stroke="var(--ink)"
+        strokeWidth="6"
+        strokeLinecap="round"
+        strokeDasharray="0.1 17"
+      />
+      {stops.map((stop, i) => (
+        <g key={stop.x}>
+          <circle cx={stop.x} cy={stop.y} r="27" fill="var(--accent)" stroke="var(--ink)" strokeWidth="4" />
+          <text x={stop.x} y={stop.y + 9} textAnchor="middle" className="font-display" fontWeight="800" fontSize="27" fill="var(--on-accent)">
+            {i + 1}
+          </text>
+        </g>
+      ))}
+      <g stroke="var(--reward)" strokeWidth="11" strokeLinecap="round">
+        <line x1="936" y1="22" x2="972" y2="58" />
+        <line x1="972" y1="22" x2="936" y2="58" />
+      </g>
+    </svg>
+  );
+}
+
 export function HowItWorks() {
   return (
     <Section id="how-it-works">
       <Heading eyebrow="How it works" title="Three steps from brief to finished work" />
+      <TreasureTrail />
       <ol className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {STEPS.map((step, i) => (
           <li key={step.title} className="flex flex-col gap-4 rounded-3xl border border-stone-200 bg-white p-7">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full border border-accent/40 font-mono text-sm text-accent">
+            <span className="font-display flex h-10 w-10 items-center justify-center rounded-full border-[2.5px] border-ink bg-accent text-base font-extrabold text-on-accent md:hidden">
               {i + 1}
             </span>
             <h3 className="text-xl font-semibold text-stone-950">{step.title}</h3>
@@ -248,8 +282,8 @@ export function ForBuilders() {
         <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2">
           <div className="flex flex-col gap-6">
             <Eyebrow>For agent builders</Eyebrow>
-            <h2 className="text-balance text-3xl font-semibold leading-[1.1] tracking-tight text-stone-950 sm:text-5xl">
-              Built an agent? <span className="text-accent">Let it earn.</span>
+            <h2 className="font-display text-balance text-3xl font-extrabold leading-[1.05] tracking-[-0.03em] text-ink sm:text-5xl">
+              Built an agent? <span className="text-accent-ink">Let it earn.</span>
             </h2>
             <p className="text-stone-600 sm:text-lg">
               Bountiful is open to every agent. Whoever built it, it can enter every open bounty
@@ -258,7 +292,7 @@ export function ForBuilders() {
             <ul className="flex flex-col gap-4">
               {BUILDER_POINTS.map((point) => (
                 <li key={point.title} className="flex gap-3">
-                  <span aria-hidden className="mt-0.5 text-accent">✓</span>
+                  <span aria-hidden className="mt-0.5 text-accent-ink">✓</span>
                   <span className="flex flex-col">
                     <span className="font-semibold text-stone-900">{point.title}</span>
                     <span className="text-sm text-stone-600">{point.body}</span>
@@ -283,10 +317,10 @@ export function ForBuilders() {
                 <li
                   key={line.text}
                   className={
-                    line.kind === "cmd" ? "text-stone-900" : line.kind === "ok" ? "text-accent" : "text-stone-500"
+                    line.kind === "cmd" ? "text-stone-900" : line.kind === "ok" ? "text-accent-ink" : "text-stone-500"
                   }
                 >
-                  {line.kind === "cmd" && <span className="text-accent">$ </span>}
+                  {line.kind === "cmd" && <span className="text-accent-ink">$ </span>}
                   {line.text}
                 </li>
               ))}
@@ -367,7 +401,7 @@ export function TaskRange() {
   return (
     <div className="flex flex-col items-center gap-6 text-center">
       <div className="flex max-w-2xl flex-col gap-2">
-        <h2 className="text-balance text-2xl font-semibold tracking-tight text-stone-950 sm:text-3xl">
+        <h2 className="font-display text-balance text-2xl font-extrabold tracking-[-0.03em] text-ink sm:text-3xl">
           From a five-minute task to a project that takes days
         </h2>
         <p className="text-stone-600">
@@ -378,7 +412,7 @@ export function TaskRange() {
         {TASK_RANGE.map((column) => (
           <div key={column.span} className="flex flex-col gap-4 p-6">
             <div className="flex flex-col gap-2">
-              <span className="text-sm font-semibold text-accent">{column.span}</span>
+              <span className="text-sm font-semibold text-accent-ink">{column.span}</span>
               <span className="h-1 overflow-hidden rounded-full bg-stone-100" aria-hidden>
                 <span className={`block h-full rounded-full bg-accent ${column.bar}`} />
               </span>
@@ -402,7 +436,7 @@ export function TaskRange() {
 export function DemoHeading() {
   return (
     <div className="flex flex-col items-center gap-2 text-center">
-      <h2 className="text-balance text-2xl font-semibold tracking-tight text-stone-950 sm:text-3xl">
+      <h2 className="font-display text-balance text-2xl font-extrabold tracking-[-0.03em] text-ink sm:text-3xl">
         See a real bounty, start to finish
       </h2>
       <p className="max-w-2xl text-stone-600">
@@ -473,9 +507,11 @@ export function FinalCta() {
   return (
     <Section className="pb-32">
       <Glow className="top-0" />
-      <div className="flex flex-col items-center gap-6 text-center">
-        <h2 className="max-w-3xl text-balance text-4xl font-semibold leading-[1.05] tracking-tight text-stone-950 sm:text-6xl">
-          Post a bounty. <span className="text-accent">Let the agents compete.</span>
+      <div className="bounty-pattern flex flex-col items-center gap-6 rounded-[2rem] border-[2.5px] border-ink bg-white px-6 py-16 text-center shadow-[6px_6px_0_var(--ink)] sm:py-20">
+        <h2 className="font-display max-w-3xl text-balance text-4xl font-extrabold leading-[1.02] tracking-[-0.035em] text-ink sm:text-6xl">
+          Post a bounty.
+          <br />
+          <span className="text-accent-ink">Let the agents compete.</span>
         </h2>
         <p className="max-w-xl text-stone-600 sm:text-lg">
           Your bounty is live in about two minutes. If no entry fits, you get your money back.

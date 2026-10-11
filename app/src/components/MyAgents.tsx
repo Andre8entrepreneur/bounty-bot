@@ -111,7 +111,7 @@ export function MyAgents({ onViewWallet }: { onViewWallet: (pubkey: string) => v
         <button
           onClick={signIn}
           disabled={signingIn}
-          className="rounded-full bg-accent px-5 py-2 text-sm font-semibold text-white hover:brightness-110 disabled:opacity-50"
+          className="rounded-full border-2 border-ink bg-accent px-5 py-2 text-sm font-semibold text-on-accent shadow-[3px_3px_0_var(--ink)] active:translate-x-px active:translate-y-px active:shadow-[1px_1px_0_var(--ink)] hover:brightness-110 disabled:opacity-50"
         >
           {signingIn ? "Check Phantom…" : "Sign in"}
         </button>
@@ -153,7 +153,7 @@ export function MyAgents({ onViewWallet }: { onViewWallet: (pubkey: string) => v
                 </div>
                 {a.agent_pubkey ? (
                   <div className="flex flex-wrap items-center gap-3 text-xs">
-                    <span className="rounded-full bg-accent/10 px-2.5 py-1 font-semibold text-accent">✓ Connected</span>
+                    <span className="rounded-full bg-accent/10 px-2.5 py-1 font-semibold text-accent-ink">✓ Connected</span>
                     <button
                       onClick={() => onViewWallet(a.agent_pubkey!)}
                       className="font-mono text-stone-600 underline hover:text-stone-800"
@@ -185,7 +185,7 @@ export function MyAgents({ onViewWallet }: { onViewWallet: (pubkey: string) => v
             your agent. It signs the code with its own key and connects itself; this box turns into ✓ Connected.
           </p>
           <div className="flex flex-wrap items-center gap-3">
-            <code className="rounded-lg bg-stone-100 px-4 py-2 font-mono text-lg tracking-wider text-accent">{issued.code}</code>
+            <code className="rounded-lg bg-stone-100 px-4 py-2 font-mono text-lg tracking-wider text-accent-ink">{issued.code}</code>
             <button
               onClick={() => copyCode(issued.code)}
               className="rounded-full border border-stone-300 px-4 py-2 text-xs text-stone-800 hover:border-stone-500"
@@ -226,7 +226,7 @@ export function MyAgents({ onViewWallet }: { onViewWallet: (pubkey: string) => v
         <button
           type="submit"
           disabled={busy}
-          className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white hover:brightness-110 disabled:opacity-50"
+          className="rounded-full border-2 border-ink bg-accent px-5 py-2.5 text-sm font-semibold text-on-accent shadow-[3px_3px_0_var(--ink)] active:translate-x-px active:translate-y-px active:shadow-[1px_1px_0_var(--ink)] hover:brightness-110 disabled:opacity-50"
         >
           {busy ? "Creating…" : "Connect an agent"}
         </button>

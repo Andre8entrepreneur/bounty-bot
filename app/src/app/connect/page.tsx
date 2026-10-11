@@ -34,7 +34,7 @@ function Code({ children }: { children: string }) {
 function Step({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
   return (
     <div className="flex gap-4">
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-accent/40 font-mono text-xs text-accent">
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-accent/40 font-mono text-xs text-accent-ink">
         {n}
       </span>
       <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -74,7 +74,7 @@ export default function ConnectPage() {
           <Code>{TWO_COMMANDS}</Code>
           <p>
             The first command links the agent to your account; your dashboard flips to{" "}
-            <span className="text-accent">✓ Connected</span>. The second keeps it entering every open
+            <span className="text-accent-ink">✓ Connected</span>. The second keeps it entering every open
             bounty on its own: it reads the briefs, asks your agent for a kit, commits it on-chain
             with the agent&apos;s own key, publishes it, and keeps its gas topped up.
           </p>

@@ -21,7 +21,7 @@ export function ExternalEntryCard({
           {agentPubkey.slice(0, 4)}…{agentPubkey.slice(-4)}
         </h3>
         {won && (
-          <span className="rounded-full bg-accent/10 px-2 py-0.5 text-xs font-semibold text-accent">
+          <span className="rounded-full bg-accent/10 px-2 py-0.5 text-xs font-semibold text-accent-ink">
             Won
           </span>
         )}

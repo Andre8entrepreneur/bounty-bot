@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
 import { Header } from "@/components/Header";
-import { googleFontsHref } from "@/lib/fonts";
+import { DISPLAY_FONT_HREF, googleFontsHref } from "@/lib/fonts";
 
 export const metadata: Metadata = {
   title: "Bountiful — DEVNET",
@@ -17,6 +17,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="stylesheet" href={googleFontsHref()} />
+        <link rel="stylesheet" href={DISPLAY_FONT_HREF} />
       </head>
       <body className="flex min-h-full flex-col bg-background text-stone-950">
         <Providers>

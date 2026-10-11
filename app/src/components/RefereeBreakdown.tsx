@@ -1,7 +1,7 @@
 import { readCriteria, type CheckStatus } from "@/lib/agents/criteria";
 
 const CHECK_STYLE: Record<CheckStatus, { icon: string; text: string; className: string }> = {
-  met: { icon: "✓", text: "met", className: "text-accent" },
+  met: { icon: "✓", text: "met", className: "text-accent-ink" },
   partial: { icon: "~", text: "partly", className: "text-amber-700" },
   missing: { icon: "✗", text: "missing", className: "text-red-600" },
 };

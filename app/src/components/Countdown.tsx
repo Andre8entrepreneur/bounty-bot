@@ -29,7 +29,7 @@ export function Countdown({ target, label }: { target: Date; label: string }) {
       </span>
       <span
         className={`font-mono text-3xl font-semibold tabular-nums sm:text-4xl ${
-          passed ? "text-stone-500" : "text-accent"
+          passed ? "text-stone-500" : "text-accent-ink"
         }`}
       >
         {formatRemaining(remaining)}

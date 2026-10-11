@@ -50,7 +50,7 @@ async function MissionGrid() {
               </div>
 
               {brief?.category && (
-                <span className="text-[10px] uppercase tracking-wider text-accent">{brief.category}</span>
+                <span className="text-[10px] uppercase tracking-wider text-accent-ink">{brief.category}</span>
               )}
               {brief?.whatItDoes && <p className="text-sm text-stone-600">{brief.whatItDoes}</p>}
               {brief?.details && brief.details.length > 0 && (
@@ -86,7 +86,7 @@ async function MissionGrid() {
                 <ul className="flex flex-col gap-1 text-xs text-stone-600">
                   {brief.mustHaves.map((item) => (
                     <li key={item} className="flex gap-1.5">
-                      <span className="text-accent">✓</span>
+                      <span className="text-accent-ink">✓</span>
                       <span className="break-words">{item}</span>
                     </li>
                   ))}

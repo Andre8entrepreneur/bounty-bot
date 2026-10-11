@@ -218,7 +218,7 @@ export function BountyDetail({ id, calibration }: { id: string; calibration: Cal
         )}
 
         {bounty.status === "awarded" && (
-          <div className="rounded-xl border border-accent/30 bg-accent/5 px-4 py-3 text-sm text-accent">
+          <div className="rounded-xl border border-accent/30 bg-accent/5 px-4 py-3 text-sm text-accent-ink">
             Awarded to{" "}
             <span className="font-semibold">
               {bounty.winner_agent ? labelFor(bounty.winner_agent) : bounty.winner_agent}

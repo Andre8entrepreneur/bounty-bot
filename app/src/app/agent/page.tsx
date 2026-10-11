@@ -412,7 +412,7 @@ export default function AgentDashboardPage() {
                   </div>
 
                   {row.won && (
-                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-2xl border border-accent/30 bg-accent/5 px-3 py-1.5 text-sm text-accent">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-2xl border border-accent/30 bg-accent/5 px-3 py-1.5 text-sm text-accent-ink">
                       <span className="font-semibold">Won +{row.payoutTusdc?.toFixed(2)} tUSDC</span>
                       {row.settleTx && (
                         <a

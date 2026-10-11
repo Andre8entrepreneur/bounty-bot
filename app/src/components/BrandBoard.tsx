@@ -134,7 +134,7 @@ export function BrandBoard({
           <button
             type="button"
             onClick={() => downloadKitZip(kit)}
-            className="self-start rounded-full border border-stone-300 px-4 py-1.5 text-xs font-semibold text-stone-700 transition hover:border-accent hover:text-accent"
+            className="self-start rounded-full border border-stone-300 px-4 py-1.5 text-xs font-semibold text-stone-700 transition hover:border-accent hover:text-accent-ink"
           >
             Download kit (.zip)
           </button>

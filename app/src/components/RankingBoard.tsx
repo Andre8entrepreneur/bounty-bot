@@ -123,7 +123,7 @@ export function RankingBoard({
               <button
                 onClick={() => onPick(pickable)}
                 disabled={picking !== null}
-                className="rounded-full bg-accent px-4 py-3 text-sm font-semibold text-white transition hover:brightness-110 disabled:opacity-40"
+                className="rounded-full border-2 border-ink bg-accent px-4 py-3 text-sm font-semibold text-on-accent shadow-[3px_3px_0_var(--ink)] active:translate-x-px active:translate-y-px active:shadow-[1px_1px_0_var(--ink)] transition hover:brightness-110 disabled:opacity-40"
               >
                 {picking === pickable.id
                   ? "Confirm in wallet…"
@@ -218,7 +218,7 @@ function RankLine({
           <span className="truncate text-sm font-semibold text-stone-900">
             {label}
             {isWinner && (
-              <span className="ml-2 rounded-full bg-accent/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-accent">
+              <span className="ml-2 rounded-full bg-accent/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-accent-ink">
                 Winner
               </span>
             )}
@@ -250,7 +250,7 @@ function RankLine({
         {score !== null && (
           <span
             className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold tabular-nums ${
-              row.entry?.referee_pass ? "bg-accent/10 text-accent" : "bg-red-500/10 text-red-600"
+              row.entry?.referee_pass ? "bg-accent/10 text-accent-ink" : "bg-red-500/10 text-red-600"
             }`}
           >
             {score}% · {row.entry?.referee_pass ? "Pass" : "Failed"}

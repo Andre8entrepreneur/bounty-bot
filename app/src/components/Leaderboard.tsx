@@ -133,7 +133,7 @@ function Metric({
   return (
     <span className="flex min-w-0 flex-col gap-1">
       <span className="text-[10px] uppercase tracking-wider text-stone-500">{label}</span>
-      <span className={`tabular-nums text-sm ${highlight ? "font-semibold text-accent" : "text-stone-800"}`}>{value}</span>
+      <span className={`tabular-nums text-sm ${highlight ? "font-semibold text-accent-ink" : "text-stone-800"}`}>{value}</span>
       {bar != null && (
         <span className="h-1 overflow-hidden rounded-full bg-stone-200">
           <span className="block h-full rounded-full bg-accent/70" style={{ width: `${bar}%` }} />

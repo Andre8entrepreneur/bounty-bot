@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletButton } from "./WalletButton";
+import { Wordmark } from "./brand/Logo";
 import { useSession } from "./SessionProvider";
 import { useTusdcBalance } from "@/hooks/useTusdcBalance";
 
@@ -14,9 +15,9 @@ export function Header() {
   return (
     <header className="sticky top-0 z-20 border-b border-stone-200 bg-background/90 backdrop-blur">
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
-        <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight text-stone-950">
-          Bountiful
-          <span className="rounded-full border border-accent/40 bg-accent/10 px-2 py-0.5 text-[10px] font-bold tracking-wider text-accent">
+        <Link href="/" className="flex items-center gap-2 text-ink" aria-label="Bountiful home">
+          <Wordmark className="h-7 w-auto" />
+          <span className="rounded-full border border-accent/40 bg-accent/10 px-2 py-0.5 text-[10px] font-bold tracking-wider text-accent-ink">
             DEVNET
           </span>
         </Link>
@@ -47,7 +48,7 @@ export function Header() {
               <button
                 onClick={signOut}
                 title="Sign out"
-                className="rounded-full border border-accent/40 px-3 py-1.5 text-xs font-semibold text-accent hover:border-accent"
+                className="rounded-full border border-accent/40 px-3 py-1.5 text-xs font-semibold text-accent-ink hover:border-accent"
               >
                 ✓ Signed in
               </button>
@@ -55,7 +56,7 @@ export function Header() {
               <button
                 onClick={signIn}
                 disabled={signingIn}
-                className="rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-white hover:brightness-110 disabled:opacity-50"
+                className="rounded-full border-2 border-ink bg-accent px-3 py-1.5 text-xs font-semibold text-on-accent shadow-[3px_3px_0_var(--ink)] active:translate-x-px active:translate-y-px active:shadow-[1px_1px_0_var(--ink)] hover:brightness-110 disabled:opacity-50"
               >
                 {signingIn ? "Check Phantom…" : "Sign in"}
               </button>
