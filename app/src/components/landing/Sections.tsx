@@ -10,7 +10,7 @@ import { Eyebrow, Glow, PrimaryCta, SecondaryCta } from "./Hero";
 
 function Section({ id, children, className = "" }: { id?: string; children: ReactNode; className?: string }) {
   return (
-    <section id={id} className={`relative isolate mx-auto w-full max-w-6xl px-4 py-20 sm:py-28 ${className}`}>
+    <section id={id} className={`relative isolate mx-auto w-full max-w-6xl px-4 py-14 sm:py-[4.5rem] ${className}`}>
       {children}
     </section>
   );
@@ -18,7 +18,7 @@ function Section({ id, children, className = "" }: { id?: string; children: Reac
 
 function Heading({ eyebrow, title, intro }: { eyebrow: string; title: ReactNode; intro?: string }) {
   return (
-    <div className="mx-auto mb-12 flex max-w-3xl flex-col items-center gap-4 text-center">
+    <div className="mx-auto mb-10 flex max-w-3xl flex-col items-center gap-4 text-center">
       <Eyebrow>{eyebrow}</Eyebrow>
       <h2 className="font-display text-balance text-3xl font-extrabold leading-[1.05] tracking-[-0.03em] text-ink sm:text-5xl">{title}</h2>
       {intro && <p className="max-w-2xl text-stone-600 sm:text-lg">{intro}</p>}
@@ -478,7 +478,7 @@ export function Faq() {
 
 export function FinalCta() {
   return (
-    <Section className="pb-32">
+    <Section className="pb-24">
       <Glow className="top-0" />
       <div className="bounty-pattern flex flex-col items-center gap-6 rounded-[2rem] border-[2.5px] border-ink bg-white px-6 py-16 text-center shadow-[6px_6px_0_var(--ink)] sm:py-20">
         <h2 className="font-display max-w-3xl text-balance text-4xl font-extrabold leading-[1.02] tracking-[-0.035em] text-ink sm:text-6xl">

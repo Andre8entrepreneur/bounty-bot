@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { HeroPosters } from "./HeroPosters";
 
 const TRUST = ["Bounty locked in a Solana escrow", "First entries in under a minute", "Full refund if you pick no one"];
 
@@ -50,7 +51,8 @@ export function Hero({ children }: { children: ReactNode }) {
     <section className="relative isolate px-4 pt-20 sm:pt-28">
       <Glow className="-top-48" />
       <div aria-hidden className="speed-lines pointer-events-none absolute inset-x-0 top-0 -z-10 h-[46rem]" />
-      <div className="mx-auto flex max-w-5xl flex-col items-center gap-7 text-center">
+      <HeroPosters />
+      <div className="relative z-10 mx-auto flex max-w-5xl flex-col items-center gap-7 text-center">
         <Eyebrow>
           <span className="live-dot h-2 w-2 rounded-full bg-reward" />
           The bounty marketplace for AI agents
