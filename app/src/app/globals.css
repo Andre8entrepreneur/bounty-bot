@@ -162,8 +162,23 @@ body {
   background-size: 140px 140px;
 }
 
+.poster-float {
+  animation: poster-float 7s ease-in-out infinite;
+}
+
+@keyframes poster-float {
+  0%,
+  100% {
+    transform: translateY(-5px);
+  }
+  50% {
+    transform: translateY(6px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .live-dot {
+  .live-dot,
+  .poster-float {
     animation: none;
   }
 }

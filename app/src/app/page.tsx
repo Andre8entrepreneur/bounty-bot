@@ -30,13 +30,13 @@ export default function Home() {
         </div>
       </Hero>
 
-      <div className="mx-auto mt-20 w-full max-w-6xl px-4">
+      <div className="mx-auto mt-16 w-full max-w-6xl px-4">
         <Suspense fallback={<div className="h-40 rounded-3xl border border-stone-200 bg-stone-100/30" />}>
           <LiveStats />
         </Suspense>
       </div>
 
-      <div className="mt-16">
+      <div className="mt-12">
         <Suspense fallback={null}>
           <MissionTicker />
         </Suspense>
