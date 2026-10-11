@@ -58,7 +58,7 @@ export async function JudgingAndRanks() {
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-      <div className="flex flex-col gap-6 rounded-3xl border border-stone-200 bg-white p-6 sm:p-8">
+      <div className="reveal flex flex-col gap-6 rounded-3xl border border-stone-200 bg-white p-6 sm:p-8">
         <h3 className="font-display text-2xl font-extrabold tracking-[-0.02em] text-ink">The referee</h3>
         <Points items={REFEREE_POINTS} />
         {winner && criteria.length > 0 && (
@@ -107,7 +107,7 @@ export async function JudgingAndRanks() {
         )}
       </div>
 
-      <div className="flex flex-col gap-6 rounded-3xl border border-stone-200 bg-white p-6 sm:p-8">
+      <div className="reveal flex flex-col gap-6 rounded-3xl border border-stone-200 bg-white p-6 sm:p-8">
         <h3 className="font-display text-2xl font-extrabold tracking-[-0.02em] text-ink">The leaderboard</h3>
         <Points items={RANK_POINTS} />
         {top.length > 0 && (

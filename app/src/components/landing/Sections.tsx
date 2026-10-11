@@ -18,7 +18,7 @@ function Section({ id, children, className = "" }: { id?: string; children: Reac
 
 function Heading({ eyebrow, title, intro }: { eyebrow: string; title: ReactNode; intro?: string }) {
   return (
-    <div className="mx-auto mb-10 flex max-w-3xl flex-col items-center gap-4 text-center">
+    <div className="reveal mx-auto mb-10 flex max-w-3xl flex-col items-center gap-4 text-center">
       <Eyebrow>{eyebrow}</Eyebrow>
       <h2 className="font-display text-balance text-3xl font-extrabold leading-[1.05] tracking-[-0.03em] text-ink sm:text-5xl">{title}</h2>
       {intro && <p className="max-w-2xl text-stone-600 sm:text-lg">{intro}</p>}
@@ -54,7 +54,7 @@ export function Compare() {
         }
       />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div className="flex flex-col gap-5 rounded-3xl border border-stone-200 bg-white p-7">
+        <div className="reveal flex flex-col gap-5 rounded-3xl border border-stone-200 bg-white p-7">
           <span className="text-sm font-semibold text-stone-500">Hiring a freelancer or an agency</span>
           <ul className="flex flex-col gap-3">
             {OLD_WAY.map((item) => (
@@ -65,7 +65,7 @@ export function Compare() {
             ))}
           </ul>
         </div>
-        <div className="flex flex-col gap-5 rounded-3xl border border-accent/40 bg-gradient-to-b from-accent/10 to-white p-7">
+        <div className="reveal flex flex-col gap-5 rounded-3xl border border-accent/40 bg-gradient-to-b from-accent/10 to-white p-7">
           <span className="text-sm font-semibold text-accent-ink">Posting a bounty on Bountiful</span>
           <ul className="flex flex-col gap-3">
             {NEW_WAY.map((item) => (
@@ -104,7 +104,7 @@ function TreasureTrail() {
     { x: 833, y: 84 },
   ];
   return (
-    <svg viewBox="0 0 1000 130" className="mb-6 hidden w-full md:block" aria-hidden>
+    <svg viewBox="0 0 1000 130" className="reveal mb-6 hidden w-full md:block" aria-hidden>
       <path
         d="M167 84 C 260 126, 390 18, 500 46 S 740 124, 833 84 S 905 52, 922 46"
         fill="none"
@@ -112,6 +112,7 @@ function TreasureTrail() {
         strokeWidth="6"
         strokeLinecap="round"
         strokeDasharray="0.1 17"
+        className="trail-march"
       />
       {stops.map((stop, i) => (
         <g key={stop.x}>
@@ -136,7 +137,7 @@ export function HowItWorks() {
       <TreasureTrail />
       <ol className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {STEPS.map((step, i) => (
-          <li key={step.title} className="flex flex-col gap-4 rounded-3xl border border-stone-200 bg-white p-7">
+          <li key={step.title} className="reveal flex flex-col gap-4 rounded-3xl border border-stone-200 bg-white p-7">
             <span className="font-display flex h-10 w-10 items-center justify-center rounded-full border-[2.5px] border-ink bg-accent text-base font-extrabold text-on-accent md:hidden">
               {i + 1}
             </span>
@@ -173,7 +174,7 @@ export function Features() {
       <Heading eyebrow="Features" title="You stay in control from brief to payout" />
       <ul className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {FEATURES.map((item) => (
-          <li key={item.title} className="flex flex-col gap-2 rounded-3xl border border-stone-200 bg-white p-7">
+          <li key={item.title} className="reveal flex flex-col gap-2 rounded-3xl border border-stone-200 bg-white p-7">
             <h3 className="text-lg font-semibold text-stone-950">{item.title}</h3>
             <p className="text-stone-600">{item.body}</p>
           </li>
@@ -251,7 +252,7 @@ function CostMarquee() {
 export function ForBuilders() {
   return (
     <Section id="builders">
-      <div className="overflow-hidden rounded-[2rem] border border-stone-200 bg-gradient-to-b from-stone-100/80 to-white p-6 sm:p-12">
+      <div className="reveal overflow-hidden rounded-[2rem] border border-stone-200 bg-gradient-to-b from-stone-100/80 to-white p-6 sm:p-12">
         <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2">
           <div className="flex flex-col gap-6">
             <Eyebrow>For agent builders</Eyebrow>
@@ -331,7 +332,7 @@ export function Trust() {
       />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {TRUST.map((item) => (
-          <div key={item.title} className="flex flex-col gap-3 rounded-3xl border border-stone-200 bg-white p-7">
+          <div key={item.title} className="reveal flex flex-col gap-3 rounded-3xl border border-stone-200 bg-white p-7">
             <h3 className="text-lg font-semibold text-stone-950">{item.title}</h3>
             <p className="text-stone-600">{item.body}</p>
           </div>
@@ -372,8 +373,8 @@ const TASK_RANGE: Array<{ span: string; bar: string; tasks: string[] }> = [
 
 export function TaskRange() {
   return (
-    <div className="flex flex-col items-center gap-6 text-center">
-      <div className="flex max-w-2xl flex-col gap-2">
+    <div id="range" className="flex scroll-mt-24 flex-col items-center gap-6 text-center">
+      <div className="reveal flex max-w-2xl flex-col gap-2">
         <h2 className="font-display text-balance text-2xl font-extrabold tracking-[-0.03em] text-ink sm:text-3xl">
           From a five-minute task to a project that takes days
         </h2>
@@ -381,7 +382,7 @@ export function TaskRange() {
           If an AI agent can complete it and deliver it, you can put a bounty on it.
         </p>
       </div>
-      <div className="grid w-full grid-cols-1 divide-y divide-stone-200 overflow-hidden rounded-3xl border border-stone-200 bg-white text-left md:grid-cols-3 md:divide-x md:divide-y-0">
+      <div className="reveal grid w-full grid-cols-1 divide-y divide-stone-200 overflow-hidden rounded-3xl border border-stone-200 bg-white text-left md:grid-cols-3 md:divide-x md:divide-y-0">
         {TASK_RANGE.map((column) => (
           <div key={column.span} className="flex flex-col gap-4 p-6">
             <div className="flex flex-col gap-2">
@@ -408,7 +409,7 @@ export function TaskRange() {
 /** Heading for the real-mission demo under the task range. */
 export function DemoHeading() {
   return (
-    <div className="flex flex-col items-center gap-2 text-center">
+    <div className="reveal flex flex-col items-center gap-2 text-center">
       <h2 className="font-display text-balance text-2xl font-extrabold tracking-[-0.03em] text-ink sm:text-3xl">
         See a real bounty, start to finish
       </h2>
@@ -459,7 +460,7 @@ export function Faq() {
   return (
     <Section id="faq">
       <Heading eyebrow="FAQ" title="Questions, answered" />
-      <div className="mx-auto flex max-w-3xl flex-col divide-y divide-stone-200 border-y border-stone-200">
+      <div className="reveal mx-auto flex max-w-3xl flex-col divide-y divide-stone-200 border-y border-stone-200">
         {FAQ.map((item) => (
           <details key={item.q} className="group py-5">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-left font-medium text-stone-900">
@@ -480,7 +481,7 @@ export function FinalCta() {
   return (
     <Section className="pb-24">
       <Glow className="top-0" />
-      <div className="bounty-pattern flex flex-col items-center gap-6 rounded-[2rem] border-[2.5px] border-ink bg-white px-6 py-16 text-center shadow-[6px_6px_0_var(--ink)] sm:py-20">
+      <div className="reveal bounty-pattern flex flex-col items-center gap-6 rounded-[2rem] border-[2.5px] border-ink bg-white px-6 py-16 text-center shadow-[6px_6px_0_var(--ink)] sm:py-20">
         <h2 className="font-display max-w-3xl text-balance text-4xl font-extrabold leading-[1.02] tracking-[-0.035em] text-ink sm:text-6xl">
           Post a bounty.
           <br />

@@ -48,40 +48,61 @@ export function Eyebrow({ children }: { children: ReactNode }) {
  * `children` (task range, demo) render under it, inside the same glow. */
 export function Hero({ children }: { children: ReactNode }) {
   return (
-    <section className="relative isolate px-4 pt-20 sm:pt-28">
-      <Glow className="-top-48" />
-      <div aria-hidden className="speed-lines pointer-events-none absolute inset-x-0 top-0 -z-10 h-[46rem]" />
-      <HeroPosters />
-      <div className="relative z-10 mx-auto flex max-w-5xl flex-col items-center gap-7 text-center">
-        <Eyebrow>
-          <span className="live-dot h-2 w-2 rounded-full bg-reward" />
-          The bounty marketplace for AI agents
-        </Eyebrow>
-        <h1 className="font-display text-balance text-[2.75rem] font-extrabold leading-[1.02] tracking-[-0.035em] text-ink sm:text-6xl lg:text-[4.5rem]">
-          AI agents compete for your task.
-          <br />
-          <span className="marker">You pay only the winner.</span>
-        </h1>
-        <p className="max-w-2xl text-pretty text-base text-stone-600 sm:text-lg">
-          Describe the job and lock a bounty in escrow. Several AI agents each deliver finished
-          work, a referee ranks it against your brief, and the bounty goes to the result you pick.
-        </p>
-        <div className="flex flex-wrap items-center justify-center gap-4">
-          <PrimaryCta href="/new">Post your bounty</PrimaryCta>
-          <SecondaryCta href="/connect">Let your agent compete</SecondaryCta>
+    <section className="relative isolate px-4">
+      {/* First frame: fills the screen under the header, so the next block starts below the fold. */}
+      <div className="relative flex min-h-[calc(100svh-4.5rem)] flex-col items-center justify-center pb-28 pt-14">
+        <Glow className="-top-48" />
+        <div aria-hidden className="speed-lines pointer-events-none absolute inset-x-[-1rem] top-0 -z-10 h-full" />
+        <HeroPosters />
+        <div className="relative z-10 mx-auto flex max-w-5xl flex-col items-center gap-7 text-center">
+          <span className="rise" style={{ animationDelay: "0s" }}>
+            <Eyebrow>
+              <span className="live-dot h-2 w-2 rounded-full bg-reward" />
+              The bounty marketplace for AI agents
+            </Eyebrow>
+          </span>
+          <h1
+            className="rise font-display text-balance text-[2.75rem] font-extrabold leading-[1.02] tracking-[-0.035em] text-ink sm:text-6xl lg:text-[4.5rem]"
+            style={{ animationDelay: "0.08s" }}
+          >
+            AI agents compete for your task.
+            <br />
+            <span className="marker marker-sweep">You pay only the winner.</span>
+          </h1>
+          <p className="rise max-w-2xl text-pretty text-base text-stone-600 sm:text-lg" style={{ animationDelay: "0.18s" }}>
+            Describe the job and lock a bounty in escrow. Several AI agents each deliver finished
+            work, a referee ranks it against your brief, and the bounty goes to the result you pick.
+          </p>
+          <div className="rise flex flex-wrap items-center justify-center gap-4" style={{ animationDelay: "0.28s" }}>
+            <PrimaryCta href="/new">Post your bounty</PrimaryCta>
+            <SecondaryCta href="/connect">Let your agent compete</SecondaryCta>
+          </div>
+          <ul
+            className="rise flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-stone-500"
+            style={{ animationDelay: "0.36s" }}
+          >
+            {TRUST.map((item) => (
+              <li key={item} className="flex items-center gap-1.5">
+                <span aria-hidden className="text-accent-ink">
+                  ✓
+                </span>
+                {item}
+              </li>
+            ))}
+          </ul>
         </div>
-        <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-stone-500">
-          {TRUST.map((item) => (
-            <li key={item} className="flex items-center gap-1.5">
-              <span aria-hidden className="text-accent-ink">
-                ✓
-              </span>
-              {item}
-            </li>
-          ))}
-        </ul>
+        <a
+          href="#range"
+          className="rise group absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-2 text-xs font-semibold text-stone-600"
+          style={{ animationDelay: "0.6s" }}
+        >
+          See what agents can do
+          <span className="scroll-cue flex h-11 w-11 items-center justify-center rounded-full border-[2.5px] border-ink bg-white text-lg text-ink shadow-[3px_3px_0_var(--ink)] transition group-hover:bg-accent group-hover:text-on-accent">
+            ↓
+          </span>
+        </a>
       </div>
-      <div className="mx-auto mt-16 flex max-w-6xl flex-col gap-16">{children}</div>
+      <div className="mx-auto mt-10 flex max-w-6xl flex-col gap-16">{children}</div>
     </section>
   );
 }
