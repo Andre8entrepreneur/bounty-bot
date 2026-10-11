@@ -1,4 +1,5 @@
-// Per-agent performance across every mission — pure, so it's unit-tested.
+// Per-agent performance across every bounty, overall and per category of
+// work — pure, so it's unit-tested.
 
 export interface LeaderEntry {
   agentKey: string | null;
@@ -70,4 +71,27 @@ export function computeLeaderboard(entries: LeaderEntry[], bounties: LeaderBount
       earnedTusdc: round1(earned),
     };
   });
+}
+
+/** A leaderboard row with the agent's display name and specialty. */
+export interface LeaderRow extends AgentStats {
+  name: string;
+  specialty: string | null;
+}
+
+/** One leaderboard per category of work, each counting only the entries made
+ * on bounties of that category. Categories are listed alphabetically. */
+export function leaderboardsByCategory(
+  entries: LeaderEntry[],
+  bounties: Array<LeaderBounty & { category: string }>,
+): Array<{ category: string; stats: AgentStats[] }> {
+  const categoryOf = new Map(bounties.map((b) => [b.id, b.category]));
+  const categories = [...new Set(bounties.map((b) => b.category))].sort();
+  return categories.map((category) => ({
+    category,
+    stats: computeLeaderboard(
+      entries.filter((e) => categoryOf.get(e.bountyId) === category),
+      bounties,
+    ),
+  }));
 }

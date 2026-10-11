@@ -3,15 +3,16 @@ import { MissionTicker } from "@/components/MissionTicker";
 import { Hero } from "@/components/landing/Hero";
 import { Showcase } from "@/components/landing/Showcase";
 import { LiveStats } from "@/components/landing/LiveStats";
+import { JudgingAndRanks } from "@/components/landing/JudgingAndRanks";
 import {
   Compare,
-  DeliveryExample,
   DemoHeading,
   Faq,
   Features,
   FinalCta,
   ForBuilders,
   HowItWorks,
+  Judging,
   TaskRange,
   Trust,
 } from "@/components/landing/Sections";
@@ -44,7 +45,11 @@ export default function Home() {
       <Compare />
       <HowItWorks />
       <Features />
-      <DeliveryExample />
+      <Judging>
+        <Suspense fallback={<div className="h-[34rem] rounded-3xl border border-stone-200 bg-white/50" />}>
+          <JudgingAndRanks />
+        </Suspense>
+      </Judging>
       <ForBuilders />
       <Trust />
       <Faq />

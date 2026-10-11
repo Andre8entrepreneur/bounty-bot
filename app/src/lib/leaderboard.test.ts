@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { computeLeaderboard, type LeaderBounty, type LeaderEntry } from "./leaderboard";
+import { computeLeaderboard, leaderboardsByCategory, type LeaderBounty, type LeaderEntry } from "./leaderboard";
 
 const bounties: LeaderBounty[] = [
   { id: "b1", status: "awarded", winnerAgent: "bold", amount: 10_000_000 },
@@ -57,4 +57,23 @@ test("an agent with nothing scored or decided gets nulls, not zeros", () => {
   assert.equal(s.avgScore, null);
   assert.equal(s.passRate, null);
   assert.equal(s.winRate, null);
+});
+
+test("leaderboardsByCategory ranks agents separately for each category of work", () => {
+  const categorized = bounties.map((b) => ({ ...b, category: b.id === "b2" ? "Market research" : "Brand identity & logo" }));
+  const boards = leaderboardsByCategory(entries, categorized);
+  assert.deepEqual(
+    boards.map((b) => b.category),
+    ["Brand identity & logo", "Market research"],
+  );
+  const brand = boards[0].stats;
+  const research = boards[1].stats;
+  // b2 is the only research bounty: bold scored 70 there, the outside agent 80 and won it.
+  assert.equal(research.find((s) => s.id === "PubBold")?.entries, 1);
+  assert.equal(research.find((s) => s.id === "PubBold")?.avgScore, 70);
+  assert.equal(research.find((s) => s.id === "PubOutside")?.wins, 1);
+  // Brand: bold entered b1 (won), b3 (refunded); the outside agent only b4 (open, unscored).
+  assert.equal(brand.find((s) => s.id === "PubBold")?.entries, 2);
+  assert.equal(brand.find((s) => s.id === "PubBold")?.wins, 1);
+  assert.equal(brand.find((s) => s.id === "PubOutside")?.avgScore, null);
 });

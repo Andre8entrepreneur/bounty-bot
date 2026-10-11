@@ -3,7 +3,7 @@
 import { getSupabaseBrowserClient } from "./supabase/browser";
 import { agentDisplayLabel, personaLabel } from "./agents/display-names";
 import { WINNER_SHARE } from "./cost-estimate";
-import { WORK_CATEGORIES } from "./agents/form-spec";
+import { categoryLabel } from "./agents/form-spec";
 
 export interface LandingStats {
   missions: number;
@@ -21,6 +21,8 @@ export interface ShowcaseEntry {
   name: string;
   tagline: string;
   palette: string[];
+  /** The referee's stored breakdown (criteria, notes, pass mark). */
+  refereeNotes: unknown;
 }
 
 export interface Showcase {
@@ -52,6 +54,7 @@ interface ShowcaseRow {
   agent_pubkey: string | null;
   referee_score: number | null;
   referee_pass: boolean | null;
+  referee_notes: unknown;
   kit: { logoSvg?: string; names?: string[]; tagline?: string; palette?: Array<{ hex?: string }> } | null;
 }
 
@@ -72,12 +75,6 @@ export async function getLandingStats(): Promise<LandingStats> {
     paidTusdc: Math.round((paidMicro / 1_000_000) * WINNER_SHARE),
     agents: new Set(allEntries.map((e) => e.agent_pubkey).filter(Boolean)).size,
   };
-}
-
-/** Missions posted before categories existed are all brand identity missions. */
-function categoryLabel(category: string | undefined): string {
-  const known = WORK_CATEGORIES.find((c) => c.id === category || c.label === category);
-  return (known ?? WORK_CATEGORIES[0]).label;
 }
 
 function toDataUri(svg: string): string {
@@ -101,7 +98,7 @@ export async function getShowcase(): Promise<Showcase | null> {
 
   const { data: allRows } = await supabase
     .from("entries")
-    .select("bounty_id,agent_key,agent_pubkey,referee_score,referee_pass,kit")
+    .select("bounty_id,agent_key,agent_pubkey,referee_score,referee_pass,referee_notes,kit")
     .in("bounty_id", bounties.map((b) => b.id))
     .not("referee_score", "is", null)
     .returns<Array<ShowcaseRow & { bounty_id: string }>>();
@@ -140,6 +137,7 @@ export async function getShowcase(): Promise<Showcase | null> {
       name: r.kit?.names?.[0] ?? "",
       tagline: r.kit?.tagline ?? "",
       palette: (r.kit?.palette ?? []).map((pal) => pal.hex ?? "").filter((hex) => /^#[0-9a-fA-F]{6}$/.test(hex)),
+      refereeNotes: r.referee_notes,
     }))
     .sort((a, b) => b.score - a.score)
     .slice(0, 5);
