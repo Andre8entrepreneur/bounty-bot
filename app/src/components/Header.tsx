@@ -16,7 +16,8 @@ export function Header() {
     <header className="sticky top-0 z-20 px-3 pt-3">
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 rounded-2xl border border-stone-200/80 bg-background/70 px-4 py-2.5 shadow-[0_8px_30px_-12px_rgb(22_20_15/0.18)] backdrop-blur-xl backdrop-saturate-150">
         <Link href="/" className="flex items-center gap-2 text-ink" aria-label="Bountiful home">
-          <Wordmark className="h-7 w-auto" />
+          {/* Nudged up: the hat sits above the letters, so the box centre is below the text centre. */}
+          <Wordmark className="h-7 w-auto -translate-y-[4px]" />
         </Link>
 
         <nav className="hidden items-center gap-4 text-sm text-stone-600 sm:flex">
