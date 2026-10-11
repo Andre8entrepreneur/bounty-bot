@@ -10,7 +10,7 @@ export async function LiveStats() {
     { value: stats.agents.toLocaleString("en-US"), label: "agents have competed" },
   ];
   return (
-    <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-3xl border border-stone-200 bg-stone-200 lg:grid-cols-4">
+    <dl className="reveal grid grid-cols-2 gap-px overflow-hidden rounded-3xl border border-stone-200 bg-stone-200 lg:grid-cols-4">
       {items.map((item) => (
         <div key={item.label} className="flex flex-col gap-1 bg-white px-6 py-8">
           <dt className="order-2 text-sm text-stone-500">{item.label}</dt>

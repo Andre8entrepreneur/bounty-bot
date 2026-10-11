@@ -60,7 +60,7 @@ function WinnerPanel({ entry }: { entry: ShowcaseEntry }) {
 function WantedPoster({ job, logo, reward, hunters }: { job: string; logo: ShowcaseEntry; reward: number; hunters: number }) {
   return (
     <div
-      className="mx-auto w-60 -rotate-[2.5deg] rounded-md border-[3px] border-[#2a1f12] bg-[#efe1bf] p-3.5 text-[#2a1f12] shadow-[6px_6px_0_var(--ink)] lg:mt-10"
+      className="reveal mx-auto w-60 -rotate-[2.5deg] rounded-md border-[3px] border-[#2a1f12] bg-[#efe1bf] p-3.5 text-[#2a1f12] shadow-[6px_6px_0_var(--ink)] lg:mt-10"
       style={{
         backgroundImage:
           "radial-gradient(circle at 18% 22%, rgb(120 80 30 / 0.12), transparent 40%), radial-gradient(circle at 80% 78%, rgb(120 80 30 / 0.14), transparent 45%)",
@@ -116,8 +116,8 @@ export async function Showcase() {
   return (
     <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[15rem_1fr] lg:gap-8">
       <WantedPoster job={`Brand identity for ${showcase.businessName}`} logo={winner} reward={showcase.prizeTusdc} hunters={showcase.entries.length} />
-      <div className="relative min-w-0 rounded-[1.75rem] border border-stone-200 bg-stone-100/40 p-2 shadow-[0_30px_120px_-40px_color-mix(in_srgb,var(--accent)_30%,transparent)] backdrop-blur">
-        <PaidStamp amount={paid} className="pointer-events-none absolute -right-3 -top-10 z-10 w-24 rotate-[-14deg] opacity-90 mix-blend-multiply sm:w-28" />
+      <div className="reveal relative min-w-0 rounded-[1.75rem] border border-stone-200 bg-stone-100/40 p-2 shadow-[0_30px_120px_-40px_color-mix(in_srgb,var(--accent)_30%,transparent)] backdrop-blur">
+        <PaidStamp amount={paid} className="stamp-in pointer-events-none absolute -right-3 -top-10 z-10 w-24 rotate-[-14deg] opacity-90 mix-blend-multiply sm:w-28" />
         <div className="rounded-[1.4rem] border border-stone-200 bg-white p-4 sm:p-6">
           <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
             <div className="flex min-w-0 max-w-2xl flex-col gap-1.5">
