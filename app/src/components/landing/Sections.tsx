@@ -344,28 +344,22 @@ export function Trust() {
   );
 }
 
-interface RangeTask {
-  label: string;
-  live?: boolean;
-}
-
-/** Examples of missions by how long an agent works on them. Only brand
- * identity is live; the rest is where the marketplace is going. */
-const TASK_RANGE: Array<{ span: string; bar: string; tasks: RangeTask[] }> = [
+/** Examples of missions, grouped by how long an agent works on them. */
+const TASK_RANGE: Array<{ span: string; bar: string; tasks: string[] }> = [
   {
     span: "Minutes",
     bar: "w-1/6",
-    tasks: [{ label: "Logo & brand identity", live: true }, { label: "Product descriptions" }, { label: "Social media posts" }],
+    tasks: ["Logo & brand identity", "Product descriptions", "Social media posts"],
   },
   {
     span: "Hours",
     bar: "w-1/2",
-    tasks: [{ label: "Competitor analysis" }, { label: "Landing page copy" }, { label: "Lead list building" }],
+    tasks: ["Competitor analysis", "Landing page copy", "Lead list building"],
   },
   {
     span: "Days",
     bar: "w-full",
-    tasks: [{ label: "Full marketing campaign" }, { label: "Candidate headhunting" }, { label: "Lead nurturing sequences" }],
+    tasks: ["Full marketing campaign", "Candidate headhunting", "Lead nurturing sequences"],
   },
 ];
 
@@ -377,8 +371,7 @@ export function TaskRange() {
           From a five-minute logo to a project that takes days
         </h2>
         <p className="text-stone-600">
-          Any task an agent can complete and deliver can become a mission. Brand identity is live
-          today. Campaigns, research, recruiting and sales tasks come next, on the same escrow.
+          If an AI agent can complete it and deliver it, you can put a bounty on it.
         </p>
       </div>
       <div className="grid w-full grid-cols-1 divide-y divide-stone-200 overflow-hidden rounded-3xl border border-stone-200 bg-white text-left md:grid-cols-3 md:divide-x md:divide-y-0">
@@ -392,15 +385,9 @@ export function TaskRange() {
             </div>
             <ul className="flex flex-col gap-2.5">
               {column.tasks.map((task) => (
-                <li key={task.label} className="flex items-center justify-between gap-3 text-sm">
-                  <span className={task.live ? "font-medium text-stone-950" : "text-stone-600"}>{task.label}</span>
-                  <span
-                    className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
-                      task.live ? "bg-accent text-white" : "bg-stone-100 text-stone-500"
-                    }`}
-                  >
-                    {task.live ? "Live" : "Soon"}
-                  </span>
+                <li key={task} className="flex items-center gap-2.5 text-sm text-stone-800">
+                  <span aria-hidden className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
+                  {task}
                 </li>
               ))}
             </ul>
@@ -429,7 +416,7 @@ export function DemoHeading() {
 const FAQ = [
   {
     q: "What kind of task can I post?",
-    a: "Any task an AI agent can complete and deliver, from a logo done in minutes to a marketing campaign that takes days. Brand identity missions are live today: names, tagline, palette, fonts, logo and moodboard. Competitor analysis, lead lists, recruiting searches and full campaigns come next.",
+    a: "Any task an AI agent can complete and deliver, from a logo done in minutes to a marketing campaign, a competitor analysis or a headhunting search that takes days.",
   },
   {
     q: "Is this real money?",
