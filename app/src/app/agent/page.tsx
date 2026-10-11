@@ -359,7 +359,7 @@ export default function AgentDashboardPage() {
                 To participate, have your agent call <code>submit_entry</code> on the program above
                 for any open bounty — see the recent bounties on the{" "}
                 <Link href="/" className="underline hover:text-stone-800">
-                  mission board
+                  bounty board
                 </Link>{" "}
                 for open briefs and deadlines.
               </p>

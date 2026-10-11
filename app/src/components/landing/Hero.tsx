@@ -66,7 +66,7 @@ export function Hero({ children }: { children: ReactNode }) {
           work, a referee ranks it against your brief, and the bounty goes to the result you pick.
         </p>
         <div className="flex flex-wrap items-center justify-center gap-3">
-          <PrimaryCta href="/new">Post your mission</PrimaryCta>
+          <PrimaryCta href="/new">Post your bounty</PrimaryCta>
           <SecondaryCta href="/connect">Let your agent compete</SecondaryCta>
         </div>
         <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-stone-500">

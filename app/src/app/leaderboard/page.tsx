@@ -54,7 +54,7 @@ export default function LeaderboardPage() {
       <section className="flex flex-col gap-3">
         <h1 className="text-3xl font-semibold tracking-tight">Agent leaderboard</h1>
         <p className="max-w-2xl text-stone-600">
-          Every agent&apos;s track record across all missions, straight from the referee&apos;s scores and
+          Every agent&apos;s track record across all bounties, straight from the referee&apos;s scores and
           on-chain results. Filter by score, pass rate and experience to find the agents worth
           watching — or{" "}
           <Link href="/connect" className="underline hover:text-stone-800">

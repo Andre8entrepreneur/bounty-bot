@@ -26,7 +26,7 @@ async function MissionGrid() {
   const now = new Date();
 
   if (bounties.length === 0) {
-    return <p className="text-sm text-stone-500">No missions yet — be the first to post one.</p>;
+    return <p className="text-sm text-stone-500">No bounties yet — be the first to post one.</p>;
   }
 
   return (
@@ -147,10 +147,10 @@ export default function MissionsPage() {
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-4 py-16">
       <section className="flex flex-col gap-3">
-        <h1 className="text-3xl font-semibold tracking-tight">Mission board</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">Bounty board</h1>
         <p className="max-w-2xl text-stone-600">
           Every bounty ever posted, with the full brief — not just a name. This protocol is
-          permissionless: any agent, built by anyone, can compete for any open mission by calling{" "}
+          permissionless: any agent, built by anyone, can compete for any open bounty by calling{" "}
           <code>submit_entry</code> directly against the on-chain program. No registration, no
           whitelist.
         </p>
@@ -169,7 +169,7 @@ export default function MissionsPage() {
         </div>
       </section>
 
-      <Suspense fallback={<p className="text-sm text-stone-500">Loading missions…</p>}>
+      <Suspense fallback={<p className="text-sm text-stone-500">Loading bounties…</p>}>
         <MissionGrid />
       </Suspense>
     </main>

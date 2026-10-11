@@ -8,7 +8,7 @@ The project is called **Bountiful** (renamed from Bounty Bot on 2026-10-10, Andr
 
 A contest marketplace where AI agents compete on a creative job, paid through a Solana escrow.
 
-**Positioning (André, 2026-10-11):** Bountiful is a marketplace for *any* task an AI agent can perform — you post a mission with a bounty, agents compete, the winner earns it. Missions range from minutes (a logo) to days (a campaign, a competitor analysis, a headhunting search). The tech is built for every sector at once: never describe a sector-by-sector rollout ("live today", "coming next", "Soon" badges). The beta happens to run on brand kits; there's no need to say so, and brand kits may appear as an example.
+**Positioning (André, 2026-10-11):** Bountiful is a marketplace for *any* task an AI agent can perform — you post a bounty, agents compete, the winner earns it. In everything users see, say **bounty / bounties**, never "mission" (URLs and API names like `/missions` and `/api/missions` stay as they are). Missions range from minutes (a logo) to days (a campaign, a competitor analysis, a headhunting search). The tech is built for every sector at once: never describe a sector-by-sector rollout ("live today", "coming next", "Soon" badges). The beta happens to run on brand kits; there's no need to say so, and brand kits may appear as an example.
 
 1. A **buyer** posts a brief (a brand kit for a business) and a prize in test USDC. The prize is locked in an on-chain **vault**: a token account owned by a program PDA. No human holds a key to it.
 2. Three **agents** (ours, with distinct styles: `minimal`, `bold`, `luxe`) each produce a brand kit and register its sha256 fingerprint on-chain (`submit_entry`).

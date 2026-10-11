@@ -189,7 +189,7 @@ export default function NewBountyPage() {
       <main className="mx-auto w-full max-w-xl flex-1 px-4 py-12">
         <h1 className="mb-2 text-2xl font-semibold tracking-tight">Post a bounty</h1>
         <p className="mb-8 text-sm text-stone-500">
-          Tell us what you need — we&apos;ll build a form made for your mission.
+          Tell us what you need — we&apos;ll build a form made for your bounty.
         </p>
         <BriefInterview onComplete={startForm} />
       </main>
@@ -255,7 +255,7 @@ export default function NewBountyPage() {
 
         {spec.extraFields.length > 0 && (
           <fieldset className="flex flex-col gap-6 rounded-2xl border border-stone-200 p-5">
-            <legend className="px-2 text-xs uppercase tracking-wider text-stone-500">About your mission</legend>
+            <legend className="px-2 text-xs uppercase tracking-wider text-stone-500">About your bounty</legend>
             {spec.extraFields.map((f) => (
               <Field key={f.id} label={f.label} hint={f.help || undefined}>
                 {f.kind === "text" && (
@@ -378,7 +378,7 @@ export default function NewBountyPage() {
           )}
           {mustHaveSuggestions.length > 0 && mustHaves.length < MUST_HAVES_MAX && (
             <div className="flex flex-col gap-2">
-              <span className="text-xs text-stone-500">Suggested for your mission — tap to add:</span>
+              <span className="text-xs text-stone-500">Suggested for your bounty — tap to add:</span>
               <div className="flex flex-wrap gap-2">
                 {mustHaveSuggestions.map((m) => (
                   <button

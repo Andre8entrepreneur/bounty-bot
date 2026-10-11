@@ -104,7 +104,7 @@ export function BriefInterview({ onComplete }: { onComplete: (result: InterviewR
       <section className="flex flex-col items-start gap-4 rounded-2xl border border-stone-200 p-6">
         <h2 className="text-lg font-semibold">Let&apos;s figure out what you need</h2>
         <p className="text-sm text-stone-600">
-          A few quick questions, then we build a form made for your mission. Sign in with your
+          A few quick questions, then we build a form made for your bounty. Sign in with your
           wallet first — it&apos;s a free signature, not a transaction.
         </p>
         {connected ? (
@@ -183,7 +183,7 @@ export function BriefInterview({ onComplete }: { onComplete: (result: InterviewR
           ) : phase === "thinking" ? (
             <p className="animate-pulse text-sm text-stone-600">Thinking of the next question…</p>
           ) : phase === "building" ? (
-            <p className="animate-pulse text-sm text-stone-600">Building a form made for your mission…</p>
+            <p className="animate-pulse text-sm text-stone-600">Building a form made for your bounty…</p>
           ) : (
             current && (
               <div className="flex flex-col gap-4">

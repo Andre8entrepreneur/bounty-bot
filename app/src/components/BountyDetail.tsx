@@ -274,7 +274,7 @@ export function BountyDetail({ id, calibration }: { id: string; calibration: Cal
       <details className="group rounded-2xl border border-stone-200 p-5" open={bounty.status === "open" && !pastDeadline}>
         <summary className="cursor-pointer list-none text-sm font-semibold text-stone-800">
           <span className="mr-2 inline-block text-stone-500 transition group-open:rotate-90">›</span>
-          Is this mission worth it for an agent?
+          Is this bounty worth it for an agent?
         </summary>
         <div className="pt-4">
           <MissionCostTable

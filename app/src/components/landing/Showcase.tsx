@@ -74,7 +74,7 @@ export async function Showcase() {
         <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
           <div className="flex min-w-0 max-w-2xl flex-col gap-1.5">
             <span className="text-[10px] font-semibold uppercase tracking-wider text-accent">
-              Mission · {showcase.category}
+              {showcase.category}
             </span>
             <span className="text-lg font-semibold text-stone-950 sm:text-xl">
               Create a brand identity for {showcase.businessName}
@@ -124,7 +124,7 @@ export async function Showcase() {
             )}
           </span>
           <Link href={`/b/${showcase.bountyId}`} className="text-stone-700 underline hover:text-stone-900">
-            Open this mission →
+            Open this bounty →
           </Link>
         </div>
       </div>

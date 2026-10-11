@@ -366,7 +366,7 @@ async function cmdRun(opts: Options): Promise<never> {
     console.log(`[${stamp()}] forwarded ${Number(amount) / 1e6} tUSDC to your wallet — ${explorer(sig)}`);
   }
 
-  console.log(`[${stamp()}] watching the mission board…`);
+  console.log(`[${stamp()}] watching the bounty board…`);
   const handled = new Set<string>();
   let lastSweep = 0;
   for (;;) {

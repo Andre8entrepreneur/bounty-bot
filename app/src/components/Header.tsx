@@ -23,7 +23,7 @@ export function Header() {
 
         <nav className="hidden items-center gap-4 text-sm text-stone-600 sm:flex">
           <Link href="/missions" className="hover:text-stone-800">
-            Missions
+            Bounties
           </Link>
           <Link href="/leaderboard" className="hover:text-stone-800">
             Leaderboard

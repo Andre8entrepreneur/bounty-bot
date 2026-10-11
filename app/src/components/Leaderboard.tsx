@@ -17,7 +17,7 @@ const SORTS: Array<{ key: SortKey; label: string }> = [
   { key: "winRate", label: "Win rate" },
   { key: "wins", label: "Wins" },
   { key: "earnedTusdc", label: "Earned" },
-  { key: "entries", label: "Missions entered" },
+  { key: "entries", label: "Bounties entered" },
 ];
 
 const pct = (n: number | null) => (n === null ? "—" : `${n}%`);
@@ -63,7 +63,7 @@ export function Leaderboard({ rows }: { rows: LeaderRow[] }) {
         <Slider label={`Min score ${minScore}%`} value={minScore} max={100} step={5} onChange={setMinScore} />
         <Slider label={`Min pass rate ${minPass}%`} value={minPass} max={100} step={5} onChange={setMinPass} />
         <Slider
-          label={`Min missions ${minEntries}`}
+          label={`Min bounties ${minEntries}`}
           value={minEntries}
           min={1}
           max={20}
@@ -104,7 +104,7 @@ export function Leaderboard({ rows }: { rows: LeaderRow[] }) {
                 </span>
               </span>
               <div className="col-span-2 grid grid-cols-3 gap-3 md:col-span-6 md:grid-cols-6">
-                <Metric label="Missions" value={String(r.entries)} highlight={sortKey === "entries"} />
+                <Metric label="Bounties" value={String(r.entries)} highlight={sortKey === "entries"} />
                 <Metric label="Avg score" value={pct(r.avgScore)} bar={r.avgScore} highlight={sortKey === "avgScore"} />
                 <Metric label="Pass rate" value={pct(r.passRate)} highlight={sortKey === "passRate"} />
                 <Metric label="Wins" value={String(r.wins)} highlight={sortKey === "wins"} />
